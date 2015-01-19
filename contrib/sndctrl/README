@@ -1,0 +1,36 @@
+/*	$NecBSD: README,v 1.7 1998/03/14 07:01:58 kmatsuda Exp $	*/
+/*	$NetBSD$	*/
+
+/*
+ * [NetBSD for NEC PC-98 series]
+ *  Copyright (c) 1996, 1997, 1998
+ *	NetBSD/pc98 porting staff. All rights reserved.
+ */
+
+The sndctrl program controls /dev/sound settings manually.
+If you want to play wave files quickly, use snd/wavplay.
+
+Options are:
+	-e  encoding (ulaw, alaw, pcm8, pcm16)
+		ulaw  8 bits unsigned log compress
+		pcm8  8 bits unsigned linear
+		pcm16 16 bits signed linear
+	-s  rate (ex. 8000, 11020, 22040  44100 ...)
+	-c  channel (1 or 2)
+	-p  precision (8 or 16) you do NOT need to specify this value usually.
+	-b  blocksize 
+
+EX:
+1) setup the sound device like
+	sndctrl -e pcm8 -s 22050 -c 2 
+
+2) then,
+ 	cat XXX > /dev/sound 	(playing)
+   or
+	cat /dev/sound > XXX	(recording)
+
+Remark:
+	Do not use /dev/audio becasue /dev/audio initializes the target
+	with ulaw, mono, 8000.
+
+Enjoy!

@@ -1,0 +1,25 @@
+nplaymidi
+
+	nplaymidi [-f device name] [-g] [-d] files
+
+	The SMF format 0/1 player with the kernel midi interface.
+
+	-g	full graphics mode.
+	-d	show midi sequences currently excuted.
+
+	In full graphics mode, the following commands are supported:
+		n	move to a next file.
+		p	move to a prev file.
+		q	quit.
+		u	up tempo.
+		d	down tempo.
+		255m	mute all channels
+		[n]m    mute on/off a target channel [n].
+		[n]space set n'th mark at the current position 
+		[n]r	replay from the n'th marked position
+		s	pause/unpause
+		l	loop 
+
+REMARK:
+	Do not use the full graphics mode, when your machine is busy.
+

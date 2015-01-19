@@ -1,0 +1,147 @@
+#
+# GENERIC device decls
+#
+# Files are placed in Cbus/dev, However they are bus independent.
+#
+
+#
+# IDE/EIDE
+#
+define	wdcsubr
+file	arch/i386/Cbus/dev/atapi/wdcsubr.c	wdcsubr
+file	arch/i386/Cbus/dev/atapi/wdc_cap.c	wdcsubr
+
+define	atapidrv
+file	arch/i386/Cbus/dev/scsi-atapi/atapidrv.c atapidrv needs-flag
+
+define	idedrv
+
+define	wdc_atabus    {[bank = -1], [channel = -1]}
+define	atabus_direct {[drive = -1]}
+
+device	atabus: atapidrv, atapi, atabus_direct
+attach	atabus at wdc_atabus
+file	arch/i386/Cbus/dev/scsi-atapi/atabus.c	atabus needs-flag
+
+device	wd: disk, idedrv
+attach	wd at atabus_direct
+file	arch/i386/Cbus/dev/atapi/whd.c		wd needs-flag
+
+#
+# SCSI 
+#
+# GENERIC SCSI PROTOCOL LAYER
+define	scsi_low
+file	arch/i386/Cbus/dev/scsi_low.c		scsi_low
+
+# WD33C93 for isa, pisa, pci
+device	ct: scsi, scsi_low
+file	arch/i386/Cbus/dev/ct/ct.c		ct
+
+# NCR53C406/53C500 SCSI CARD
+device	ncv: scsi, scsi_low
+file	arch/i386/Cbus/dev/ncr53c500.c		ncv
+
+# TMC18C30/18C50 SCSI CARD
+device	stg: scsi, scsi_low
+file	arch/i386/Cbus/dev/tmc18c30.c 		stg
+
+# NinjaSCSI
+device	nsp: scsi, scsi_low
+file	arch/i386/Cbus/dev/nsp.c 		nsp
+
+#
+# SERIRAL
+#
+# serial console
+define	serconsole
+file arch/i386/Cbus/dev/serial/ser_console.c	serconsole
+
+# serial driver (top level)
+device	ser {[slave = -1]}: serconsole
+file	arch/i386/Cbus/dev/serial/ser.c		ser needs-flag
+
+# 8250/16[45]50-based multi-port serial boards
+define	serial_lines {}
+
+# common hardware utils
+define	sersubr
+file	arch/i386/Cbus/dev/serial/sersubr.c	sersubr
+
+# common ns16550 hardware utils
+define	ns16550
+file	arch/i386/Cbus/dev/serial/ns165subr.c	ns16550
+
+# common i8251 hardware utils
+define	i8251
+file	arch/i386/Cbus/dev/serial/i8251subr.c	i8251
+
+# drivers of chips.
+defopt opt_serf.h SERF_SPEED
+device  serf {}: serial_lines, sersubr, serconsole, i8251
+attach	serf at ser
+file	arch/i386/Cbus/dev/serial/serf.c		serf needs-flag
+file	arch/i386/Cbus/dev/serial/serf_console.c	serf
+
+defopt opt_seri.h SERI_SPEED
+device  seri {}: serial_lines, sersubr, serconsole, i8251
+attach	seri at ser
+file	arch/i386/Cbus/dev/serial/seri.c		seri needs-flag
+file	arch/i386/Cbus/dev/serial/seri_console.c	seri
+
+defopt opt_sera.h SERA_SPEED
+device  sera {}: serial_lines, sersubr, ns16550
+attach	sera at ser
+file	arch/i386/Cbus/dev/serial/sera.c		sera needs-flag
+
+defopt opt_serb.h SERB_SPEED
+device  serb {}: serial_lines, sersubr, ns16550
+attach	serb at ser
+file	arch/i386/Cbus/dev/serial/serb.c		serb needs-flag
+
+defopt opt_sern.h SERN_SPEED
+device  sern {}: serial_lines, sersubr, serconsole, ns16550
+attach	sern at ser
+file	arch/i386/Cbus/dev/serial/sern.c		sern needs-flag
+file	arch/i386/Cbus/dev/serial/sern_console.c	sern
+
+defopt opt_serh.h SERH_SPEED
+device	serh {}: serial_lines, sersubr, ns16550
+attach	serh at ser
+file	arch/i386/Cbus/dev/serial/serh.c		serh needs-flag
+
+# com: name of the kernel interfaces.
+define	com
+file	arch/i386/Cbus/dev/serial/com.c			com needs-flag
+
+device	sertty {}: tty
+attach	sertty at serial_lines
+file	arch/i386/Cbus/dev/serial/serttys.c		sertty
+
+device	ttycua: tty, com
+attach	ttycua at sertty
+
+device	ttycom: tty, com
+attach	ttycom at sertty
+
+#
+# ETHER
+#
+# National Semiconductor DS8390 pio and shm
+define	dp8390shm
+file	arch/i386/Cbus/dev/dp8390shm.c		dp8390shm
+
+define	dp8390pio
+file	arch/i386/Cbus/dev/dp8390pio.c		dp8390pio
+
+#
+# Midi interface (high performances)
+#
+device	pmidi 
+attach	pmidi at midibus
+file	dev/packet_midi.c		pmidi	needs-flag
+
+#
+# Extra
+#
+defopt	opt_ncrio.h NCR_IOMAPPED 

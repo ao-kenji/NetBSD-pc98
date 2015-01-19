@@ -1,0 +1,43 @@
+#	$NecBSD: files.systm,v 1.15.2.1 1999/08/21 10:06:52 honda Exp $
+#	$NetBSD$
+
+# [NetBSD for NEC PC-98 series]
+#  Copyright (c) 1994, 1995, 1996, 1997, 1998
+#	NetBSD/pc98 porting staff. All rights reserved.
+
+file	arch/i386/systm/busiosubr.c
+file	arch/i386/systm/syspmgr.c
+file	arch/i386/systm/timersubr.c
+file	arch/i386/systm/slot_device.c
+
+device	systm {}
+attach	systm at systmbus
+file	arch/i386/systm/systmbus.c	systm needs-flag
+
+#
+# Drivers and devices attached with System bus 
+#
+
+define	systmmsg
+file	arch/i386/systm/systmsubr.c	systmmsg
+
+defopt  opt_vm86biosd.h	KTHREAD_VM86BIOSD
+define	vm86bios
+file	arch/i386/systm/vm86bios.c	vm86bios needs-flag
+
+# NEC sound
+device	necss {}
+attach	necss at systm
+file	arch/i386/systm/necss.c		necss needs-flag	
+
+# NEC apm
+defopt  opt_apm.h APM_GEN_POWEVENT
+device	apm: vm86bios, systmmsg
+attach	apm at systm
+file	arch/i386/systm/apm.c	apm needs-flag
+
+# Systm Sound Timer
+pseudo-device sndtm
+file	arch/i386/systm/sndtm.c		sndtm needs-count		
+
+defopt	opt_systm_daemon.h APM_AUTO_START PCSD_AUTO_START IPPCTRL_AUTO_START

@@ -1,0 +1,50 @@
+	$NecBSD: README,v 1.9 1998/09/26 05:12:55 kmatsuda Exp $
+	$NetBSD$
+
+お遊びでcdplayer in consoleを作って見ました。
+
+DEC220 compat consoleでないといけません。
+
+起動は　 cdplay cd? (scsi cdrom, atapi cdrom)
+
+run time command 群は
+
+< : volume control   (wrappingします）
+> : volume control
+p : play
+j : next
+k : previous   （これ、vi key up down assignです.理由は画面見れば判ります）
+h : <<
+l : >> 
+P : pause
+r : resume
+s : stop
+E : eject
+q : exit
+c : all disselect
+a : all select
+sp: select
+L : loop mode (default)
+^L: screen redraw
+
+って感じでいつでも入力出来ます。
+
+まあ、お遊びという事でね。
+あ、あと10行以下のconsoleだとダメですね。
+
+セレクトモードも追加しました。（loop modeも）
+
+stop の時に落ち着いて選択しても良いですし、
+play 状態で聞きながら選択しても良いです。
+ちょとした癖がありますから、コツをのみ込んでくださいね。
+
+うう、つまらない事でpatch levelあげてますな。。。
+
+window resize signal, sig suspendに対応しました。
+また、run markerを動かすようにしました。
+非選択されたtrackに対する挙動をかえました。
+一部のcdromでmsf formatのindex を -1にしないといけないバグを回避しました。
+
+そこそこの出来になったと思います。使って見てください。
+
+Naofumi Honda

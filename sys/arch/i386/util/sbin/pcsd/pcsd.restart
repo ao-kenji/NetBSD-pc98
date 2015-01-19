@@ -1,0 +1,25 @@
+#!/bin/sh
+#
+# [NetBSD for NEC PC-98 series]
+#  Copyright (c) 1999 NetBSD/pc98 porting staff.
+#  All rights reserved.
+# 
+#set -x
+
+/bin/ps -x | 
+(
+	while read PCSD_PID ARG2 ARG3 ARG4 PROG_NAME
+	do
+		PROG_BASE="${PROG_NAME##*/}"
+		TARGET="${PROG_BASE%% *}"
+		if [ X"$TARGET" = "Xpcsd" ]
+		then
+			echo restart pcsd $PCSD_PID
+			/bin/kill -HUP $PCSD_PID
+			/bin/kill -USR2 $PCSD_PID
+			exit 0
+		fi
+	done
+	echo "no pcsd running"
+	exit 255
+)

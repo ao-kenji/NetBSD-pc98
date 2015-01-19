@@ -1,0 +1,559 @@
+/*	$NecBSD: msg.md.ja,v 1.14.2.2 1999/08/25 23:52:28 honda Exp $	*/
+/*	$NetBSD: msg.md.en,v 1.15.4.1 1999/06/24 22:55:03 cgd Exp $	*/
+
+/*
+ * Copyright 1997 Piermont Information Systems Inc.
+ * All rights reserved.
+ *
+ * Written by Philip A. Nelson for Piermont Information Systems Inc.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
+ * 3. All advertising materials mentioning features or use of this software
+ *    must display the following acknowledgement:
+ *      This product includes software developed for the NetBSD Project by
+ *      Piermont Information Systems Inc.
+ * 4. The name of Piermont Information Systems Inc. may not be used to endorse
+ *    or promote products derived from this software without specific prior
+ *    written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY PIERMONT INFORMATION SYSTEMS INC. ``AS IS''
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED. IN NO EVENT SHALL PIERMONT INFORMATION SYSTEMS INC. BE 
+ * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR 
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF 
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF 
+ * THE POSSIBILITY OF SUCH DAMAGE.
+ *
+ */
+
+/* MD Message catalog -- english, i386 version */
+/* MD Message catalog -- japanese, i386 version */
+
+message doing_overwrite
+{上書き}
+
+message doing_update_boot
+{ブートコードアップデート}
+
+message overwrite
+{既存のi386バイナリーをPC-98差分バイナリーで上書きします。
+上書きを実行する為には、既にi386バイナリをインストールしている必要が
+あります。まだi386バイナリのインストールを行っていないのであれば、
+トップメニューに戻り必要な手続きを実行してください。
+
+注意: 
+PC-98 full distribution setsを用いてインストールを行っている場合は、
+この上書きは!!必要ありません!!。
+
+上書きを実行しますか？
+}
+
+message update_boot
+{ブートコードのアップデートのみを行います。
+既存のNetBSDファイルシステムの内容は一切変更されません。
+ブートコードのアップデートを実行する為には、NetBSDファイルシステムが
+存在する必要があります。まだNetBSDのインストールを行っていないのであれば、
+トップメニューに戻り必要な手続きを実行してください。
+
+ブートコードのアップデートを実行しますか？
+}
+
+message overwrite_complete
+{既存のi386バイナリーのPC-98差分バイナリーによる上書きは終了しました。
+
+以上でNetBSD-@@VERSION@@ の全てのインストールプロセスは完了しました。
+}
+
+message update_boot_complete
+{ブートコードのアップデートは終了しました。
+
+これからも、NetBSD/pc98をよろしくね。
+
+	NetBSD/pc98 CoreTeam 一同
+}
+
+message update_boot_abort
+{ブートコードのアップデートに失敗したようです。どうしてでしょうかね?
+まあ、失敗したものは仕方がない。くよくよせずに、理由を各自考えてみてください
+(８０字以内で述べよ)。
+}
+
+message fullpart
+{ディスク %s にNetBSDのインストールを始めます。ディスク全体を使用しますか？
+
+}
+/*
+{We are now going to install NetBSD on the disk %s.  You may
+choose to install NetBSD on the entire disk, or on part of the disk.
+
+Partial-disk installation creates a partition, or `slice', for NetBSD
+in your disk's MBR partition table. Whole-disk installation is
+`dangerously dedicated': it takes over the entire MBR. This WILL
+overwrite all existing data and OSes on the disk. It also prohibits later
+installation of multiple OSes on that disk (unless you overwrite NetBSD and
+reinstall using only part of the disk).
+
+Which would you like to do?
+}
+*/
+
+message wdtype
+{ディスク %s の種類を指定してください?}
+/*
+{What kind of disk is %s?}
+*/
+
+message sectforward
+{ディスクの不良セクターを交替セクターに置き換える機能を使用しますか?
+
+注意:  i386の実装には致命的なバグがあります。 PC-98カーネル及びPC-98付属の
+disk utility プログラムdiskgenは、交替セクターを正しく扱う事が出来ますが、
+このインストールプログラムは不完全です。 もし、この機能を使用したい場合は、
+diskgenを使ってマニュアルでインストールしてください。
+必ず使用しないを選択してください。}
+/*
+{Does your disk do AUTOMATIC sector forwarding?}
+*/
+
+message dlgeom
+{ディスク %s の本来のジオメトリとBIOSから得られるジオメトリは異っています。
+注意:  PC-98では通常両者は異っています。BIOSのジオメトリを選択して下さい。
+
+BIOSのジオメトリ: %d シリンダ, %d ヘッド, %d セクタ
+本来のジオメトリ: %d シリンダ, %d ヘッド, %d セクタ
+}
+/*
+{It appears that your disk, %s, has already been labeled with a BSD 
+disklabel and the disklabel reports geometry that is different from
+the real geometry.  The two geometries are:
+
+disklabel: %d cylinders, %d heads, %d sectors
+real geom: %d cylinders, %d heads, %d sectors
+}
+*/
+
+/* XXX: compat 1.3.3 */
+message nobiosgeom
+{ディスク %s の BIOSジオメトリを確定できません。
+選択肢としては:
+    -- インストールの中断。マニュアルでインストールを行う。
+    -- 自分自身で BIOS ジオメトリ値を入力。 sysinst は MBR を
+       初期化します。
+
+警告: 新しいジオメトリを入力すると、このプログラムはマスターブート
+レコード(MBR) の初期化とインストールされているブートプログラムの
+破壊を行ないます。
+
+}
+
+/* XXX: compat 1.3.3 */
+message diagcyl
+{古い BIOS や古い診断プログラムの中には、ディスクの最終シリンダをテスト
+に使用する物があります。最近のシステムでは既にそういう物はなくなってい
+ます。もし古いシステムを使用していて、それが最終シリンダをテストに使う
+かどうかわからない場合には、とりあえずハードディスクの最終シリンダを使
+用しないようにすることができます。
+注意:  PC-98では除外する必要はありません。
+
+最終シリンダを除外しますか? 
+
+}
+
+message part_head
+{No   Start(%s)   Size(%s)   End(%s)  種類\n}
+/*
+{番号 スタート(%s) サイズ(%s) エンド(%s) 種類\n}
+*/
+/*
+{No   Start(%s)   Size(%s)   End(%s)  Kind\n}
+*/
+
+message setbiosgeom
+{ジオメトリの入力のプロンプトがでたら、適切な値を入力してください。
+
+}
+/*
+{You will be prompted for the geometry.  Please enter the values you
+want.  The number of cylinders should be <= 1024 and the number of sectors
+should be <= 63. If you have the BIOS set up to use > 1024 cylinders just
+truncate that number to 1024 here; NetBSD will know about the rest of the
+cylinders.
+
+}
+*/
+
+message confirmbiosgeom
+{カーネルの認識したBIOS ディスクジオメトリは以下の通りです。
+再入力を選択すると、値の変更が出来ます。
+注意:  ここで修正が必要となる可能性は、ほぼありえません。続行を選択
+       してください。
+
+}
+/*
+{Please verify if the BIOS disk geometry below is correct. The value for
+the number of cylinders may have been truncated to 1024. This is ok as
+long as the other numbers are correct; only 1024 cylinders can be
+specified in the MBR, the rest will be found in a different way by NetBSD.
+
+If you reenter the values, make sure that the values are correct and
+match those used by other systems on this disk. Values that do not match
+may result in data corruption.
+
+}
+*/
+
+message badgeom
+{ディスクジオメトリに関する現在の値は:
+
+}
+/*
+{The current values for your disk geometry are:
+
+}
+*/
+
+message realgeom
+{本来のジオメトリ: %d シリンダ, %d ヘッド, %d セクタ\n}
+/*
+{real geom: %d cyl, %d heads, %d sec  (NB: for comparison only)\n}
+*/
+
+message biosgeom
+{BIOS ジオメトリ : %d シリンダ, %d ヘッド, %d セクタ\n}
+/*
+{BIOS geom: %d cyl, %d heads, %d sec\n}
+*/
+
+message reentergeom
+{与えられたジオメトリは不正です。もう一度ジオメトリを入力してください。
+}
+/*
+{The values just entered for the geometry are not usable.  Please,
+reenter the geometry.
+}
+*/
+
+message ovrwrite
+{ディスク上の非 NetBSD パーティションを NetBSD で上書きしますか?
+}
+/*
+{Your disk currently has a non-NetBSD partition.  Do you really want to
+overwrite that partition with NetBSD?
+}
+*/
+
+message parttable
+{ディスクのパーティションテーブルは以下の通りです:
+}
+/*
+{The partition table on your disk currently looks like the following:
+}
+*/
+
+message editpart
+{パーティション %d は以下の通りです:\n\n}
+/*
+{Partition %d looks like:\n\n}
+*/
+
+message editparttable
+{DOS パーティションテーブルを編集してください。
+複数のDOSパーティションが存在する場合は、最初に対象となるDOSパーティションを
+選択します。パーティションテーブルは以下の通りです:
+
+}
+/*
+{Edit your DOS partition table.  The highlighted partition is the currently
+active partition.   The partition table currently looks like:
+
+}
+*/
+
+/* PC-98 */
+message dospn
+{パーティション番号}
+
+/* PC-98 */
+message dospninv
+{パーティション番号が不正です。
+パーティション番号は0から7までの数字で選択してください。}
+
+message reeditpart
+{MBR パーティションが他のパーティションに重なっているか、または NetBSD
+のパーティションが存在しないようです。 MBR パーティションを再編集して
+ください。
+
+再編集しますか?
+}
+/*
+{There are overlapping MBR partitions or there is not exactly one NetBSD
+partition. You should reedit the MBR partition table.
+
+Do you want to reedit it?
+}
+*/
+
+message nobsdpart
+{MBR パーティションテーブル中に NetBSD パーティションがありません。}
+/*
+{There is no NetBSD partition in the MBR partition table.}
+*/
+
+message multbsdpart
+{MBR パーティションテーブル中に複数の NetBSD パーティションがあります。
+その中のパーティション %d が使われます。}
+/*
+{There are multiple NetBSD partitions in the MBR partition table.
+Partition %d will be the one used.}
+*/
+
+message dofdisk
+{DOS パーティションテーブルのセットアップ ...
+}
+/*
+{Setting up the DOS partition table ...
+}
+*/
+
+message dobad144
+{不良ブロックテーブルのインストール ...
+}
+/*
+{Installing the bad block table ...
+}
+*/
+
+message dobootblks
+{%s に対してブートブロックのインストール....
+}
+/*
+{Installing boot blocks on %s....
+}
+*/
+
+message askfsroot1
+{パーティション情報について質問します。
+
+最初は root パーティションについてです。ディスクには %d %s の空きがあ
+ります。
+}
+/*
+{I will be asking for partition information.
+
+First the root partition.  You have %d %s left on your disk.
+}
+*/
+
+message askfsroot2
+{root パーティションのサイズをいくつにしますか?  }
+/*
+{Root partition size? }
+*/
+
+message askfsswap1
+{
+次にスワップパーティションについてです。ディスクには %d %s の空きがあ
+ります。
+}
+/*
+{
+Next the swap partition.  You have %d %s left on your disk.
+}
+*/
+
+message askfsswap2
+{スワップパーティションのサイズをいくつにしますか? }
+/*
+{Swap partition size? }
+*/
+
+message otherparts
+{ディスクにはまだ確保されてないスペース(残り)があります。以下のパーテ
+ィションについてサイズとマウントポイントを答えてください。
+
+}
+/*
+{You still have some space remaining unallocated on your disk.  Please
+give sizes and mount points for the following partitions.
+
+}
+*/
+
+message askfspart1
+{次のパーティションは /dev/%s%c についてです。ディスクには %d %s の空
+きがあります。
+}
+/*
+{The next partition is /dev/%s%c.  You have %d %s left on your disk.
+}
+*/
+
+message askfspart2
+{パーティションのサイズをいくつにしますか? }
+/*
+{Partition size? }
+*/
+
+message cyl1024
+{指定されたディスクラベル(パーティションの設定)には 1024 BIOS シリンダ境
+界をまたがる root パーティションがあります。システムが確実にブートされるた
+めには、全ルートパーティションを制限内に置かなければなりません。
+
+次のうち、いずれかの方法を選んでください: }
+/*
+{The disklabel (set of partitions) you specified has a root partition that
+ends beyond the 1024 BIOS cylinder boundary. To be sure that the system
+can be booted at all times, the entire root partition must lie below that
+limit. You can either: }
+*/
+
+/*
+message onebiosmatch
+{This disk matches the following BIOS disk:
+
+BIOS #  cylinders  heads  sectors\n}
+
+message biosmultmatch
+{This disk matches the following BIOS disks:
+
+   BIOS #  cylinders  heads  sectors\n}
+
+message pickdisk
+{Choose disk: }
+
+message wmbrfail
+{Rewrite of MBR failed. I can't continue.}
+
+message partabovechs
+{The NetBSD part of the disk lies outside of the range that the BIOS on
+your machine can address. Booting from it may not be possible. Are you
+sure you that you want to do this?
+
+(Answering 'no' will take you back to the partition edit menu.)}
+
+message installbootsel
+{You appear to have more than one operating system installed on your
+disk. Do you want to install a bootselector so that you can select
+which system to start up when your computer is (re)started?}
+
+message installmbr
+{The start of the NetBSD part of the disk lies outside of the range
+that the BIOS can address. The initial bootcode in the Master Boot
+Record needs to be able to use the extended BIOS interface to boot
+off this partition. Do you want to install the NetBSD bootcode into
+the Master Boot Record so that this is ensured? Note that this will
+overwrite the existing code in the MBR, like some bootselectors.}
+
+message configbootsel
+{Configure the different bootselection menu items. You can change the
+simple menu entries for the matching partition entries that are displayed
+when the system boots. Also, you can specify the timeout and default
+action to be taken (if no selection is made in the bootmenu).\n}
+
+message bootseltimeout
+{Boot menu timeout: %d\n}
+
+message defbootselopt
+{Default boot menu action: }
+
+message defbootseloptactive
+{boot the first active partition.}
+
+message defbootseloptpart
+{boot off partition %d.\n}
+
+message defbootseloptdisk
+{boot off hard disk %d.\n}
+
+message bootselitemname
+{Enter name for menu item}
+
+message bootseltimeoutval
+{Timeout value in seconds (0-3600)}
+  
+message bootselheader
+{Number      Type                                 Menu entry\n}
+*/
+
+/* XXX: compat 1.3.3 */
+message scsigeom1
+{ディスク %s 本来のジオメトリとBIOSのジオメトリが異なっています。
+注意: PC-98では通常ディスクのジオメトリとBIOSのジオメトリは常に異なっています。
+ディスクには %d セクタあります。
+
+BIOSのジオメトリ: %d シリンダ, %d ヘッド, %d セクタ = 総計 %d セクタ
+本来のジオメトリ: %d シリンダ, %d ヘッド, %d セクタ = 総計 %d セクタ
+
+注意: PC-98ではBIOSの報告するジオメトリを！必ず！使用してください。
+}
+/*
+{It appears that your disk, %s, has already been labeled with a BSD 
+disklabel and the disklabel reports geometry that is different from
+the the real geometry.  Also, the reported geometry does not address all
+possible sectors on your disk.  Your disk has %d sectors.
+
+disklabel: %d cylinders, %d heads, %d sectors = %d total sectors
+reported geom: %d cylinders, %d heads, %d sectors = %d total sectors
+
+It may be possible to choose a fake geometry for your BSD disklabel that
+addresses most of your sectors.
+}
+*/
+
+message scsigeom2
+{ディスク %s のジオメトリはディスク全体を使いきっていません。
+ディスクには %d セクタあります。
+注意: PC-98では完全に全体を使いきったジオメトリにはなりません。
+
+報告されたもの: %d シリンダ, %d ヘッド, %d セクタ = 総計 %d セクタ
+
+注意: PC-98では偽ジオメトリを選んではいけません。BIOSの報告するジオメトリ
+を！必ず！使用してください。
+}
+/*
+{Your disk, %s, reports a geometry that does not address all possible sectors
+on your disk.  Your disk has %d sectors.
+
+reported geom: %d cylinders, %d heads, %d sectors = %d total sectors
+
+It may be possible to choose a fake geometry for your BSD disklabel that
+addresses most of your sectors.
+}
+*/
+
+message scsi_fake
+{SCSI ディスクには総計 %d セクタあります。以下の中から偽ジオメトリ
+を選ぶことができます。 最後のジオメトリは報告されたジオメトリです。
+
+1: %6d シリンダ × %6d ヘッド × %6d セクタ ＝ 総計 %8d セクタ
+2: %6d シリンダ × %6d ヘッド × %6d セクタ ＝ 総計 %8d セクタ
+3: %6d シリンダ × %6d ヘッド × %6d セクタ ＝ 総計 %8d セクタ
+4: %6d シリンダ × %6d ヘッド × %6d セクタ ＝ 総計 %8d セクタ
+5: %6d シリンダ × %6d ヘッド × %6d セクタ ＝ 総計 %8d セクタ
+
+注意: 必ず5を選んでください。
+}
+/*
+{Your SCSI disk has %d total sectors.  The following are possible choices
+for fake geometries.  At least the last one is the reported geometry.
+
+1: %6d cylinders * %6d heads * %6d sectors = %8d total sectors
+2: %6d cylinders * %6d heads * %6d sectors = %8d total sectors
+3: %6d cylinders * %6d heads * %6d sectors = %8d total sectors
+4: %6d cylinders * %6d heads * %6d sectors = %8d total sectors
+5: %6d cylinders * %6d heads * %6d sectors = %8d total sectors
+
+}
+*/
+

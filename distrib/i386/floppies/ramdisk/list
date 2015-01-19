@@ -1,0 +1,142 @@
+#	$NecBSD: list,v 1.8.2.1 1999/08/19 18:44:09 honda Exp $
+#	$NetBSD: list,v 1.15.2.3 1999/06/22 16:54:01 perry Exp $
+
+# copy the crunched binary, link to it, and kill it
+COPY	${OBJDIR}/ramdiskbin		ramdiskbin
+LINK	ramdiskbin			sysinst
+LINK	ramdiskbin			bin/cat
+LINK	ramdiskbin			bin/chmod
+LINK	ramdiskbin			bin/cp
+LINK	ramdiskbin			bin/dd
+LINK	ramdiskbin			bin/df
+LINK	ramdiskbin			bin/ed
+# PC-98: required if script based install (does not need now)
+LINK	ramdiskbin			bin/expr
+LINK	ramdiskbin			bin/ln
+LINK	ramdiskbin			bin/ls
+LINK	ramdiskbin			bin/mkdir
+LINK	ramdiskbin			bin/mt
+LINK	ramdiskbin			bin/mv
+LINK	ramdiskbin			bin/pax
+LINK	ramdiskbin			bin/pwd
+LINK	ramdiskbin			bin/rm
+LINK	ramdiskbin			bin/sh
+LINK	ramdiskbin			bin/stty
+LINK	ramdiskbin			bin/sync
+LINK	ramdiskbin			bin/test
+LINK	ramdiskbin			bin/[
+LINK	ramdiskbin			sbin/cd9660
+LINK	ramdiskbin			sbin/disklabel
+LINK	ramdiskbin			sbin/fdisk
+LINK	ramdiskbin			sbin/ffs
+LINK	ramdiskbin			sbin/fsck
+LINK	ramdiskbin			sbin/fsck_ffs
+LINK	ramdiskbin			sbin/halt
+LINK	ramdiskbin			sbin/ifconfig
+LINK	ramdiskbin			sbin/init
+LINK	ramdiskbin			sbin/kernfs
+LINK	ramdiskbin			sbin/mknod
+LINK	ramdiskbin			sbin/mount
+LINK	ramdiskbin			sbin/mount_cd9660
+LINK	ramdiskbin			sbin/mount_ext2fs
+LINK	ramdiskbin			sbin/mount_ffs
+LINK	ramdiskbin			sbin/mount_kernfs
+LINK	ramdiskbin			sbin/mount_msdos
+LINK	ramdiskbin			sbin/mount_nfs
+# PC-98: require mount_union for rescue
+LINK	ramdiskbin			sbin/mount_union
+LINK	ramdiskbin			sbin/msdos
+LINK	ramdiskbin			sbin/newfs
+LINK	ramdiskbin			sbin/nfs
+LINK	ramdiskbin			sbin/ping
+LINK	ramdiskbin			sbin/reboot
+LINK	ramdiskbin			sbin/restore
+LINK	ramdiskbin			sbin/route
+LINK	ramdiskbin			sbin/rrestore
+LINK	ramdiskbin			sbin/shutdown
+LINK	ramdiskbin			sbin/slattach
+LINK	ramdiskbin			sbin/swapctl
+LINK	ramdiskbin			sbin/umount
+# PC-98
+LINK	ramdiskbin			sbin/diskgen
+LINK	ramdiskbin			sbin/diskinfo
+LINK	ramdiskbin			sbin/dospart
+LINK	ramdiskbin			sbin/ippctrl
+LINK	ramdiskbin			sbin/pcsd
+LINK	ramdiskbin			sbin/ttycon
+LINK	ramdiskbin			sbin/vm86biosd
+#
+SYMLINK	/bin/cat		usr/bin/chgrp
+SYMLINK	/bin/cat		usr/bin/ftp
+SYMLINK	/bin/cat		usr/bin/gunzip
+SYMLINK	/bin/cat		usr/bin/gzcat
+SYMLINK	/bin/cat		usr/bin/gzip
+SYMLINK	/bin/cat		usr/bin/less
+SYMLINK	/bin/cat		usr/bin/more
+SYMLINK	/bin/cat		usr/bin/sed
+SYMLINK	/bin/cat		usr/bin/tar
+SYMLINK	/bin/cat		usr/bin/tip
+SYMLINK	/bin/cat		usr/mdec/installboot
+SYMLINK	/bin/cat		usr/sbin/bad144
+SYMLINK	/bin/cat		usr/sbin/chown
+SYMLINK	/bin/cat		usr/sbin/chroot
+# PC-98: MBR ?? should not use MBR related programs!
+#SYMLINK	/bin/cat		usr/sbin/mbrlabel
+SYMLINK	/bin/cat		usr/sbin/update
+# PC-98
+SYMLINK	/bin/cat		usr/sbin/cardinfo
+SYMLINK	/bin/cat		usr/sbin/slotctrl
+SYMLINK	/bin/cat		usr/sbin/devid
+SYMLINK	/bin/cat		usr/sbin/dumpcis
+# PC-98
+SYMLINK	/bin/cat		usr/local/bin/loadmaru
+SYMLINK	/bin/cat		usr/local/bin/vsc
+#
+SPECIAL	/bin/rm ramdiskbin
+
+# various files that we need in /etc for the install
+COPY	${CURDIR}/../../../../etc/group		etc/group
+COPY	${CURDIR}/../../../../etc/master.passwd	etc/master.passwd
+COPY	${CURDIR}/../../../../etc/protocols	etc/protocols
+COPY	${CURDIR}/../../../../etc/services	etc/services
+
+SPECIAL	pwd_mkdb -p -d ./ etc/master.passwd
+SPECIAL /bin/rm etc/spwd.db
+SPECIAL /bin/rm etc/pwd.db
+
+# copy the MAKEDEV script and make some devices
+COPY	${CURDIR}/../../../../etc/etc.i386/MAKEDEV	dev/MAKEDEV
+SPECIAL	cd dev; sh MAKEDEV ramdisk
+SPECIAL	/bin/rm dev/MAKEDEV
+
+# we need the boot block in /usr/mdec + the MBR copy
+# PC-98: MBR ?? should not use MBR related programs!
+COPY	${DESTDIR}/usr/mdec/biosboot.sym	usr/mdec/biosboot.sym
+# PC-98: MBR ?? should not use MBR related programs!
+#COPY	${DESTDIR}/usr/mdec/mbr			usr/mdec/mbr
+#COPY	${DESTDIR}/usr/mdec/mbr_bootsel		usr/mdec/mbr_bootsel
+
+# and the common installation tools
+# COPY	${CURDIR}/../../../utils/script-installer/dot.commonutils  .commonutils
+# COPY	${CURDIR}/../../../utils/script-installer/dot.instutils	   .instutils
+COPY	termcap.mini			usr/share/misc/termcap
+#
+COPY	${CURDIR}/../../../../sys/arch/i386/util/sbin/ippctrl/ipp.conf	etc/ipp.conf
+COPY	${CURDIR}/../../../../sys/arch/i386/util/sbin/pcsd/pcmcia.conf	etc/pcmcia.conf
+
+# the disktab explanation file
+COPY	disktab.preinstall		etc/disktab.preinstall
+
+#the lists of obsolete files used by sysinst
+# PC-98: XXX not yet !
+SPECIAL	sh ${CURDIR}/../../../../distrib/sets/makeobsolete -b -s ${CURDIR}/../../../../distrib/sets -t ./dist 
+
+# and the installation tools
+COPY	dot.profile			.profile
+# COPY	${OBJDIR}/install.sh		install
+# COPY	${OBJDIR}/upgrade.sh		upgrade
+# COPY	${OBJDIR}/start.sh		start
+COPY	dot.hdprofile			tmp/.hdprofile
+# SPECIAL	chmod 755 install
+# SPECIAL	chmod 755 upgrade
+# SPECIAL	chmod 755 start

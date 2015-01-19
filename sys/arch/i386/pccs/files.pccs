@@ -1,0 +1,27 @@
+#	$NecBSD: files.pccs,v 1.5 1998/03/14 07:10:00 kmatsuda Exp $
+#	$NetBSD$
+
+# [NetBSD for NEC PC-98 series]
+#  Copyright (c) 1994, 1995, 1996, 1997, 1998
+#	NetBSD/pc98 porting staff. All rights reserved.
+
+	
+#
+# PC Card {16|32} bits Space definition
+#
+define	pccs_space {}
+file	arch/i386/pccs/pccscis.c	pccs_space
+file	arch/i386/pccs/pccs_patch.c	pccs_space
+
+#
+# PC Card Service definition
+#
+device	pccs {[drive = -1]}: systmmsg
+attach	pccs at pccs_space
+file	arch/i386/pccs/pccs.c		pccs needs-flag
+
+# device slot {}: pisabus, cardbus
+#
+device	slot {}: pisabus
+attach	slot at pccs
+file	arch/i386/pccs/c16res.c		slot needs-flag

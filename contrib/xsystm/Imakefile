@@ -1,0 +1,20 @@
+XCOMM ********************************
+XCOMM ** Imakefile for xsystm program
+XCOMM **
+XCOMM ********************************
+
+        DEPLIBS = XawClientDepLibs
+LOCAL_LIBRARIES = XawClientLibs -lkvm
+           SRCS = xsystm.c get_load.c
+           OBJS = xsystm.o get_load.o
+      DEFINES = -DNSLOT=2
+
+AllTarget(xsystm)
+
+NormalProgramTarget(xsystm,$(OBJS),$(DEPLIBS),$(LOCAL_LIBRARIES),NullParameter)
+
+InstallProgramWithFlags(xsystm,$(BINDIR),$(INSTKMEMFLAGS))
+InstallAppDefaults(XSystm)
+InstallManPage(xsystm,$(MANDIR))
+
+DependTarget()

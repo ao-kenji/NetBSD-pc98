@@ -1,0 +1,372 @@
+#	$NecBSD: devlist.pccs16,v 3.55.4.6 1999/12/12 00:36:30 kmatsuda Exp $
+#	$NetBSD$
+#
+# [NetBSD for NEC PC-98 series]
+#  Copyright (c) 1997, 1998
+#	NetBSD/pc98 porting staff. All rights reserved.
+#
+#	PnP device list
+#
+#############################################################
+# PC CARD STANDARD 16
+#############################################################
+BUS		PISA
+PROTOCOL	PCCS16	PCCS
+
+#############################################################
+# CLASS DEFININTION
+#############################################################
+DEFINE	CLASS_MULTI	0
+DEFINE	CLASS_NULL	0
+DEFINE	CLASS_MEMORY	1
+DEFINE	CLASS_SERIAL	2
+DEFINE	CLASS_PARA	3
+DEFINE	CLASS_FIXED	4
+DEFINE	CLASS_VIDEO	5
+DEFINE	CLASS_NET	6
+DEFINE	CLASS_AIMS	7
+DEFINE	CLASS_SCSI	8
+
+#############################################################
+# BUSCFG QUIRK DEFINITION
+#############################################################
+DEFINE	BUSCFG_QUIRK_IODS16		0x00000001
+DEFINE	BUSCFG_QUIRK_IODSAUTO		0x00000002
+DEFINE	BUSCFG_QUIRK_MEMDS16		0x00000004
+DEFINE	BUSCFG_QUIRK_INTEN		0x00000100
+DEFINE	BUSCFG_QUIRK_MIOBEN		0x00000200
+DEFINE	BUSCFG_QUIRK_IOBWIN0		0x00080000
+DEFINE	BUSCFG_QUIRK_IOBWIN1		0x00090000
+DEFINE	BUSCFG_QUIRK_IOBWIN2		0x000a0000
+DEFINE	BUSCFG_QUIRK_MEMBWIN0		0x00800000
+DEFINE	BUSCFG_QUIRK_MEMBWIN1		0x00900000
+DEFINE	BUSCFG_QUIRK_MEMBWIN2		0x00a00000
+
+#############################################################
+# scsi - aic
+# CLASS: SCSI(8)
+#############################################################
+#	ID		FUNC	CLASS	DEV
+#	<Adaptec, Inc. APA-1460 SCSI Host Adapter Version 0.01 > (0x012f0001)
+#	CLASS: MULTI
+DEVICE	0x012f0001	0	CLASS_NULL	aic		# SlimSCSI
+#
+#      <Adaptec, Inc. APA-1460 SCSI Host Adapter Version 0.01 > (0x012f0002)
+#	CLASS: MULTI
+DEVICE	0x012f0002	0	CLASS_NULL	aic		# SlimSCSI
+
+#############################################################
+# scsi - stg
+# CLASS: SCSI(8)
+#############################################################
+#	ID		FUNC	CLASS	DEV
+#	<IBM Corp. SCSI PCMCIA Card 66G9109 D43610 > (0x00a40026)
+DEVICE	0x00a40026	0	CLASS_SCSI	stg
+
+#	<PCMCIA SCSI MBH10404 01 > (0x00042000)
+DEVICE	0x00042000	0	CLASS_PARA	stg		# RATOC 36
+BUSCFG	BUSCFG_QUIRK_IODS16
+
+#	<1195 RATOC System Inc. REX5536 SCSI2 CARD PNPA002 > (0x00000000)
+DEVICE	0x0		0	CLASS_SCSI	stg		# IFN-SC1
+SKEY 	1195 RATOC System Inc. REX5536
+
+#############################################################
+# scsi - ncv
+# CLASS: SCSI(8)
+#############################################################
+#	ID		FUNC	CLASS	DEV
+#	<RATOC System Inc. SCSI2 CARD 37 > (0xc0150001)
+#	IFC-SC2, RATOC CARD 37
+DEVICE	0xc0150001	0	CLASS_SCSI	ncv	# RATOC CARD 37 
+SKEY	RATOC System Inc. SCSI2 CARD 37
+
+#	<RATOC System Inc. SOUND/SCSI2 CARD 72 > (0xc0150001)
+DEVICE	0xc0150001	0	CLASS_SCSI	ncv	# RATOC CARD 72
+SKEY	RATOC System Inc. SOUND/SCSI2 CARD 72
+BUSCFG	BUSCFG_QUIRK_IOBWIN1
+
+#	<RATOC System Inc. SOUND/SCSI2 CARD 72 > (0xc0150001)
+DEVICE	0xc0150001	0	0	ncv	# REX 9872W
+SKEY	RATOC System Inc. SOUND/SCSI2 CARD 72
+BUSCFG	BUSCFG_QUIRK_IOBWIN1
+
+#	<MACNICA MIRACLE SCSI-II mPS110 A.0.0.0 > (0xc00ba041)
+DEVICE	0xc00ba041	0	CLASS_SCSI	ncv	# mPS110
+
+#	<MACNICA MIRACLE SCSI mPS100 D.0 > (0xc00bd040)
+DEVICE	0xc00bd040	0	CLASS_SCSI	ncv	# mPS100
+
+#	Panasonic KXL-783 portable CD-ROM
+# XXX	<KME  KXLC003 00 > (0x00320504)
+DEVICE	0x00320504	0	CLASS_SCSI	ncv	# KME
+#	<KME KXLC002 00 > (0x00322104)
+DEVICE	0x00322104	0	CLASS_SCSI	ncv	# KME
+
+#	<Panasonic LK-RJ120 Fast-SCSI A.0.0.0 > (0x00320206)
+DEVICE	0x00320206 	0	CLASS_SCSI	ncv	# KME
+
+#	<KME  KXLC004 01 > (0x00320604)
+DEVICE	0x00320604 	0	CLASS_SCSI	ncv	# KME
+
+#	global
+DEVICE	0		0	CLASS_SCSI	ncv
+IOKEY	0x0		-1
+
+#############################################################
+# scsi - spc
+# CLASS: SCSI(8)
+#############################################################
+#	ID		FUNC	CLASS	DEV
+#	<PCMCIA SCSI MBH10401 01 > (0xc0150001)
+DEVICE	0xc0150001	0	CLASS_SCSI	spc	# REX5535
+SKEY	PCMCIA SCSI MBH10401 01
+
+#############################################################
+# scsi - nsp
+# CLASS: SCSI(8)
+#############################################################
+#	ID		FUNC	CLASS	DEV
+#	<WBT NinjaSCSI-3 R1.0 > (0x00000000)
+DEVICE	0		0	CLASS_NULL	nsp	# IO PCSC-F
+SKEY	WBT NinjaSCSI-3 R1.0
+
+#	<IO DATA CBSC16        1 > (0x00000000)
+DEVICE	0		0	CLASS_NULL	nsp	# IO CBSCII
+SKEY	IO DATA CBSC16        1
+
+#############################################################
+# ide
+# CLASS: FIXED(4)
+#
+DEFINE	DVCFG_WDC_GENERIC	0x0
+DEFINE	DVCFG_WDC_PCIDE		0x50000
+DEFINE	DVCFG_WDC_NINJA		0x60000
+DEFINE	DVCFG_WDC_KXL		0x70000
+#############################################################
+#	ID		FUNC	CLASS	DEV
+#	<INTEGRAL PERIPHERALS ATA CARD > (0x01060000)
+DEVICE	0x01060000	0	CLASS_FIXED	wdc
+
+#	<Microtech International Inc. IDE PCCARD (C) ARCHOS S.A. 1995-98 Fax +33 1 60 13 99 18 > (0x52410043)
+DEVICE	0x52410043	0	CLASS_FIXED	wdc		# XpressDock
+
+#
+#DEVICE	0		0	CLASS_FIXED	wdc		# generic
+#IOKEY	0x170		0x376	
+#
+#DEVICE	0		0	CLASS_FIXED	wdc		# generic
+#IOKEY	0x1f0		0x3f6
+
+# 	GENERIC TRIAL
+DEVICE	0		0	CLASS_FIXED	wdc
+
+#	<IO DATA PCIDEII 1.0 > (0x00000000)
+DEVICE	0		0	CLASS_NULL	wdc
+SKEY	IO DATA PCIDEII
+DVCFG	DVCFG_WDC_PCIDE
+
+#	<WIT IDE16 1.0 > (0x00000000)
+DEVICE	0		0	CLASS_NULL	wdc
+SKEY	WIT IDE16
+DVCFG	DVCFG_WDC_PCIDE
+
+#	<  NinjaATA- V1.0 AP00> (0x00000000)
+DEVICE	0		0	CLASS_NULL	wdc
+SKEY	  NinjaATA- V1.0 AP00
+DVCFG	DVCFG_WDC_NINJA
+
+#	<KME KXLC005 00> (0x00000000)
+DEVICE	0		0	CLASS_SCSI	wdc
+SKEY	KME KXLC005 00
+DVCFG	DVCFG_WDC_KXL
+
+#############################################################
+# serial devices
+# CLASS: SERIAL(2)
+#############################################################
+#	ID		FUNC	CLASS	DEV
+#	<Megahertz XJ3288-81 V.34 Data/Fax MODEM PC Card > (0x01020016)
+#DEVICE	0x01020016	0	CLASS_SERIAL	ser
+#
+#	<NEC PC-9801N-J15> 0x0013:0x0000
+#	<I-O DATA DEVICE,INC. DATA/FAX MODEM PCML-336 > (0x00130000)
+#DEVICE	0x00130000	0	CLASS_SERIAL	ser
+#
+#	<TDK GlobalNetworker 3410/3412 C620002x > (0x01054815)
+#DEVICE	0x01054815	1	CLASS_SERIAL	ser
+#
+#	<Logitec LPM-LAN/FM > (0x01bf2218) (function 0)
+#DEVICE	0x01bf2218	0	CLASS_SERIAL	ser	# LPM-LAN/FM
+
+#	<AboCom LM28X A > (0x0143c0ab)	(function 1)
+DEVICE	0x0143c0ab	1	CLASS_MULTI	ser
+BUSCFG	BUSCFG_QUIRK_IOBWIN1
+
+#	<TDK DFL5610WS   > (0x0105ea15)
+DEVICE	0x0105ea15	0	CLASS_MULTI	ser
+BUSCFG	BUSCFG_QUIRK_IOBWIN0
+
+#	 <APEX DATA MULTICARD ETHERNET-MODEM A > (0x00130000)
+DEVICE	0x00130000	1	CLASS_SERIAL	ser
+BUSCFG	BUSCFG_QUIRK_IOBWIN0
+
+#	generic modem
+DEVICE	0		0	CLASS_SERIAL	ser
+DEVICE	0		1	CLASS_SERIAL	ser
+
+#############################################################
+# ether adapter(ne)
+# CLASS: NET(6)
+#############################################################
+#	ID		FUNC	CLASS	DEV
+#	<IC-CARD IC-CARD Ver 01.00 >
+#DEVICE	0x01490265	0	CLASS_NET	ne	# IC-CARD
+#	<Logitec LPM-LN20T 118B6603 >
+#DEVICE	0x0149021b	0	CLASS_NET	ne	# LPM-LN20T
+#	<IO DATA PCETTX Fast Ethernet > (0x01490230)
+#	<Logitec LPM-LN100TX Fast Ethernet > (0x01490230)
+#DEVICE	0x01490230	0	CLASS_NET	ne	# IO DATA
+#	<DLINK compatible dp8390 cards>
+DEVICE	0x014902ff	0	CLASS_NET	ne
+MASKS	0xffffff00
+
+#	<TDK DFL5610WS   > (0x0105ea15)
+DEVICE	0x0105ea15	1	CLASS_MULTI	ne
+BUSCFG	BUSCFG_QUIRK_IOBWIN1
+
+#	<Telecom Device K.K. SuperSocket RE450T 2.0 > (0x0149c1ab)
+#	<Ethernet Adapter 2.0 > (0x0149c1ab)
+#       <Linksys EtherFast 10/100 PC Card (PCMPC100) > (0x0149c1ab) 
+DEVICE	0x0149c1ab	0	CLASS_NET	ne	# Telecom Device
+DEVICE	0x8a01c1ab	0	CLASS_NET	ne	# MELCO LPC3-TX
+
+#	<Allied Telesis,K.K Ethernet LAN Card CentreCOM LA-PCM > (0xc00f0002)
+#DEVICE	0xc00f0002	0	CLASS_NET	ne	# LA-PCM
+#	<corega K.K. corega Ether PCC-T > (0xc00f0000)
+#DEVICE	0xc00f0000	0	CLASS_NET	ne	# PCC-T
+#	<Allied Telesis compatible>
+DEVICE	0xc00f00ff	0	CLASS_NET	ne
+MASKS	0xffffff00
+
+#	<MACNICA ME1-JEIDA 3.00 3.00 >
+DEVICE	0xc00b3300	0	CLASS_NET	ne	# MACNICA
+
+
+#	<NEC PC-9801N-J12  >
+DEVICE	0x00a40002	0	CLASS_NET	ne	# PC-9801N-J12
+
+#	<Matsushita Electric Industrial Co.,LTD. CF-VEL211 IC LAN CARD PC-NIC ENCC 990010759-001A >
+DEVICE	0x00320101	0	CLASS_NET	ne	# CF-VEL211
+
+#	<AboCom LM28X A > 0x0143:0xc0ab	(function 0)
+DEVICE	0x0143c0ab	0	CLASS_MULTI	ne
+BUSCFG	BUSCFG_QUIRK_IOBWIN0
+
+#	<Accton compatible dp8390 cards>
+#	<Logitec LPM-LAN/FM > (0x01bf2218) (function 1)
+DEVICE	0x01bf2218	1	CLASS_NET	ne	# LPM-LAN/FM
+#	<I-O DATA PCLA ETHERNET R03 > (0x01bf2216)
+DEVICE	0x01bf2216	0	CLASS_NET	ne
+
+#	<PCMCIA UE2212 ETHERNET R01 >
+DEVICE	0		0	CLASS_NET	ne
+IOKEY	0x300		0x310
+
+DEVICE	0		0	CLASS_NET	ne
+IOKEY	0x300		-1
+
+#############################################################
+# ether adapter(sic)
+# CLASS: NET(6)
+#############################################################
+#	 <APEX DATA MULTICARD ETHERNET-MODEM A > (0x00130000)
+DEVICE	0x00130000	0	CLASS_NET	sic
+BUSCFG	BUSCFG_QUIRK_MEMBWIN0
+
+#############################################################
+# ether adapter(mbe)
+# CLASS: NET(6)
+#############################################################
+#	ID		FUNC	CLASS	DEV
+#	<PCMCIA LAN MBH10304  ES   01 > (0x00040004)
+DEVICE	0x00040004	0	CLASS_NET	mbe
+DVCFG	0x50000
+
+#	<TDK MobileNetworker DFL3200   L1400010 > (0x01050e0a)
+DEVICE	0x01050e0a	0	CLASS_NET	mbe
+DVCFG	0x30000
+BUSCFG	BUSCFG_QUIRK_IODS16
+
+#	<TDK NetPartner DFL9610        L1300010 > (0x01050d0a)
+DEVICE	0x01050d0a	0	CLASS_NET	mbe
+DVCFG	0x30000
+BUSCFG	BUSCFG_QUIRK_IODS16
+
+#	<TDK GlobalNetworker 3410/3412 C620002x > (0x01054815)
+DEVICE	0x01054815	0	CLASS_NET	mbe
+DVCFG	0x30000
+BUSCFG	BUSCFG_QUIRK_IODS16
+
+#	<TDK LAC-CD02x > (0x01050200)
+DEVICE	0x01050200	0	CLASS_NET	mbe
+DVCFG	0x30000
+
+#	<Panasonic CF-VML201 Multi-Function PC Card > (0x00321101)
+# Remark: The modem part would be attached by pcsd service daemon.
+#	  Since cis tuples of the card contain only informations of 
+#	  the LAN part, we can NOT attach the modem part at boot process.
+#	  What a buggy card!
+DEVICE	0x00321101	0	CLASS_NET	mbe
+DVCFG	0x30000
+BUSCFG	BUSCFG_QUIRK_INTEN | BUSCFG_QUIRK_MIOBEN | BUSCFG_QUIRK_IODS16
+
+#	<UBKK,V2.0 > (0x02c00002)
+DEVICE	0x02c00002	0	CLASS_NET	mbe
+DVCFG	0xC0000
+
+#############################################################
+# ether adapter(sm)
+# CLASS: NET(6)
+#############################################################
+#	ID		FUNC	CLASS	DEV
+#	<Megahertz CC10BT/2 PCMCIA 10BASE-T/2 ETHERNET ADAPTER 00008605A797  > (0x01280103)
+DEVICE	0x01280103	0	CLASS_NET	sm
+
+#############################################################
+# ether adapter(ep)
+# CLASS: NET(6)
+#############################################################
+#	ID		FUNC	CLASS	DEV
+DEVICE	0x01010589	0	CLASS_NET	ep
+
+#	<3Com Corporation 3C562D/3C563D EtherLink III LAN+Modem PC Card > (0x01010562)
+DEVICE	0x01010562	0	CLASS_NET	ep
+
+#############################################################
+# ether adapter(sn)
+# CLASS: unknown(6?)
+#############################################################
+#	ID		FUNC	CLASS	DEV
+#	<NEC PC-9801N-J02 > (0x00000000)
+DEVICE	0x0		0	CLASS_NULL	sn
+SKEY	NEC    PC-9801N-J02
+
+#############################################################
+# sound devices
+# CLASS: unknown(0?)
+#############################################################
+#	<Qvision Corp. Card86 / 98   Version 1.00 8600100>
+DEVICE	0		0	CLASS_NULL	qws
+SKEY	Qvision Corp. Card86 / 98
+
+#	<Roland PCMCIA Sound Card > (0xc00c0001)
+DEVICE	0xc00c0001	0	CLASS_SERIAL	scp
+
+#############################################################
+# game devices
+# CLASS: unknown(0?)
+#############################################################
+DEVICE	0		0	CLASS_NULL	joy
+SKEY	IO DATA PCJOY
+

@@ -1,0 +1,115 @@
+#	$NecBSD: termcap,v 1.10 1998/03/14 07:09:50 kmatsuda Exp $
+#	$NetBSD$
+
+# [NetBSD for NEC PC-98 series]
+#  Copyright (c) 1994, 1995, 1996, 1997, 1998
+#	NetBSD/pc98 porting staff. All rights reserved.
+
+#######################################################
+# VSC ( Virtual Screen Console )
+# Standard Dec Vt220 & Ansi Esc Seq.
+# Written by N. Honda.
+#######################################################
+VSC|vsc|vsc 2.00  Virtual Screen Console (DEC VT220):\
+	:AL=\E[%dL:\
+	:DC=\E[%dP:\
+	:DL=\E[%dM:\
+	:DO=\E[%dB:\
+	:IC=\E[%d@:\
+	:LE=\E[%dD:\
+	:RI=\E[%dC:\
+	:SF=\E[%dS:SR=\E[%dT:\
+	:UP=\E[%dA:\
+	:ae=^O:\
+	:al=\E[L:\
+	:am:\
+	:as=^N:\
+	:bl=^G:\
+	:bs:\
+	:cb=\E[1K:\
+	:cd=\E[J:\
+	:ce=\E[K:\
+	:cl=\E[H\E[J:\
+	:cm=\E[%i%d;%dH:\
+	:cr=^M:\
+	:cs=\E[%i%d;%dr:\
+	:ct=\E[3g:\
+	:dc=\E[P:\
+	:dl=\E[M:\
+	:do=^J:\
+	:ei=\E[4l:\
+	:ho=\E[H:\
+	:im=\E[4h:\
+	:it#8:\
+	:k1=\E[M:\
+	:k2=\E[N:\
+	:k3=\E[O:\
+	:k4=\E[P:\
+	:k5=\E[Q:\
+	:k6=\E[R:\
+	:k7=\E[S:\
+	:k8=\E[T:\
+	:k9=\E[U:\
+	:k0=\E[V:\
+	:kh=\E[1~:\
+	:kI=\E[2~:\
+	:kD=\E[3~:\
+	:kH=\E[4~:\
+	:kP=\E[5~:\
+	:kN=\E[6~:\
+	:%1=\E[7~:\
+	:kb=\177:\
+	:#4=\EOD:\
+	:%i=\EOC:\
+	:su=\EOA:\
+	:sd=\EOB:\
+	:kl=\E[D:\
+	:kr=\E[C:\
+	:ku=\E[A:\
+	:kd=\E[B:\
+	:ke=\E[?1l\E>:\
+	:km:\
+	:ks=\E[?1h\E=:\
+	:le=^H:\
+	:mb=\E[5m:\
+	:md=\E[1m:\
+	:me=\E[m:\
+	:mi:\
+	:mr=\E[7m:\
+	:ms:\
+	:nd=\E[C:\
+	:pb#16000000:\
+	:pt:\
+	:rc=\E8:\
+	:rs=\Ec\E>\E[?3l\E[?4l\E[?5l\E[?7h\E[?8h:\
+	:sc=\E7:\
+	:se=\E[27m:\
+	:sf=\ED:\
+	:so=\E[7m:\
+	:sr=\EM:\
+	:st=\EH:\
+	:ue=\E[24m:\
+	:up=\E[A:\
+	:us=\E[4m:\
+	:vt#3:\
+	:hs:ts=\E_:fs=\E\\:ds=\E_\E\\:\
+	:xn:G0:
+#######################################################
+#	:rf=/usr/share/tabset/vt100:\
+# Some comments.
+# 1) hs: ts: ds: hardware status line (ansi esq).
+# 2) xn: vt100 MAGIC margin.
+#        This means this terminal has VT100 AWM which is NOT
+#        true AWM.
+# 3) G0: For new screen prog which supports kanji.
+#######################################################
+VSC25|vsc25|dec vt220 with 25 lines:\
+	:li#25:\
+	:co#80:\
+	:is=\E>\E[?3l\E[?4l\E[?5l\E[?7h\E[?8h\E[1;25r\E[25;1H:\
+	:tc=VSC:
+VSC30|vsc30|dec vt220 with 30 lines:\
+	:li#30:\
+	:co#80:\
+	:is=\E>\E[?3l\E[?4l\E[?5l\E[?7h\E[?8h\E[1;30r\E[30;1H:\
+	:tc=VSC:

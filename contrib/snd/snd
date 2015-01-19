@@ -1,0 +1,13 @@
+#!/bin/sh
+#
+#	$NecBSD: snd,v 1.9 1998/03/14 07:01:53 kmatsuda Exp $
+#	$NetBSD$
+#
+# [NetBSD for NEC PC-98 series]
+#  Copyright (c) 1996, 1997, 1998
+#	NetBSD/pc98 porting staff. All rights reserved.
+# 
+for i in $*
+do
+sox $i -t ul -r 44100 -c 2 - | ulaw
+done

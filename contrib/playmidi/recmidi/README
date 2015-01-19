@@ -1,0 +1,80 @@
+NetBSD/pc98におけるmidi interfaceについて。
+
+NetBSDには未だ、kernel midi interfaceはありません。
+そこで、NetBSD/pc98では、実験的なinterfaceを設けました。
+
+現状ではLinux sequecerのinterfaceが標準であって、今後NetBSDが
+それと異なる実装をしても標準にはなりそうもありません。
+この事を考慮した上で、
+  *) IP層のような極めて基本的かつシンプルな実装にする。
+  *) compat/osssoundでLinux sequecer emulationが実装しやすいような、
+     基本層となるようにする。
+という基準で以下のようにデータ構造を定めます。
+
+kernel midi interfaceにおける、全てのmidiデータは、
+先頭にmidi_packet_header構造体を持ちます。
+
+struct midi_packet_header {
+	u_int16_t mp_code;
+	u_int16_t mp_size;
+	u_int	mp_ticks;
+}
+
+mp_codeはパケットの種別であり、大きく分けて２つの
+ MIDI_PKT_SYSTM
+ MIDI_PKT_DATA
+の種別があります。 
+
+MIDI_PKT_SYSTMはmidi kernel interface コントロール命令用のpacketであり、
+実際にmidi interface上にはながれません。
+MIDI_PKT_SYSTM | MIDI_TIMER_INIT    kernelタイマーの初期化(0)
+MIDI_PKT_SYSTM | MIDI_TIMER_PAUSE   kernelタイマーのpause
+MIDI_PKT_SYSTM | MIDI_TIMER_UNPAUSE kernelタイマーのunpuase
+
+MIDI_PKT_DATAは実際のmidi dataです。カーネルはデータ内容について
+いっさい関知しません。 
+
+mp_sizeはmidi_packet_header以下に続くデータのサイズ。
+
+mp_ticksは 1ms単位のMIDI_TIMER_INITからの相対時間であり、
+この時間に実際にmidi interfaceからmidi機器にパケットが送りだされます。
+また、midi機器からの入力の場合は、当該packetを受け取った時間です。
+
+実際にキーボード等からくるmidi packetは、上記formatで/dev/midiから
+読み出せます。これを、SMF mode 0のmidi fileにするのは非常に簡単でしょう。
+
+midi port 0にkeyboardと音源が繋がっているとして、
+cat /dev/midi0 > midi.data
+cat midi.dat > /dev/midi0
+で再生できます。
+
+*) nplaymidiについて
+SMF format 0 と SMF format 1のファイルを再生できます。
+-g optionsを付けると、graphics表示で進行状況を表します。
+ただし、 この場合画面とmidiを同期させるため、裏でcompileなどして
+忙しい状況では音飛びが発生します。このような状況では、-gを
+使わないほうが良いでしょう。
+
+*) recmidi
+主にmidi楽器をin portに繋げ、out portに音源を繋げた状態を
+想定したプログラムです。
+
+In portから入ってくるmidiデータをgraphicalに表示した上に、
+out portでリダイレクトします。
+また、各channelのbank/program numberを動的に変更出来ます。
+
+midi keyboard等のbank/program number変更は面倒な操作が必要ですので、
+recmidiで行うと楽でしょう。あと、envelope(attack タイム）等の
+NPRN命令の発行をサポートする予定です。音作りには不可欠ですからね。
+
+*) Midiのresolutionについて。
+
+Kernel timerは10msが最小単位ですので、これ以上の精度は得られません。
+これは、midiでは致命的に精度が悪い訳です。
+一般的にinteligent modeをサポートしたmpu以外は、精度の高い
+timerを他から得る事が不可欠です。
+NetBSD/pc98では、wss搭載機種のtimer modeを使用して、1msの精度を
+得るようにしてあります。(temp 120で 480の分解能が得られますね）
+これを有効にするためには、kernel configに
+psudo-device sndtm
+を追加してください。

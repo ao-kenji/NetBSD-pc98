@@ -1,0 +1,60 @@
+#!/bin/sh
+
+#	$NetBSD: start.tmpl,v 1.3 1998/01/09 08:03:20 perry Exp $
+
+again="true"
+
+echo "NetBSD @@VERSION@@ インストールフロッピーへようこそ！"
+#echo "Welcome to the NetBSD @@VERSION@@ installation floppy."
+echo
+
+while [ $again = "true" ]; do
+
+	echo '次の4つの選択肢があります:'
+	echo '      "sysinst": 新しいシステムインストールプログラムを起動します,'
+	echo '      "install": NetBSD をインストールします,'
+	echo '      "upgrade": 既存の NetBSD システムをアップグレードします,'
+	echo '      "shell": シェルプロンプト.'
+#	echo 'enter "sysinst" to run the new system install program,'
+#	echo '      "install" to install NetBSD,'
+#	echo '      "upgrade" to upgrade an existing NetBSD system,'
+#	echo '   or "shell" for a shell prompt.'
+	echo
+#	echo -n "どれを選択しますか? "
+#	echo -n "your choice? "
+	read resp
+
+	case "$resp" in
+		sysinst|install|upgrade|shell)
+			again="false"
+			;;
+		"")
+			echo
+			;;
+		*)
+			echo	"$resp は不正な選択肢です."
+#			echo	"Sorry, $resp isn't valid."
+			echo
+			;;
+	esac
+done
+
+case "$resp" in
+	sysinst)
+		sysinst
+		;;
+	install)
+		install
+		;;
+	upgrade)
+		upgrade
+		;;
+	shell)
+		echo '後でインストールコマンドやアップグレードコマンドを'
+		echo '実行するには, シェルで単に "install" もしくは'
+		echo '"upgrade" と入力してください.'
+#		echo 'If you want to run install or upgrade later,'
+#		echo 'simply type "install" or "upgrade" to the shell.'
+		echo 'good luck!'
+		;;
+esac

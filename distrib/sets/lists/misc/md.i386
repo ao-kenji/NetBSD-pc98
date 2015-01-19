@@ -1,0 +1,12 @@
+./usr/local/bin/cdplay
+./usr/local/bin/clock
+./usr/local/bin/loadascii
+./usr/local/bin/loadmaru
+./usr/local/bin/nplaymidi
+./usr/local/bin/playmidi
+./usr/local/bin/recmidi
+./usr/local/bin/screenmode
+./usr/local/bin/sndctrl
+./usr/local/bin/vsc
+./usr/local/bin/wavplay
+./usr/local/lib/libpcmcia.a

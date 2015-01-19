@@ -1,0 +1,425 @@
+#	$NecBSD: files.Cbus,v 1.83.2.2 1999/08/22 19:45:47 honda Exp $
+#	$NetBSD: files.isa,v 1.21 1996/05/16 03:45:55 mycroft Exp $
+#
+# Config.new file and device description for machine-independent ISA code.
+# Included by ports that need it.  Requires that the SCSI files be
+# defined first.
+
+# [NetBSD for NEC PC-98 series]
+#  Copyright (c) 1994, 1995, 1996, 1997, 1998, 1999
+#	NetBSD/pc98 porting staff. All rights reserved.
+
+defopt	opt_magic.h CONFIG_DEVICES
+file	arch/i386/Cbus/dev/magic.c
+
+# PnP ISA
+device	pisa {}: systmmsg
+attach	pisa at pisabus
+file	arch/i386/Cbus/pisa.c			pisa needs-flag
+
+# ISA
+device	isa {[port = -1], [size = 0],
+	     [iomem = -1], [iosiz = 0],
+	     [irq = -1], [drq = -1], [drq2 = -1]}
+attach	isa at isabus
+file	arch/i386/Cbus/isa_compat.c		isa needs-flag
+
+# ISA DMA controller
+define	isadma
+file	arch/i386/Cbus/isadma.c			isadma needs-flag
+
+# ISA Plug and Play protocol Initiator
+defopt  opt_ipp.h IPP_IRQMASK
+device	ippi {}: systmmsg, pisabus
+attach	ippi at systm
+file	arch/i386/Cbus/pnp/ippi.c		ippi needs-flag
+file	arch/i386/Cbus/pnp/ippres.c		ippi
+file	arch/i386/Cbus/pnp/ipp.c		ippi
+
+# "PC Card at pisa" connection attribute
+define	pccs_pisabus
+file	arch/i386/Cbus/pccs16/pccs16_pisa.c	pccs_pisabus
+
+# 16Bits PC Card Controller (Generic Intel compatible Pc card Controller)
+defopt  opt_pccshw.h PCCSHW_IRQMASK
+device  gipc: pccs_pisabus, pccs_space	
+file	arch/i386/Cbus/pccs16/gipc.c		gipc needs-flag
+attach  gipc at systm with gipc_systm
+file	arch/i386/Cbus/pccs16/gipc_systm.c	gipc_systm needs-flag
+attach  gipc at pisa with gipc_pisa
+file	arch/i386/Cbus/pccs16/gipc_pisa.c	gipc_pisa needs-flag
+attach  gipc at ppcb with gipc_pci
+file	arch/i386/Cbus/pccs16/gipc_pci.c	gipc_pci needs-flag
+
+# 16Bits PC Card Controller (NEC specific)
+device  nepc: pccs_pisabus, pccs_space
+file	arch/i386/Cbus/pccs16/nepc.c		nepc needs-flag
+
+attach  nepc at systm with nepc_systm
+file	arch/i386/Cbus/pccs16/nepc_systm.c	nepc_systm needs-flag
+file	arch/i386/Cbus/pccs16/busiosubr_nec.c	nepc_systm
+
+# io place holder device
+device  nulldv {}
+file	arch/i386/Cbus/nulldv.c			nulldv
+
+attach	nulldv at pisa with nulldv_pisa
+file	arch/i386/Cbus/nulldv_pisa.c		nulldv_pisa needs-flag
+
+attach	nulldv at isa with nulldv_isa
+file	arch/i386/Cbus/nulldv_isa.c		nulldv_isa needs-flag
+
+#
+# Serial
+#
+define	pc98_Cbus_serial
+file	arch/i386/Cbus/dev/serial/i8251_pc98_Cbus.c		pc98_Cbus_serial
+file	arch/i386/Cbus/dev/serial/ns165_pc98_Cbus.c		pc98_Cbus_serial
+file	arch/i386/Cbus/dev/serial/ser_pc98_Cbus.c		pc98_Cbus_serial
+file	arch/i386/Cbus/dev/serial/ser_console_pc98_Cbus.c 	pc98_Cbus_serial
+
+attach	ser at isa with ser_isa: systmmsg, pc98_Cbus_serial
+file	arch/i386/Cbus/dev/serial/ser_isa.c	ser_isa needs-flag
+
+attach  ser at pisa with ser_pisa: pc98_Cbus_serial
+file	arch/i386/Cbus/dev/serial/ser_pisa.c	ser_pisa needs-flag
+
+# PC parallel ports (XXX what chip?)
+device	lpt
+attach	lpt at isa
+file	arch/i386/Cbus/dev/lpt.c		lpt needs-flag
+
+#
+# SCSI host adapters
+#
+
+# SCSI LOW PISA
+define	scsi_low_pisa
+file	arch/i386/Cbus/dev/scsi_low_pisa.c	scsi_low_pisa
+
+# WD33C93 SCSI
+define	bshw_subr
+file	arch/i386/Cbus/dev/ct/bshw_machdep.c	bshw_subr
+
+attach	ct at pisa with ct_pisa: bshw_subr, isadma, scsi_low_pisa
+file	arch/i386/Cbus/dev/ct/ct_pisa.c		ct_pisa needs-flag
+
+attach	ct at isa with ct_isa: bshw_subr, isadma
+file	arch/i386/Cbus/dev/ct/ct_isa.c		ct_isa needs-flag
+
+# NCR53C406/53C500 SCSI CARD
+attach	ncv at isa with ncv_isa
+file	arch/i386/Cbus/dev/ncr53c500_isa.c	ncv_isa needs-flag
+
+attach	ncv at pisa with ncv_pisa: scsi_low_pisa
+file	arch/i386/Cbus/dev/ncr53c500_pisa.c	ncv_pisa needs-flag
+
+# TMC18C30/18C50 SCSI CARD
+attach	stg at isa with stg_isa
+file	arch/i386/Cbus/dev/tmc18c30_isa.c	stg_isa needs-flag
+
+attach	stg at pisa with stg_pisa: scsi_low_pisa
+file	arch/i386/Cbus/dev/tmc18c30_pisa.c 	stg_pisa needs-flag
+
+# NinjaSCSI
+attach	nsp at pisa with nsp_pisa: scsi_low_pisa
+file	arch/i386/Cbus/dev/nsp_pisa.c 		nsp_pisa needs-flag
+
+# Fujitsu MB89352 ICs
+device	spc: scsi
+file	arch/i386/Cbus/dev/mb89352.c		spc
+
+attach	spc at isa with spc_isa: isadma
+file	arch/i386/Cbus/dev/spc_isa.c		spc_isa needs-flag
+
+attach	spc at pisa with spc_pisa
+file	arch/i386/Cbus/dev/spc_pisa.c		spc_pisa needs-flag
+
+# Adaptec AIC-6[32]60 ICs
+# device declaration in sys/conf/files
+attach	aic at isa with aic_isa
+file	arch/i386/Cbus/dev/aic_isa.c		aic_isa needs-flag
+
+attach	aic at pisa with aic_pisa
+file	arch/i386/Cbus/dev/aic_pisa.c		aic_pisa needs-flag
+
+# IDE/ATAPI controller
+define	pc98_Cbus_ide
+file	arch/i386/Cbus/dev/atapi/wdc_pc98_Cbus.c pc98_Cbus_ide
+
+device	wdc: wdcsubr, wdc_atabus
+file	arch/i386/Cbus/dev/atapi/wdc.c		wdc needs-flag
+
+attach	wdc at isa with wdc_isa: systmmsg, pc98_Cbus_ide
+file	arch/i386/Cbus/dev/atapi/wdc_isa.c	wdc_isa needs-flag
+
+attach  wdc at pisa with wdc_pisa: pc98_Cbus_ide
+file	arch/i386/Cbus/dev/atapi/wdc_pisa.c	wdc_pisa needs-flag
+
+#
+# ISA networking drivers
+#
+define	endsubr
+file	arch/i386/Cbus/dev/endsubr.c		endsubr
+
+# WD/SMC 80x3 family, SMC Elite Ultra [8216], SMC EtherEZ
+# MUST be first: probe is non invasive, and registers are clobbered
+# by other drivers's probe
+device	we: ether, ifnet, arp, dp8390nic
+attach	we at isa
+file	arch/i386/Cbus/dev/if_we.c		we
+
+# 3Com common probe code
+define	elink
+file	dev/isa/elink.c				elink
+
+# National Semiconductor DS8390 standard Cbus boards and pnp boards
+attach	ne at isa with ne_isa: dp8390pio, endsubr
+file	arch/i386/Cbus/dev/if_ne_isa.c		ne_isa	needs-flag
+
+attach	ne at pisa with ne_pisa: dp8390pio, endsubr
+file	arch/i386/Cbus/dev/if_ne_pisa.c		ne_pisa	needs-flag
+
+device	sic: ether, ifnet, arp, dp8390nic, dp8390pio, dp8390shm, endsubr
+
+attach	sic at isa with sic_isa
+file	arch/i386/Cbus/dev/if_sic_isa.c		sic_isa needs-flag
+attach	sic at pisa with sic_pisa
+file	arch/i386/Cbus/dev/if_sic_pisa.c	sic_pisa needs-flag
+
+# 3Com 3C505
+device	eg: ether, ifnet, arp
+attach	eg at isa
+file	arch/i386/Cbus/dev/if_eg.c		eg
+
+# 3Com 3C501
+device	el: ether, ifnet, arp
+attach	el at isa
+file	arch/i386/Cbus/dev/if_el.c		el
+
+# 3Com 3C509 Ethernet controller
+attach	ep at isa with ep_isa: elink
+file	arch/i386/Cbus/dev/if_ep_isa.c		ep_isa
+
+#ifndef	ORIGINAL_CODE
+attach	ep at pisa with ep_pisa: elink
+file	arch/i386/Cbus/dev/if_ep_pisa.c		ep_pisa	needs-flag
+#endif	/* !PC-98 */
+
+# XXX: should be in sys/conf/files if -current
+# MB8696x Ethernet Controller
+define	mb86960
+file	arch/i386/Cbus/dev/mb86960.c		mb86960
+
+define	mb86960subr
+file	arch/i386/Cbus/dev/mb86960subr.c	mb86960subr
+
+# Generic MB8696x Ethernet Controller driver
+device	mbe: arp, ether, ifnet, mb86960, mb86960subr
+
+# MB8696x Ethernet Controllers
+attach	mbe at isa with mbe_isa
+file	arch/i386/Cbus/dev/if_mbe_isa.c		mbe_isa needs-flag
+
+attach	mbe at pisa with mbe_pisa
+file	arch/i386/Cbus/dev/if_mbe_pisa.c	mbe_pisa needs-flag
+
+# XXX: should be in sys/conf/files if -current
+# MB86950 Ethernet Controller
+define	mb86950
+file	arch/i386/Cbus/dev/mb86950.c		mb86950
+
+define	mb86950subr
+file	arch/i386/Cbus/dev/mb86950subr.c	mb86950subr
+
+# Generic MB86950 Ethernet Controller driver
+device	fes: arp, ether, ifnet, mb86950, mb86950subr
+
+# MB86950 Ethernet Controllers
+attach	fes at isa with fes_isa
+file	arch/i386/Cbus/dev/if_fes_isa.c		fes_isa needs-flag
+
+# Intel 82586 Ethernet Controller
+#
+# XXX
+#  name `i82586' is conflict with i82586 declare in sys/conf/files
+define	i82586nic
+file	arch/i386/Cbus/dev/i82586.c		i82586nic
+
+# EtherExpress/16
+device	ix: ether, ifnet, arp, i82586nic
+attach	ix at isa
+file	arch/i386/Cbus/dev/if_ix.c		ix
+
+# SMC91Cxx Ethernet Controllers 
+attach	sm at isa with sm_isa
+file	arch/i386/Cbus/dev/if_sm_isa.c		sm_isa needs-flag
+
+# SMC91Cxx Ethernet Controllers (i.e. Megahertz X-Jack)
+attach	sm at pisa with sm_pisa
+file	arch/i386/Cbus/dev/if_sm_pisa.c		sm_pisa needs-flag
+
+# AMD am7990 (Lance) -based boards
+# (BICC Isolan, NE2100, DEPCA)
+# device declaration in sys/conf/files
+device nele {}
+attach nele at isa
+attach le at nele with le_nele: le24, isadma
+device bicc {}
+attach bicc at isa
+attach le at bicc with le_bicc: le24, isadma
+device cnle {}
+attach cnle at isa
+attach le at cnle with le_cnle: le24, isadma
+file	arch/i386/Cbus/dev/if_le_isa.c	nele | bicc | cnle
+##device depca {}
+##attach	depca at isa with depca_isa
+##attach	le at depca with le_depca: le24
+##file	dev/isa/if_depca_isa.c	depca
+
+# XXX: should be in sys/conf/files if -current
+# DP83916/32/34 (Sonic) Ethernet Controller
+define	dp83932
+file	arch/i386/Cbus/dev/dp83932.c		dp83932
+
+# DP83916/32/34 Bus depend subroutines
+define	dp83932subr
+file	arch/i386/Cbus/dev/dp83932subr.c	dp83932subr
+
+# Generic DP83916/32/34 (Sonic) Ethernet Controller driver
+device	sn: arp, ether, ifnet, dp83932, dp83932subr
+
+# DP83916/32/34 (Sonic) Ethernet Controllers
+attach	sn at isa with sn_isa
+file	arch/i386/Cbus/dev/if_sn_isa.c		sn_isa needs-flag
+
+attach	sn at pisa with sn_pisa
+file	arch/i386/Cbus/dev/if_sn_pisa.c		sn_pisa needs-flag
+
+#
+# ISA Sound hardware
+#
+
+# the SoundBlaster DSP, or close likenesses; used by other drivers
+define	sbdsp
+file	arch/i386/Cbus/dev/sbdsp.c		sbdsp
+
+# SoundBlaster family
+device	sb: audio, isadma, sbdsp, mulaw, auconv, midibus
+file	arch/i386/Cbus/dev/sb.c			sb needs-flag
+
+attach	sb at isa with sb_isa
+file	arch/i386/Cbus/dev/sb_isa.c		sb_isa needs-flag
+
+# AD1848 (CS4248, CS4231, AD1845) compat_audio codec support; used by other drivers
+define	ad1848
+file	arch/i386/Cbus/dev/ad1848.c		ad1848
+
+# Microsoft Windows Sound System
+device	wss: audio, isadma, ad1848, auconv
+file	arch/i386/Cbus/dev/wss.c		wss needs-flag
+
+attach	wss at isa with wss_isa
+file	arch/i386/Cbus/dev/wss_isa.c		wss_isa
+
+attach	wss at necss with wss_necss
+file	arch/i386/Cbus/dev/wss_systm.c		wss_necss
+
+# NEC PC-9801-86 soundboard.
+device	pcm: audio, auconv, mulaw
+file	arch/i386/Cbus/dev/nec86.c		pcm
+file	arch/i386/Cbus/dev/nec86hw.c		pcm
+
+attach	pcm at isa with pcm_isa
+file	arch/i386/Cbus/dev/nec86_isa.c		pcm_isa needs-flag
+
+attach	pcm at necss with pcm_necss
+file	arch/i386/Cbus/dev/nec86_systm.c	pcm_necss needs-flag
+
+attach	pcm at pisa with pcm_pisa
+file	arch/i386/Cbus/dev/nec86_pisa.c		pcm_pisa needs-flag
+
+# YM230X FM synth
+device 	yms: audio
+file	arch/i386/Cbus/dev/yms.c		yms
+
+attach	yms at necss with yms_necss
+file	arch/i386/Cbus/dev/yms_systm.c		yms_necss needs-flag
+
+# Mitsumi CD-ROM controllers
+device	mcd: disk
+attach	mcd at isa
+file	dev/isa/mcd.c			mcd needs-flag
+
+# Sony CDU-3[13]A CD-ROM drives
+device	scd: disk
+attach	scd at isa
+file	dev/isa/scd.c			scd needs-flag
+
+# Wangtek- and Archive-compatible tape controller boards
+device	wt: tape, isadma
+attach	wt at isa
+file	dev/isa/wt.c			wt needs-flag
+
+#
+# PlanetConnect satellite receiver driver.
+#
+device satlink: isadma
+attach satlink at isa
+file dev/isa/satlink.c			satlink	needs-flag
+
+#
+# imported from sys/arch/i386/isa
+#
+
+# Game adapter (joystick)
+device	joy
+file	arch/i386/Cbus/dev/joy.c		joy needs-flag
+
+attach	joy at isa with joy_isa
+file	arch/i386/Cbus/dev/joy_isa.c		joy_isa
+
+attach	joy at pisa with joy_pisa
+file	arch/i386/Cbus/dev/joy_pisa.c		joy_pisa needs-flag
+
+#
+# midi mpu.
+#
+device	mpu: midibus
+file	arch/i386/Cbus/dev/mpu401.c		(mpu | sb) needs-flag
+
+attach	mpu at isa with mpu_isa
+file	arch/i386/Cbus/dev/mpu_isa.c		mpu_isa needs-flag
+
+attach	mpu at pisa with mpu_pisa
+file	arch/i386/Cbus/dev/mpu_pisa.c		mpu_pisa needs-flag
+
+#
+# Roland Sound Canpus
+#
+device  scp {}
+
+attach	scp at pisa with scp_pisa
+file	arch/i386/Cbus/dev/scp_pisa.c		scp_pisa needs-flag
+
+attach	mpu at scp with mpu_scp
+file	arch/i386/Cbus/dev/mpu_scp.c		mpu_scp
+
+attach	wss at scp with wss_scp
+file	arch/i386/Cbus/dev/wss_scp.c		wss_scp
+
+#
+# Qvision WaveStar multi media attacher
+#
+device	qws {}
+attach	qws at pisa with qws_pisa
+file	arch/i386/Cbus/dev/qws_pisa.c		qws_pisa needs-flag
+
+attach	pcm at qws with pcm_qws
+file	arch/i386/Cbus/dev/nec86_qws.c		pcm_qws needs-flag
+attach  yms at qws with yms_qws
+file	arch/i386/Cbus/dev/yms_qws.c		yms_qws needs-flag
+attach	joy at qws with joy_qws
+file	arch/i386/Cbus/dev/joy_qws.c		joy_qws needs-flag
+attach	mpu at qws with mpu_qws
+file	arch/i386/Cbus/dev/mpu_qws.c		mpu_qws needs-flag

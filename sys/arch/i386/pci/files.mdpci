@@ -1,0 +1,41 @@
+#	$NecBSD: files.mdpci,v 1.10.2.2 1999/08/15 05:13:01 kmatsuda Exp $
+#	$NetBSD$
+
+# [NetBSD for NEC PC-98 series]
+#  Copyright (c) 1996, 1997, 1998
+#	NetBSD/pc98 porting staff. All rights reserved.
+#
+# Config file and device description for machine-independent PCI code.
+# Included by ports that need it.  Requires that the SCSI files be
+# defined first.
+
+# PCI-PCMCIA BRIDGE
+define	pci_pccs_bridge {[bus = -1], [function = 0]}
+
+device	ppcb {}
+attach  ppcb at pci_pccs_bridge
+file	arch/i386/pci/ppcb.c			ppcb
+
+# TI 1130 PCI-CardBus bridge chips
+device	tipc: pcibus, pci_pccs_bridge
+attach	tipc at pci
+file	arch/i386/pci/tipc.c			tipc
+
+# Host chipset configurations driver
+device	its: pcibus
+attach	its at pci
+file	arch/i386/pci/its.c			its
+
+# PCI IDE legacy bridge
+device	pciide: wdcsubr, wdc_atabus
+attach	pciide at pci
+file	arch/i386/pci/pciide.c			pciide needs-flag
+
+# PCI SERIAL
+attach	ser at pci with ser_pci
+file	arch/i386/pci/ser_pci.c			ser_pci	needs-flag
+
+# PCI ETHER
+device	ofxp: ether, ifnet, arp
+attach	ofxp at pci 
+file	arch/i386/pci/if_fxp.c			ofxp

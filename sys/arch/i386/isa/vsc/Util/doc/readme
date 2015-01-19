@@ -1,0 +1,142 @@
+#	$NecBSD: readme,v 1.11 1998/03/14 07:09:31 kmatsuda Exp $
+#	$NetBSD$
+
+# [NetBSD for NEC PC-98 series]
+#  Copyright (c) 1994, 1995, 1996, 1997, 1998
+#	NetBSD/pc98 porting staff. All rights reserved.
+
+VC 2.0(a) written by N. HONDA.
+
+This is THE final final version of vsc for NetBSD 1.0.
+Many faiclities are added and source codes become fairy clean.
+
+INSTALL
+	1) patch etc.dif ( i386/conf.c conf/files.i386)
+	2) change your own config file ( see NOTE )
+        3) config -> make
+        4) you also need to install new vsc.c
+	5) you also need to install termcap.
+        6) change tty shells's termentry -> vsc30 entry.
+
+	check:
+	1)nvi [long file]. push roll up or roll down or any kp keys,
+	  correctly move ?
+        2)vsc -SON, 
+          chenge next window 
+          vsc -SON, 
+          clock 1 ( compile clock.c ),
+	  status line correctly works? ( also change window )
+	  vsc -SOFF,
+	  status line disapper ?
+	3)
+	  first assume no canuum and no screen.
+	  vsc -2
+	  push CTRL+ROLL DOWN  many times,
+	  push CTRL+ESC
+	  vsc -1
+	  push CTRL+ROLL DOWN  many times,
+	  push CTRL+ESC
+	  does it work ?
+REMARK: 
+	Patch also includes com console fixes in conf.c.
+
+New version vsc.
++) Process terminal supported.
+   Now window is also changed by signal. ( X also uses this facility. However
+   I do NOT know X98 supports this methods? )
++) Completely rewrite device attach mechanism.
+   You need to change config file. ( See example NOTE )
++) Status line supported with ansi esq.
++) Speed up output routine. About 10% faster!
++) Rewrite KBD part.
+   Preserve led state of each windows.
+   Key mapping supported ( Compatible with pcvt )
++) graphic control changed.
+
+Ｑ＆Ａ
+[1]  沢山の漢字モードがありますが。違いは？
+
+各モードは default で map されている  G0 G1 G2 G3 集合の char sets
+が違います。 これは、文章によって char sets を G1 集合に map せず
+default の G1 集合を GL or GR に SI SO するものが多いからです。
+例えば、
+ Graphic chars を使った動画  G1 == DEC GRAPHICS
+ 半角カナ (JIS)              G1 == JIS KANA
+ EUC                         G1 == 94 chars & multibytes chars set.
+などです。
+ですから、正しく表示されない時は、モードをいろいろ変えてみてください。
+SJIS EUC は KANA KEY を押しても変えられます。
+ちなみに、自動判定というのは理論上不可能です。(もちろん、いい加減なら
+出来る。EUC の modeでは JISも使えますが JIS半角カナが表示出来ません)
+
+<Under default mapping state>
+		JIS	EUC  	JE	SJIS	DEC
+ascii		o	o	o	x 	o  
+romaji          x 	x	x	o	x
+jis-kanji	o	o	o	o	o
+jis-hankana	o	x	o	o	x	  ( SI/SO )
+jis-hankana  	o       x       x	o       x         ( GR mapping )
+euc-kanji	x	o	o	x	x
+euc-hankana	o	o	o	x	x	  ( SS2 )
+euc-ext         o       o       x       o       x	  ( SS3 )
+sjis-kanji	x	x	x	o	x
+sjis-hankana	o	x	x	o	x
+graph		x	x	x	x	o
+fonts			jis83   	jis78
+
+kana key
+start mode(default JIS) -> SJIS ->EUC
+
+[2] Window の change 及び scroll
+
+すべて、 Ctrl+Function key, Ctrl + RUP(RDOWN) です。
+(Copy Keyは廃止)
+ただし、例外があります。 Kernel が panicした時、及び、VT Process 端末になって
+いる場合で processが hang すると(例えば Xがhangした時)、これでは変えられ
+ないことがあります。
+この場合は、更に GRAPH KEY も同時に押してください。ただし、これは
+非常の場合なので多用しないでください。
+特に、X を使っている場合でkernelがpanicすると、X の画面にはなにも
+表示されず、freeze した状態になります。この様な場合 必ず GRAPH
+KEYも押してください。
+ 
+CTL+GR+Func
+CTL+Func       windows change.
+
+CTL+GR+UD
+CTL+UP         scroll
+
+CTL+HOME       key reset. key map reset.
+CTL+GR+HOME    25 lines <-> 30 lines
+
+CTL+GR+DEL     cpu reset
+CTL+GR+ESC     kernel debugger
+
+[3] KEY MAP を変えたいのですが。
+
+PCVT/UTIL/KCON のprogramがそのまま使えます。 ただし、 /usr/share/misc/keycap
+は IBM用に書かれていますから、注意してください。
+KEY MAPがおかしくなってしまった場合、非常時のために CTL+HOME でKEY MAP CLEAR
+が出来ます。
+
+[4] DVIOUTなどの GRAPHICが表示されません。
+
+VCON -g ON tty device で、GRAPHIC の表示をONにしてください。
+(各 windowごとに設定出来ます。 DefaultはOFFです)
+
+[5] Fontをloadしたのに表示されません。
+
+Loadされた fontはJIS83のSEQのみで有効です。JIS78の場合、defaultの
+ROMを使います。
+VCON -j ON でJIS83強制表示に変更出来ます。
+
+[6] Load した fontsを  clear したいです。
+
+VCON -l で JIS83 fontsごと、clear します。
+JIS83 fonts を再 loadしたい時は
+VCON -J
+としてください。
+
+[7] Saver を off にしたいです。
+
+VCON -s 0 で offになります。

@@ -1,0 +1,1178 @@
+#	$NecBSD: GENERIC,v 3.38.2.13 1999/12/14 06:38:16 kmatsuda Exp $
+#	$NetBSD$
+#
+#	GENERIC -- almost everything that's currently supported
+#
+
+include "arch/i386/conf/std.i386"
+
+maxusers	32		# estimated number of users
+
+# CPU support.  At least one is REQUIRED.
+options 	I386_CPU
+options 	I486_CPU
+options 	I586_CPU
+options 	I686_CPU
+
+# CPU-related options.
+options 	MATH_EMULATE	# floating point emulation
+options 	VM86		# virtual 8086 emulation
+options 	USER_LDT	# user-settable LDT; used by WINE
+options 	KTHREAD_VM86BIOSD	# Vm86bios tasks
+
+# eliminate delay no-ops in I/O; recommended on all but very old machines
+#options 	DUMMY_NOPS
+
+# delay between "rebooting ..." message and hardware reset, in milliseconds
+#options 	CPURESET_DELAY=2000
+
+# Misc. i386-specific options
+#options 	XSERVER		# X server support in console drivers
+#options 	XSERVER_DDB	# PF12 gets you into DDB when X is running
+
+# This option allows you to force a serial console at the specified
+# I/O address.   see console(4) for details.
+#options 	"CONSDEVNAME=\"com\"",CONADDR=0x2f8,CONSPEED=57600
+#	you don't want the option below ON iff you are using the
+#	serial console option of the new boot strap code.
+#options	CONS_OVERRIDE	# Always use above! independent of boot info
+
+# The following options override the memory sizes passed in from the boot
+# block.  Use them *only* if the boot block is unable to determine the correct
+# values.  Note that the BIOS may *correctly* report less than 640k of base
+# memory if the extended BIOS data area is located at the top of base memory
+# (as is the case on most recent systems).
+#options 	FEXTMEM_SIZE=...	# size of extended memory below 16M
+#options 	SEXTMEM_SIZE=...	# size of extended memory >= 16M
+
+# Standard system options
+
+options 	UCONSOLE	# users can use TIOCCONS (for xconsole)
+options 	INSECURE	# disable kernel security levels
+
+options 	RTC_OFFSET=-540	# hardware clock is this many mins. west of GMT
+options 	NTP		# NTP phase/frequency locked loop
+
+options 	KTRACE		# system call tracing via ktrace(1)
+
+options 	SYSVMSG		# System V-like message queues
+options 	SYSVSEM		# System V-like semaphores
+options 	SYSVSHM		# System V-like memory sharing
+#options 	SHMMAXPGS=1024	# 1024 pages is the default
+
+options 	LKM		# loadable kernel modules
+
+# Diagnostic/debugging support options
+options 	DIAGNOSTIC	# cheap kernel consistency checks
+#options 	DEBUG		# expensive debugging checks/support
+#options 	KMEMSTATS	# kernel memory statistics (vmstat -m)
+options 	DDB		# in-kernel debugger
+#options 	DDB_HISTORY_SIZE=100	# enable history editing in DDB
+#options 	KGDB		# remote debugger
+#options 	"KGDB_DEVNAME=\"com\"",KGDBADDR=0x3f8,KGDBRATE=9600
+#makeoptions	DEBUG="-g"	# compile full symbol table
+
+# Compatibility options
+options 	COMPAT_NOMID	# compatibility with 386BSD, BSDI, NetBSD 0.8,
+options 	COMPAT_09	# NetBSD 0.9,
+options 	COMPAT_10	# NetBSD 1.0,
+options 	COMPAT_11	# NetBSD 1.1,
+options 	COMPAT_12	# NetBSD 1.2,
+options 	COMPAT_13	# NetBSD 1.3,
+options 	COMPAT_43	# and 4.3BSD
+
+#options 	COMPAT_SVR4	# binary compatibility with SVR4
+#options 	COMPAT_IBCS2	# binary compatibility with SCO and ISC
+options 	COMPAT_LINUX	# binary compatibility with Linux
+options 	COMPAT_FREEBSD	# binary compatibility with FreeBSD
+
+# Executable format options
+options 	EXEC_ELF32	# 32-bit ELF executables (SVR4, Linux)
+
+# File systems
+file-system 	FFS		# UFS
+file-system 	EXT2FS		# second extended file system (linux)
+file-system 	LFS		# log-structured file system
+file-system 	MFS		# memory file system
+file-system 	NFS		# Network File System client
+file-system 	CD9660		# ISO 9660 + Rock Ridge file system
+file-system 	MSDOSFS		# MS-DOS file system
+file-system 	FDESC		# /dev/fd
+file-system 	KERNFS		# /kern
+file-system 	NULLFS		# loopback file system
+file-system 	PORTAL		# portal filesystem (still experimental)
+file-system 	PROCFS		# /proc
+file-system 	UMAPFS		# NULLFS + uid and gid remapping
+file-system 	UNION		# union file system
+file-system	CODA		# Coda File System; also needs vcoda (below)
+
+# File system options
+options 	QUOTA		# UFS quotas
+#options 	FFS_EI		# FFS Endian Independant support
+options 	NFSSERVER	# Network File System server
+#options 	EXT2FS_SYSTEM_FLAGS # makes ext2fs file flags (append and
+				# immutable) behave as system flags.
+
+# Networking options
+#options 	GATEWAY		# packet forwarding
+options 	INET		# IP + ICMP + TCP + UDP
+#options 	MROUTING	# IP multicast routing
+options 	NS		# XNS
+#options 	NSIP		# XNS tunneling over IP
+options 	ISO,TPIP	# OSI
+options 	EON		# OSI tunneling over IP
+options 	CCITT,LLC,HDLC	# X.25
+options 	NETATALK	# AppleTalk networking protocols
+#options 	PPP_BSDCOMP	# BSD-Compress compression support for PPP
+#options 	PPP_DEFLATE	# Deflate compression support for PPP
+#options 	PPP_FILTER	# Active filter support for PPP (requires bpf)
+#options 	PFIL_HOOKS	# pfil(9) packet filter hooks
+#options 	IPFILTER_LOG	# ipmon(8) log support
+
+# Compatibility with 4.2BSD implementation of TCP/IP.  Not recommended.
+#options 	TCP_COMPAT_42
+
+# These options enable verbose messages for several subsystems.
+# Warning, these may compile large string tables into the kernel!
+options 	PCIVERBOSE	# verbose PCI device autoconfig messages
+options 	SCSIVERBOSE	# human readable SCSI error messages
+options 	USBVERBOSE	# verbose USB device autoconfig messages
+
+options 	NFS_BOOT_BOOTP,NFS_BOOT_BOOTPARAM
+
+
+# Kernel root file system and dump configuration.
+config		netbsd	root on ? type ?
+#config		netbsd	root on sd0a type ffs
+#config		netbsd	root on ? type nfs
+
+#
+# Device configuration
+#
+
+options 	CONFIG_DEVICES
+options 	APM_AUTO_START		# APM automatic start
+options		PCSD_AUTO_START		# PCSD automatic start
+options		IPPCTRL_AUTO_START	# IPPCTRL onetime attach
+
+######################################################################
+# HARDWARE DEVICE CONFIGURATION
+
+# CPU:
+#
+# Cyrix 486DLC/SLC/DLC2/SLC2 cpu will be detected automatically,
+# and cpu cache enable. (Also we can disable cache later.)
+# Cyrix 5x86 cpu will be detected automatically, and cpu cache enable.
+#
+# Options for cpu:
+# BLUELIGHTNING enables cpu cache for IBM BlueLightning 486SLC2/SX3.
+#
+#options 	BLUELIGHTNING	# BlueLightning 486SLC2/SX3 cache enable
+#
+# CYRIX_5X86_PCR0 enables some features for Cyrix 5x86 cpu via PCR0 register.
+# 0x01		RSTK_EN	return stack enable
+# 0x04		LOOP_EN	loop enable
+# 0x80		LSSER	load store serialize enable (reorder disable)
+#
+#options 	CYRIX_5X86_PCR0=0x81	# enable some features for Cyrix 5x86
+
+mainbus0 at root
+
+# PC-98 (C bus) and PCI devices:
+# NESA (New Extended Architecture) bus is not supported at all.
+
+#
+# Bus for system devices: REQUIRED
+#
+systm0	at mainbus0		# system devices
+
+#
+# ISA bus with fixed resources `isa': 
+#
+isa0	at mainbus0		# isa bus with fixed resources
+
+#options 	AUTO_EOI_1	# enable automatic EOI for master 8259AC
+#options 	AUTO_EOI_2	# enable automatic EOI for slave 8259AC
+#options 	REORDER_IRQ	# pri order irq; PC-98 internal com first
+
+#
+# PCI bus `pci':
+#
+pci0	at mainbus0 bus ?
+
+ppb*	at pci? dev ? function ?	# PCI-PCI bridges
+pci*	at ppb? bus ?
+
+#
+# PC Card Servics `pccs'
+#						  cardbus (pccs 32)
+#						/
+#  controllers (gipc, nepc, tipc) - pccs - slot 
+#					 	\ 	
+#						  pisa (pccs 16)
+#
+#options 	 PCCSHW_IRQMASK=0x1028
+
+# NEc PcCs 16 bits controller
+nepc0	at systm?
+pccs*	at nepc0
+
+# Generic Intel PcCs 16 bits controller
+# Flags are as follows:
+# 0x0001	polling mode (interrupt pin not used) 
+# 0x0100	second pc card adapter (io base 0x3e2)
+gipc*	at systm?
+gipc*	at pisa?
+
+# TI113X(PCI) PcCs 16 bits (legacy mode) birdge
+tipc*	at pci?  dev ? function ?
+#ppcb*	at tipc? bus ? function ?
+#gipc*	at ppcb?
+
+# PC Card Service
+pccs*	at gipc?
+slot*	at pccs?
+
+# 16 bits bus connection
+pisa*	at slot?
+
+# 32 bits bus connection (reserved)
+#cardbus* at slot?
+
+#  
+# ISA PnP Initiator: `ippi'
+#
+ippi0	at systm?
+pisa*	at ippi0
+#options 	 IPP_IRQMASK=0x1028
+
+#
+# Numeric coprocessor extension (NPX) driver: `npx'
+#
+npx0	at isa? port 0x0f8 irq 14	# math coprocessor
+
+#
+# keyboard and console driver: `kbdc/vsc/vc'
+#
+# vsc driver family: `kbd/vsc/vc'
+#
+# kbd: keyboard driver
+#
+# The flags fields are used to specify BS/DEL key behavior or whether
+# hook key is CTRL key or ALT(GRPH) key.
+# 
+# 0x1		use PC-98 specific DEL and BS assign;
+#			BS  unshift: \010     shift: \010     ctrl: \010
+#			DEL unshift: \177     shift: \177     ctrl: \177
+#
+# NB: default assign;
+#			BS  unshift: \177     shift: \010     ctrl: \177
+#			DEL unshift: \033[3~  shift: \033[3~  ctrl: \033[3~
+#
+# 0x2		use ALT(GRPH) as hook key instead of CTRL key;
+#		for example, ALT(GRPH) + F1 works as first screen change
+#		instead of CTRL + F1.
+
+#
+# vsc: virtual console controller
+# vc: virtual console driver
+#
+# The flags fields of `vc' are used to specify mode settings for this console.
+#
+# 0x1		VT100 auto wrap mode (AWM)
+# 0x2		DEC INS mode
+#
+# NB: The following flags assign default settings for each vc.
+# we can change these settings later using vsc(1).
+#
+# 0x4		graphic on; enable vram access
+# 0x8		enable virtual scrool with window split
+# 0x20		open a status sub-window from the beginning
+# bits 16-23	default start up KANJI code;
+#		0	JIS
+#		1	JIS ROMAJI
+#		2	EUC
+#		3	SJIS
+#		5	JE
+#		6	DEC
+#
+# Options for `kbd/vsc/vc':
+#
+options 	KBD_PROBE_FAILURE	# if fails to probe kerboard.
+#options 	REVERSE_CRT	# reverse crt
+options 	LINEIS25	# console line is 25
+options 	SCREEN_SAVER	# console screen saver; recommended
+				#  because we can be off later
+options 	VSC_KMESG	#
+options 	KBD_EXT		# kbd extensions; pcvt and syscons compat
+				#  needed in use of X
+options 	FONT_LOAD	# font loading facility
+
+#options 	EXTERNAL_WINDOW_BOARDS	# panic escape in X;
+				# you must specify your graphic board
+#options 	PW		# with graphic board PW801/805i (C bus)
+#options 	PWLB		# with graphic board PW (local bus)
+#options 	PCSKB		# with graphic board EPSON PCSKB
+#options 	PCHKB		# with graphic board EPSON PCHKB
+#options 	PCSKB4		# with graphic board EPSON PCSKB4
+#options 	NECWAB		# with graphic board NEC WAB using S3 928
+				# 		     NEC WAB using S3 864
+#options 	GANB		# with graphic board IO DATA GA98-NB
+#options 	WAB		# with graphic board MELCO WAB-2000
+#options 	WAP		# with graphic board MELCO WAP-2000
+#
+kbdc0	at isa? port 0x041 irq 1 flags 0x00000000
+vsc0	at kbdc0
+vc0	at vsc? drive 0 iosiz 0x8000 flags 0x00020005
+vc1	at vsc? drive 1 iosiz 0x8000 flags 0x00020001
+vc2	at vsc? drive 2 iosiz 0x8000 flags 0x00020001
+vc3	at vsc? drive 3 iosiz 0x8000 flags 0x00020001
+vc4	at vsc? drive 4 iosiz 0x8000 flags 0x00020001
+
+#
+# Serial port (RS-232C) board controller: `ser'
+# Serial port (RS-232C) chip driver: `sri', `srn'
+# Serial port (RS-232C) tty line driver: `cua', `ttyc'
+#
+# The flags fields of `ser' are used to specify which com port controller
+# you use.
+#
+# i8251 base:
+# 0x000000		PC-98 (traditional) internal com port
+# 0x010000		NEC RS-232C board PC-9861K, PC-9801-101 com port ext1
+# 0x020000		NEC RS-232C board PC-9861K, PC-9801-101 com port ext2
+# 0x030000		MELCO IND-SP com port and IND-SS com port ext1
+# 0x040000		MELCO IND-SS com port ext2
+#
+# ns16550 base:
+# 0x100000		IO DATA RSA98 RS-232C board (ext1/ext2)
+# 0x110000		use ns16550 default port offset (with fifo enable)
+# 0x120000		new PC-98 second com port (with fifo enable)
+# 0x130000      	MicroCore MC16550 I
+# 0x140000		MicroCore MC16550 II, MC-RS98
+# 0x150000		Earth chip RSB-2000 & RSB-3000
+# 0x160000		RSB386
+# 0x170000		Modem cards
+# 0x180000		RSA98III (remark: flags of RSA98I/II = 0x100000)
+# 0x190000		Hayes ESP98
+#
+# 0x000001		IEN
+# 0x008000		AFE
+#
+# NB. All types which have ns16550 compatible chips must work
+# with flags 0x120001 or 0x120000.
+#
+# NB. TI16550AF chip family has auto flow control feature (AFE),
+# which is enable with the AFE bit on.
+# (RSB2000/3000 and RSA98 do the exsotic flow control through 
+#  the fifo asics insted of the AFE, DO NOT USE THE AFE)
+#
+# NB. The RSA-98 manual says that the start address of UART control register
+# as `base I/O address', for example 0x50e0 (default value).
+# But this UART uses 0xnmd0-0xnmd7 as send/receive FIFO ports.
+# So you must specify iobase (the `port' field) as 0xnmd0, not 0xnme0,
+# for example, 0x50d0, not 0x50e0 for default value.
+#
+# NB. Serial chips (RSA, MODEM ...) connected with PCI busses
+# not require any configuration flags (auto dectect).
+#
+# NB. Serial chips connected with PnP busses
+# not require any configuration flags (auto dectect).
+#
+# !! CAUTION !!
+# NB. If your board is RSB386 or RSB2000/3000, 
+#     NEVER use the iobase '0xb0' which conflicts with a fdc io port.
+
+#
+# Options for `ser/com':
+#
+#options SERI_SPEED=B38400		# default 38400
+#options SERF_SPEED=B115200		# default 115200
+#options SERN_SPEED=B115200		# default 115200
+#options SERA_SPEED=B230400		# default 230400
+#options SERB_SPEED=B230400		# default 230400
+#
+
+ser*	at pci? dev ? function ?			# PCI devices
+ser*	at pisa? 					# PC cards, PnP modems
+
+ser*	at isa? port 0x030  irq 4  flags 0x00000000	# PC-98 internal
+ser*	at isa? port 0x238  irq 5  flags 0x00120000	# PC-98 second com
+#ser*	at isa? port 0x0b0  irq 3  flags 0x00010000	# PC-9861K/9801-101 ext1
+#ser*	at isa? port 0x0b2  irq 12 flags 0x00020000	# PC-9861K/9801-101 ext2
+#ser*	at isa? port 0x0b0  irq 3  flags 0x00030000	# IND-SP/SS ext1
+#ser*	at isa? port 0x0b2  irq 12 flags 0x00040000	# IND-SS ext2
+ser*	at isa? port 0x64d0 irq 3  flags 0x00100000	# RSA98 ext1/ext2
+#ser*	at isa? port 0xe0   irq 3  flags 0x00140000	# MC-RS98
+#ser*	at isa? port 0x10b0 irq 3  flags 0x00150000	# RSB2000 ext1/ext2
+#ser*	at isa? port 0x10b0 irq 6  flags 0x00160000	# RSB386 ext1
+#ser*	at isa? port 0x10b1 irq 10 flags 0x00160000	# RSB386 ext2
+#ser*   at isa? port 0x18b0 irq 5  flags 0x00190000     # Hayes ESP98
+
+#
+# serial chip drivers
+#
+# serf*: I8251F chip driver
+# seri*: I8251 chip driver
+# sera*: RSA98 I/II/III special fifo asic chip driver
+# serb*: RSB2000/3000 earth chip driver
+# sern*: NS16550 chip driver
+# serh*: HAYES chip
+#
+# tty line drivers
+# sertty: abstract layer of serial lines
+#
+# ttycom*: principal line /dev/tty0?
+# ttycua*: sub line /dev/cua?
+#
+# attach map:
+#       - seri -            - ttycom
+#     / - serf - \	  /  
+# ser   - serb -   sertty
+#     \	  ...	 /        \ 
+#       - serh -            - ttycua
+#
+
+serf*	at ser? slave?
+sertty*	at serf?
+
+seri*	at ser? slave?
+sertty* at seri?
+
+sera*	at ser? slave?
+sertty* at sera?
+
+serb*	at ser? slave?
+sertty* at serb?
+
+sern*	at ser? slave?
+sertty* at sern?
+
+#serh*	at ser? slave?
+#sertty* at serh?
+
+ttycom* at sertty?
+ttycua* at sertty?
+
+#
+# Printer driver: `lpt'
+#
+# NB: If you specify 0x40 as iobase (the `port' field), lpt works
+# as PC-98 traditional mode. If 0x140 is specified, works as new PC-98
+# bidirectional mode. If others, works as third vendor bidirectinal
+# compatible mode (as MELCO's IND-SP, for example).
+#
+lpt0	at isa? port 0x040 irq 8	# PC-98 internal (traditional mode)
+#lpt0	at isa? port 0x140 irq 14	# PC-98 internal (bidirectional mode)
+#lpt1	at isa? port 0x540 irq 12	# IND-SPT printer port (bidirectional?)
+
+#
+# Bus mouse driver: `olms'
+#
+# olms: PC-98 bus mouse driver based on NetBSD/i386 `Logitech'-style bus mouse
+# driver `lms'.
+#
+olms0	at isa? port 0x7fd9 irq 13	# PC-98 bus mouse based on lms
+
+#
+# SCSI host adapter driver:
+#	`ahc', `aic', `bs', `ct', `isp', `ncr', `ncv', `nsp', `spc', `stg'
+#
+# aic: SCSI card using the Adaptec AIC-6360 chip (C bus/PCMCIA)
+# ahc: Adaptec 2940 SCSI controller (PCI)
+# ct:  PC-98 C bus SCSI cards using the Western Digital WD33C93 chip (C bus)
+# isp: Qlogic ISP [12]0x0 SCSI/FibreChannel (PCI)
+# ncr: NCR53C815 SCSI controller/IO mapping type (PCI)
+# ncv: SCSI card using the NCR 53C406/53C500 chip (PCMCIA)
+# nsp: SCSI card using the Workbit NinjaSCSI-3 chip (PCMCIA)
+# spc: SCSI card using the Fujitsu MB89352 chip (C bus?/PCMCIA)
+# stg: SCSI card using the FutureDomain TMC18C30/18C50 chip (PCMCIA)
+#
+
+#
+# host adapter using NCR53C406/53C500 chip (PCMCIA)
+#
+ncv*	at pisa? 
+scsibus* at ncv?
+
+#
+# host adapter using tmc18c30 or tmc18c50 chip (PCMCIA)
+#
+stg*	at pisa?
+scsibus* at stg?
+
+#
+# host adapter using Adaptec AIC-6360 chip (C bus/PCMCIA)
+#
+aic*	at isa? port 0x1840 irq 5 flags 0x10000	# NEC PC-9801-100
+aic*	at pisa?
+scsibus* at aic?
+
+#
+# host adapter using Fujitsu MB89352 chip (C bus?/PCMCIA)
+#
+#	XXX: currently perhaps broken -- kmatsuda
+#spc*	at pisa?
+#scsibus* at spc?
+
+#
+# host adapter using Workbit NinjaSCSI-3 (PCMCIA)
+#
+nsp*	at pisa?
+scsibus* at nsp?
+
+#
+# host adapter using WD33C93[ABC] chip (C bus)
+#
+# flags descriptions of ct:
+# 0x10000		IO DATA SC98 SCSI card
+# 0x20000		TEXA HA-55BS[24W] SCSI card
+# 0x30000		ELECOM EIF-98AW SCSI card
+# 0x40000		SMIT card (LOGITEC LHA-301, IO DATA SC98/III, ...)
+# 0x50000		LOGITEC LHA-20B
+# 0x00000		all types (GENERIC type)
+#
+# NB: If iobase (the `port' field of `ct') is not specified, use 0xcc0 as
+# iobase. If irq or drq are unknown (i.e., specified as ?), ct will autoprobe
+# and find irq and drq. If irq or drq are mismatch, bs use irq or drq of
+# SCSI board configuration, not that specified here.
+#
+ct*	at isa? 					# GENERIC
+#ct*	at isa? flags 0x10000				# SC98
+#ct*	at isa? flags 0x20000				# TEXA
+#ct*	at isa? flags 0x30000				# ELECOM
+#ct*	at isa? iomem 0xdc000 	flags 0x40000		# SMIT
+#ct*	at isa? flags 0x50000				# LOGITEC
+ct*	at pisa?
+scsibus* at ct?
+
+#
+# Adaptec 2940 (PCI)
+#
+ahc*	at pci? dev ? function ?	# Adaptec 2940 SCSI controllers
+scsibus* at ahc?
+
+#
+# host adapter using NCR53C815 chip (PCI)
+#
+#options 	NCR_IOMAPPED		# if IO MAPPING TYPE (old IO DATA products)
+options 	SCSI_NCR_DFLT_TAGS=0
+ncr*	at pci? dev ? function ?	# NCR 538XX SCSI controllers
+scsibus* at ncr?
+
+adv*	at pci? dev ? function ?	# AdvanSys 1200[A,B], 9xx[U,UA] SCSI
+scsibus* at adv?
+
+# XXX: broken (require casts in code)
+#adw*	at pci? dev ? function ?	# AdvanSys 9xxUW SCSI
+#scsibus* at adw?
+
+bha*	at pci? dev ? function ?	# BusLogic 9xx SCSI
+scsibus* at bha?
+
+isp*	at pci? dev ? function ?	# Qlogic ISP [12]0x0 SCSI/FibreChannel
+scsibus* at isp?
+
+pcscp*	at pci? dev ? function ?	# AMD 53c974 PCscsi-PCI SCSI
+scsibus* at pcscp?
+
+#
+# SCSI device configurations
+#
+# flags descriptions of sd/cd/st:
+# 0x01		enable Synchronus Data Transfer
+# 0x02		disconnection and reselection enable
+# 0x04		waits for complete bus free state
+# 0x08		scsi cmd link enable
+# 0x10		qtag msg enable (not yet, but reserved)
+# 0x100		do not use combination cmd
+# 0x200		do not use parity line
+# 0x400		always save a current scsi data pointer after a disconnect msg
+# 0x800		inhibit smit xfer
+# bits 12-15	scsi disk geometry selection bits (valid only for scsi disks)
+# bits 16-23	sync neg offset max assertion value
+# bits 24-31	sync neg period max assertion value (ex. 5M/s -> 50 = 0x32)
+#
+# 0x320c0304	the safest flags (quite slow!)
+# 0xffff0003	flags recommended
+# 0xffff000b	the best flags
+#
+#options SCSIBIOS_SCSIBUS_ID=0
+
+sd0	at scsibus? target 0 lun 0 flags 0x320c0304	# SCSI disk drives
+sd1	at scsibus? target 1 lun 0 flags 0x320c0304	# SCSI disk drives
+sd2	at scsibus? target 2 lun 0 flags 0x320c0304	# SCSI disk drives
+sd3	at scsibus? target 3 lun 0 flags 0x320c0304	# SCSI disk drives
+sd4	at scsibus? target 4 lun 0 flags 0x320c0304	# SCSI disk drives
+sd5	at scsibus? target 5 lun 0 flags 0x320c0304	# SCSI disk drives
+sd6	at scsibus? target 6 lun 0 flags 0x320c0304	# SCSI disk drives
+st*	at scsibus? target ? lun 0 flags 0x320c0304	# SCSI tape drives
+cd*	at scsibus? target ? lun ? flags 0x320c0304	# SCSI CD-ROM drives
+
+#
+# Floppy disk controller: `fdc'
+# Floppy disk driver: `fd'
+#
+# The flags fields of `fdc' are used to specify the default mode. We can
+# change these settings later using fdc command.
+#
+# 0x1		disenable density check and density change automatically
+# 0x2		enable interleave format
+#
+fdc0	at isa? port 0x090 irq 11 drq 2
+fd*	at fdc? drive ?
+
+#
+# IDE and Enhanced IDE hard disk driver
+#
+# The flags of `wd' as follows
+#
+# 0x1	do not use multiple sectors transfer mode (i.e. single sec pio transfer)
+#
+# ex: wd0 at atabus0 chan 0 lun 0 flags 1
+#
+#options	PCIIDE_NODMA_TRANSFER
+pciide*	at pci?	dev ? function ?
+wdc0	at isa? port 0x640 irq 9
+wdc*	at pisa?
+
+#
+# attach map
+#
+# wdc0 or pciide0 -  atabus0 (bank 0)	-	wd? (IDE disks)
+#				        -	atapibus0 	- 	cd?
+#								-	sd?
+#		  -  atabus1 (bank 1)	-	wd? (IDE disks)
+#					-	atapibus1 	-	cd?	
+#								-	sd?
+#
+# Remark: A NEC IDE controller is always connected with 2 atabusses
+# (corresponding to the bank).
+#
+atabus*   at pciide? channel ?
+atabus*   at wdc? bank ?
+
+wd*	  at atabus? drive ?
+atapibus* at atabus?
+cd*	  at atapibus? drive ?
+sd*	  at atapibus? drive ?
+
+# Network interface drivers:
+#	`ep', `fes', `ix', `le', `mbe', `ne', `sic', `sm', `sn', `we',
+#	`de', `fxp'
+#
+# ep: 3Com EtherLink III PC-9800 3C569 (C bus)
+#     3Com EtherLink III 3C589 (pcmcia card)
+# ne: Allied Telesis CentreCom LA-98-T (C bus)
+#     Contec C-NET(98)E*A/L*A (C bus)
+#     Contec C-NET(98)P [not P2!] (C bus)
+#     D-Link DE-298{T,TP,CAT} (C bus)
+#     D-Link DE-298PT (C bus, PnP)
+#     D-Link DE-298PCAT (C bus with Legacy [non PnP] mode)
+#     ELECOM Laneed LD-BDN[123]A (C bus)
+#     ELECOM Laneed LD-98P (C bus with Legacy [non PnP] mode)
+#     ELECOM Laneed LD-CDWA (pcmcia card)
+#     ELECOM Laneed LD-CDY (pcmcia card)
+#     ICM DT-ET-25, DT-ET-T5, IF-2766ET, IF-2771ET (C bus)
+#     IO DATA LA/T-98 (C bus)
+#     IO DATA LCLA/T (pcmcia card)
+#     Logitec LPM-LAN/FM (pcmcia card)
+#     Logitec LPM-LN20T (pcmcia card)
+#     Macnica NE2098 (C bus)
+#     MELCO EGY-98, LGY-98, IND-SP, IND-SS (C bus)
+#     MELCO LPC-TJ (pcmcia card)
+#     Matsushita CF-VEL211P-B (pcmcia card)
+#     NEC PC-9801-108 (C bus)
+#     NEC PC-9801-J12 (pcmcia card)
+#     PLANET SMART COM 98 EN-2298-T (C bus)
+#     PLANET SMART COM 98 EN-2298-C (C bus)
+#     PLANET SMART COM 98 EN-2298P-T (C bus)
+#     PLANET SMART COM CREDITCARD/2000 PCMCIA (pcmcia card)
+#     PLANET SMART COM 3500 ENW-3500-T (pcmcia card)
+#     Z-LAN MODEM288 (multifunctional pcmcia card)
+# sic: Allied Telesis CentreCom SIC-98 (C bus)
+#     Contec C-NET(98) (C bus)
+#     Contec C-NET(9N) (NOTE 110pin)
+#     Contec C-NET(98)E/L (C bus)
+#     Contec C-NET(9N)L (NOTE 110pin)
+#     NEC PC-9801-77 (C bus)
+#     NEC PC-9801-78 (C bus)
+#     Soliton SB-9801-T (Cbus)
+#     Soliton SN-9801-T (NOTE 110pin)
+#     3COM EtherLink/98 3CJ5098 (Cbus)
+#     3COM EtherLink/98-TP 3CJ5098TP (Cbus)
+#     3COM EtherLink/98N-TP 3CJ5098N-TP (NOTE 110pin)
+#     APEX ETHER MODEM CARD (pc card)
+# mbe: Allied Telesis CentreCom RE-100x, RE-100xplus (C bus)
+#     Ratoc REX-5588A (pcmcia card)
+#     TDK LAC-CD02x (pcmcia card)
+#     TDK LAC-98012/13/25 (C bus)
+#     TDK DFL3410 GlobalNetworker (multifunctional pcmcia card)
+#     TDK DFL9610 NetPartner (multifunctional pcmcia card)
+#     TDK DFL3200 MobileNetworker (multifunctional pcmcia card)
+#     Contec C-NET(98)P2 (C bus)
+#     Contec C-NET(9N)E (NOTE 110pin)
+#     Contec C-NET(9N)C-10 (NOTE IC Card)
+#     Logitec LAN-98TP/LAN-98T25P (C bus)
+#     NextCom NextLink-III PC9800C TPO (NC5098C-TPO) (C bus)
+#     NextCom NextLink-III PC9800C COMBO (NC5098C-COMBO) (C bus)
+#     Ungermann-Bass Access/PC N98C+ PC85152 (C bus)
+#     Ungermann-Bass Access/PC N98C+ PC85142 (C bus)
+#     Ungermann-Bass Access/NOTE N98 PC86132 (NOTE 110pin)
+#     UB Networks Access/CARD JC89532A (pcmcia card)
+#     Ratoc REX-9880/9881/9882/9886/9887 (C bus)
+#     Ratoc REX-9883 (NOTE 110pin)
+# ix: Intel EtherExpress/98 (C bus)
+#     Networld 98X3Dash (C bus)
+# le: Contec C-NET(98)S (C bus)
+# we: SMC EtherEZ98 (C bus)
+# fes: Sun Electronics AngeLan AL-98 series (C bus, NOTE 110pin)
+#     Ungermann-Bass Access/PC N98C+ PC85151 (C bus)
+#     Ungermann-Bass Access/NOTE N98 PC86131 (NOTE 110pin)
+# sn: NEC PC-9801-83 (C Bus)
+#     NEC PC-9801-84 (Cbus)
+#     NEC PC-9801-103 (Cbus)
+#     NEC PC-9801-104 (Cbus)
+#     NEC PC-9801N-25 (NOTE 110pin)
+#     NEC PC-9801N-J02 (pcmcia card)
+#     NEC PC-9801N-J02R (pcmcia card)
+# sm: Megahertz XJ-10BT (pcmcia card)
+# de: PLANET SMART COM Fast/9500 (PCI bus)
+# fxp: Intel EtherExpressPro/100 (PCI bus)
+#
+
+# 3Com EtherLink III
+#
+# 0x00000	3Com EtherLink III PC-9800 3C569 (C bus)
+# 0x10000	use default (NetBSD/i386 original) configuration offset
+#
+ep*	at isa? port 0x40d0 irq 3
+ep*	at pisa?
+
+# Network interface cards using dp8390 (compatible) controller
+#
+# ne:
+# 0x000000	use default (NetBSD/i386 original) configuration offset
+#		ELECOM Laneed LD-CDWA (pcmcia card)
+#		ELECOM Laneed LD-CDY (pcmcia card)
+#		IO DATA PCLA/T (pcmcia card)
+#		Logitec LPM-LAN/FM (pcmcia multifunction card)
+#		Logitec LPM-LN20T (pcmcia card)
+#		Macnica ME1 (pcmcia card) (*)
+#		Matsushita CF-VEL211P-B (pcmcia card)
+#		MELCO LPC-TJ (pcmcia card)
+#		NEC PC-9801-J12 (pcmcia card)
+#		PLANET SMART COM CREDITCARD/2000 PCMCIA (pcmcia card)
+#		PLANET SMART COM 3500 ENW-3500-T (pcmcia card)
+#		Z-LAN MODEM288 (multifunctional pcmcia card)
+# 0x100000	Allied Telesis CentreCom LA-98-T (C bus)
+# 0x200000	PLANET SMART COM 98 EN-2298-C (C bus)
+#		ELECOM LANEED LD-BDN[123]A (C bus) (*1)
+#		Macnica ME98 (C bus) (*)
+# 0x300000	MELCO EGY-98 (C bus)
+#		Contec C-NET(98)E*A/L*A (C bus) (*)
+#		Contec C-NET(98)P [not P2!] (C bus) (*)
+# 0x400000	MELCO LGY-98, IND-SP, IND-SS (C bus)
+#		Macnica NE2098 (C bus) (*)
+# 0x500000	ICM DT-ET-25, DT-ET-T5, IF-2766ET, IF-2771ET (C bus)
+#		PLANET SMART COM 98 EN-2298-T (C bus) (*)
+#		PLANET SMART COM 98 EN-2298P-T (C bus) (*)
+#		D-Link DE-298PT (C bus)
+#		D-Link DE-298PCAT (C bus)
+#		ELECOM Laneed LD-98P (C bus)
+# 0x800000	NEC PC-9801-108 (C bus)
+# 0x900000	IO DATA LA/T-98 (C bus)
+#		ELECOM LANEED LD-BDN (C bus) (*1)
+# 0xc00000	Networld 98X3 (C bus)
+#
+# *: Not yet confirmed.
+# *1: Some type of ELECOM LANEED LD-BDN does not work on flags 0x200000,
+#    please test flags 0x900000
+#
+#ne*	at isa? port 0x00d8 irq 6  flags 0x100000	# LA-98-T
+#ne*	at isa? port 0x00d8 irq 6  flags 0x200000	# SMART COM 98, LANEED
+#ne*	at isa? port 0x00d0 irq 6  flags 0x300000	# EGY-98
+ne*	at isa? port 0x00d0 irq 6  flags 0x400000	# LGY-98, IND-SP/SS
+#ne*	at isa? port 0x56d0 irq 6  flags 0x500000	# ICM IF-2766/2771
+ne*	at pisa?					# PCMCIA ether card
+
+# sic:
+# 0x100000	Allied Telesis CentreCom SIC-98 (C bus)
+# 0x200000	Contec C-NET(98) (C bus) with 0xaaed as reset ports base (JP1)
+#		Contec C-NET(9N) (NOTE 110pin)
+# 0x210000	Contec C-NET(98) (C bus) with 0x55ed as reset ports base (JP1)
+# 0x300000	Contec C-NET(98)E/L (C bus) with 0xaaed as reset ports base (JP1)
+#		Contec C-NET(9N)L (NOTE 110pin)
+# 0x310000	Contec C-NET(98)E/L (C bus) with 0x55ed as reset ports base (JP1)
+# 0x400000	NEC PC-9801-77 (C bus)
+#		NEC PC-9801-78 (C bus)
+# 0x500000	Networld EP98X (C bus) (**)
+# 0x600000	Soliton SB-9801-T (Cbus)
+#		Soliton SN-9801-T (NOTE 110pin)
+#		Fujikura FN1700-98, FN1702-98 (Cbus) (*)
+#		Fujikura FN1800-98N, FN1802-98N (NOTE 110pin) (*)
+# 0x700000	3COM EtherLink/98 3CJ5098 (Cbus)
+#		3COM EtherLink/98-TP 3CJ5098TP (Cbus)
+#		NextCom NextLink/98 (Cbus) (*)
+# 0x800000	3COM EtherLink/98N-TP 3CJ5098N-TP (NOTE 110pin)
+#		NextCom NextLink/98N (NOTE 110pin) (*)
+#
+# *: Not yet confirmed.
+# **: Not yet confirmed.
+#     My (kmatsuda's) junk EP98X (it is same as NEC PC-9801-78)
+#     does not work yet, but it should work.
+#
+# NOTE for 3COM EtherLink/98 3CJ5098 and EtherLink/98-TP 3CJ5098TP:
+#  1) Transfer mode (shared memory mode or programmed I/O mode) should
+#    give by
+#	programmed I/O mode:	if iomem and iosiz field are not specified
+#	shared memory mode:	if iomem and iosiz field are specified,
+#				here iosiz is 0x8000 (32k), iomem is in
+#				0xc0000, 0xc8000, 0xd0000, 0xd8000.
+#  2) iobase should give as iobase jumper setting (0xd0, 0xd2, 0xd4 or 0xd8)
+#    plus 0x2000 (i.e., 0x20d0, 0x20d2, 0x20d4 or 0x20d8).
+#  ex.
+#    sic0 at isa? port 0x20d0 irq 6 flags 0x700000
+#	programmed I/O mode, iobase jumper setting is 0xd0
+#    sic0 at isa? port 0x20d8 irq 6 iomem 0xc0000 iosiz 0x8000 flags 0x700000
+#	shared memory mode, iobase jumper setting is 0xd8,
+#	memory base is 0xc0000
+#
+#  3) flags 0x700000 DOES NOT drive 3COM EtherLink/98N-TP 3CJ5098N-TP
+#    (NOTE 110pin).
+#
+# NOTE for 3COM EtherLink/98N-TP 3CJ5098N-TP:
+#  1) Transfer mode (shared memory mode or programmed I/O mode) should
+#    give by
+#	programmed I/O mode:	if iomem and iosiz field are not specified
+#	shared memory mode:	if iomem and iosiz field are specified,
+#				here iosiz is 0x8000 (32k), iomem is in
+#				0xc0000, 0xc8000, 0xd0000.
+#  2) As in hardware manual, iobase is 0xd0 and fixed. In our configuration,
+#    we must specify iobase as (documented iobase) 0xd0 plus 0x1000
+#    (i.e., 0x10d0).
+#  ex.
+#    sic0 at isa? port 0x10d0 irq 3 flags 0x800000
+#	programmed I/O mode, iobase is 0xd0 (fixed), irq is 3
+#    sic0 at isa? port 0x10d0 irq 5 iomem 0xc0000 iosiz 0x8000 flags 0x800000
+#	shared memory mode, iobase is 0xd0 (fixed),
+#	memory base is 0xc0000, irq is 5
+#
+sic*	at isa? port 0x00d0 irq 6  iomem 0xc0000 flags 0x100000	# SIC-98
+sic*	at pisa?
+
+# we: 
+# 0x00000	use default (NetBSD/i386 original) configuration offset
+# 0x10000	SMC EtherEZ98 (SMC8498BTA) (C bus)
+#
+# NB: Transfer mode (shared memory mode or programmed I/O mode) is
+#     automatically detected from board configuration.
+#     Even if iomem/iosiz parameters are specified, if board is configured
+#     as programmed I/O mode, we drives board as programmed I/O mode.
+#
+we*	at isa? port 0x10d0 irq 6  iomem 0xc8000 iosiz 8192 flags 0x10000
+
+# Network interface cards using Fujitsu mb86960 (compatible) controller
+#
+# mbe:
+# 0x10000	Allied Telesis CentreCom RE-100x (C bus)
+# 0x20000	Allied Telesis CentreCom RE-100xplus (C bus)
+# 0x30000	TDK LAC-CD02x (pcmcia card)
+#		TDK DFL3410 GlobalNetworker (multifunctional pcmcia card)
+#		TDK DFL9610 NetPartner (multifunctional pcmcia card)
+#		TDK DFL3200 MobileNetworker (multifunctional pcmcia card)
+# 0x40000	Contec C-NET(98)P2 (C bus)
+#		Logitec LAN-98TP/LAN-98T25P (C bus) (*)
+#		NextCom NextLink-III PC9800C TPO (NC5098C-TPO) (C bus) (*)
+#		NextCom NextLink-III PC9800C COMBO (NC5098C-COMBO) (C bus) (*)
+# 0x50000	Ratoc REX-5588A (pcmcia card)
+# 0x60000	TDK LAC-98012/13/25 (C bus)
+# 0x70000	Ungermann-Bass Access/PC N98C+ PC85152 (C bus)
+#		Ungermann-Bass Access/PC N98C+ PC85142 (C bus) (*)
+# 0x80000	Ratoc REX-9886/9887 (C bus)
+# 0x90000	Ratoc REX-9880/9881/9882 (Cbus) (*)
+#		Ratoc REX-9883 (NOTE 110pin)
+# 0xa0000	Contec C-NET(9N)E (NOTE 110pin)
+# 0xb0000	Ungermann-Bass Access/NOTE N98 PC86132 (NOTE 110pin)
+# 0xc0000	UB Networks Access/CARD JC89532A (pcmcia card)
+# 0xd0000	Contec C-NET(9N)C-10 (NOTE IC Card)
+#
+# *: Not yet confirmed.
+#
+# NB: Ungermann-Bass Access/PC N98C+ PC85151 (C bus) does not work with
+#     flags 0x70000 (currently, mbe driver can not drive MB86950).
+#     Use `fes' driver described below.
+#
+#     Ungermann-Bass Access/NOTE N98 PC85131 (NOTE 110pin) does not work with
+#     flags 0xb0000 (currently, mbe driver can not drive MB86950).
+#     Use `fes' driver described below.
+#
+#     UB Networks Access/CARD JC8953 (not JC89532, JC89532A) does not
+#     work with flags 0xc0000, perhaps...   
+#
+#     Do not insert/remove Contec C-NET(9N)C-10 during machine is
+#     power up. (Hot plug for IC Cards is not supported.)
+#     Also irq setting should be set up by 98NOTE setup disk.
+#
+mbe*	at isa? port 0x01d4 irq 3 flags 0x10000		# Allied Telesis RE100x
+mbe*	at pisa?					# PCMCIA ether card
+
+# Network interface cards using Intel i82586 controller,
+#
+# ix: Intel EtherExpress/16, EtherExpress/98 (ISA bus/C bus)
+# 0x000000	EtherExpress/16 on PC/AT ISA bus (memory mapped type)
+# 			This type is default on NetBSD/i386.
+# 0x100000	EtherExpress/16 on PC/AT ISA bus (io mapped type)
+#			Not yet confirmed.
+# 0x010000	EtherExpress/98 on PC-98 C-bus (memory mapped type)
+# 			This type's EtherExpress 98 does not exist.
+# 0x110000	EtherExpress/98 on PC-98 C-bus (io mapped type)
+#		Networld 98X3Dash (C bus, iomapped type)
+#
+#options 	IX_SMALL	# only accept flags 0x110000 (Cbus, iomapped)
+ix*	at isa? port 0x800 irq 5 flags 0x110000		# Intel EtherExpress 98
+
+# Network interface cards using AMD Am79C960 controller
+#
+# le* at nele?		NE2100 (NetBSD/i386 original)
+# le* at bicc?		BICC IsoLan (NetBSD/i386 original)
+# le* at cnle?		Contec C-NET(98)S (C bus)
+#
+#nele0	at isa? port 0x320 irq 10 drq 7		# NE2100
+#le*	at nele?
+#bicc0	at isa? port 0x320 irq 10 drq 7		# BICC IsoLan
+#le*	at bicc?
+#options 	LE_SMALL	# only accept cnle/le (omit nele,bicc/le)
+cnle*	at isa? port 0x03d0 irq 6 drq 1		# CONTEC C-NET(98)S-12
+le*	at cnle?
+
+# Network interface cards using Fujitsu mb86950 (EtherStar) controller
+#
+# fes:
+# 0x10000	Sun Electronics AngeLan AL-98 series (C bus, NOTE 110pin)
+#		tested on AL-9852D (C bus) and AL-98N2D (NOTE 110pin)
+# 0x20000	Ungermann-Bass Access/PC N98C+ PC85151 (C bus)
+# 0x30000	Ungermann-Bass Access/NOTE N98 PC86131 (NOTE 110pin)
+#
+# NB: Ungermann-Bass Access/PC N98C+ PC85152 (C bus) does not work with
+#     flags 0x20000 (currently, fes driver can not drive MB86960).
+#     Use `mbe' driver described above.
+#
+#     Ungermann-Bass Access/NOTE N98 PC85132 (NOTE 110pin) does not work with
+#     flags 0x30000 (currently, mbe driver can not drive MB86960).
+#     Use `mbe' driver described above.
+#options 	FES_DEBUG=3
+fes*	at isa? port 0x0d0 irq 3 flags 0x10000		# AngeLan AL-98
+
+# Network interface cards using SMC SMC91c90/92/94/100 controller
+#
+sm*	at pisa?
+
+# Network interface cards using NS DP83916/83932/83934 controller
+#
+#	NEC PC-9801-83 (C Bus)
+#	NEC PC-9801-84 (Cbus)
+#	NEC PC-9801-103 (Cbus)
+#	NEC PC-9801-104 (Cbus)
+#	NEC PC-9801N-25 (NOTE 110pin) (*)
+#	NEC PC-9801N-J02 (pcmcia card)
+#	NEC PC-9801N-J02R (pcmcia card)
+#
+# *: Not yet confirmed.
+#
+#options 	SNDEBUG
+sn*	at isa? port 0x888 irq 6 iomem 0xc0000		# NEC PC-9801-83
+sn*	at pisa?
+
+# Network interface cards on pci bus.
+#
+de*	at pci? dev ? function ?	# DEC 21x4x-based Ethernet
+en*	at pci? dev ? function ?	# ENI/Adaptec ATM
+ep*	at pci? dev ? function ?	# 3Com 3c59x
+ex*	at pci? dev ? function ?	# 3Com 90x[B]
+epic*	at pci? dev ? function ?	# SMC EPIC/100 Ethernet
+esh*	at pci? dev ? function ?	# Essential HIPPI card
+fpa*	at pci? dev ? function ?	# DEC DEFPA FDDI
+fxp*	at pci? dev ? function ?	# Intel EtherExpress PRO 10+/100B
+le*	at pci? dev ? function ?	# PCnet-PCI Ethernet
+ne*	at pci? dev ? function ?	# NE2000-compatible Ethernet
+tl*	at pci? dev ? function ?	# ThunderLAN-based Ethernet
+vr*	at pci? dev ? function ?	# VIA Rhine Fast Ethernet
+lmc*	at pci? dev ? function ?	# Lan Media Corp SSI/HSSI/DS3
+
+# MII/PHY support
+exphy*	at mii? phy ?			# 3Com internal PHYs
+icsphy*	at mii? phy ?			# Integrated Circuit Systems ICS1890
+inphy*	at mii? phy ?			# Intel 82555 PHYs
+lxtphy*	at mii? phy ?			# Level One LXT-970 PHYs
+nsphy*	at mii? phy ?			# NS83840 PHYs
+qsphy*	at mii? phy ?			# Quality Semiconductor QS6612 PHYs
+sqphy*	at mii? phy ?			# Seeq 80220/80221/80223 PHYs
+tlphy*	at mii? phy ?			# ThunderLAN PHYs
+ukphy*	at mii? phy ?			# generic unknown PHYs
+
+# USB Controller and Devices
+
+# PCI USB controllers
+uhci*	at pci?				# Universal Host Controller (Intel)
+ohci*	at pci?				# Open Host Controller
+
+# USB bus support
+usb*	at uhci?
+usb*	at ohci?
+
+# USB Hubs
+uhub*	at usb?
+uhub*	at uhub? port ? configuration ? interface ?
+
+# USB Mice
+#ums*	at uhub? port ? configuration ? interface ?
+#wsmouse*	at ums?
+
+# USB Keyboards
+#ukbd*	at uhub? port ? configuration ? interface ?
+#wskbd*	at ukbd? console ?
+
+# USB Generic HID devices
+uhid*	at uhub? port ? configuration ? interface ?
+
+# USB Printer
+#ulpt*	at uhub? port ? configuration ? interface ?
+
+# USB Generic driver
+ugen*	at uhub? port ? configuration ? interface ?
+
+#
+# PC speaker: `spkr'
+#
+#spkr0	at isa?
+
+#
+# Audio drivers: `sb', `wss', `pcm'
+#
+# sb: SoundBlaster16
+# wss: Windows Sound System
+# pcm: PC-9801-86 compatible SoundBoard
+#
+# SoundBlaster16: should use the same irq both sounds and midi
+#
+sb0	at isa? port 0x20d2 irq 5 drq 3		# SoundBlaster16
+mpu*	at isa? port 0x80d2 irq 5 flags 0x30000	# SoundBlaster16 mpu401
+midi*	at sb?					# SoundBlaster8 midi
+audio*	at sb?
+
+# NEC compatible sound boards (Cbus)
+# REMARK: NOT recommended (use necss below)
+
+#pcm*	at isa? port 0xa460 irq 12		# PC-9801-86 SoundBoard
+#wss*	at isa? port 0xf40 irq 12 drq 1		# Windows Sound System (3rd Vd)
+
+# System sound devices or NEC compatible (non PnP) sound boards
+#
+# All machines equipped with FM sound modules are required to define yms also.
+#
+# If you want to use both 3rd vendor sound card and internal wss 
+# at the same time, add flags 0xa0000.
+#
+#necss0	at systm?	flags 0xa0000		# Windows Sound System (NEC)
+necss0	at systm?				# Windows Sound System (NEC)
+wss*	at necss?				# Wss based system
+pcm*	at necss?				# PCM86 based system
+yms*	at necss?				# YM2203, YM2608, YM288
+
+# PnP or Pc cards sound and game devices
+#
+qws*	at pisa?				# PnP QVision WaveStar
+pcm*	at qws?
+yms*	at qws?
+joy*	at qws?
+mpu*	at qws?
+
+# SCP (Roland Sound Canvas)
+#
+scp*	at pisa?
+wss*	at scp?
+mpu*	at scp?
+
+# MPU98	(Midi interface boards)
+#
+# flags are following:
+# 0x00000	default port map (MPU98 compatible)
+# 0x10000	MPU98 compatible port map
+# 0x20000	AT MPU401 port map
+# 0x30000	SB98 port map
+#
+# should specify port and irq correctly
+#mpu*	at isa?	port 0xe0d0 irq 5 
+
+# PnP S-MPU98
+mpu*	at pisa?				# S-MPU98 (PnP)
+
+# Audio/Midi interface connection
+audio*	at pcm?
+audio*	at wss?
+#audio*	at yms?
+midi*	at mpu?
+pmidi*	at mpu?
+
+#
+# Joystick driver: `joy'
+#
+# joy: Coumputer Technica Joystick Interface board JSB-98
+#      with PC/AT compatible joystick.
+#
+
+# Joystick driver. Probe is a little strange; add only if you have one.
+#joy0	at isa? port 0x4d2
+joy*	at pisa?
+
+#
+# Advanced Power Management drivers: `apm'
+#
+apm0	at systm?
+
+#
+# Dummy place holder
+#
+nulldv*	at pisa?
+
+# Miscellaneous Devices
+
+# Planetconnect Satellite receiver driver.
+#satlink0 at isa? port 0x300 drq 1
+
+include	"arch/i386/conf/GENERIC.local"
+
+# Pseudo-Devices
+
+# disk/mass storage pseudo-devices
+pseudo-device	ccd		4	# concatenated/striped disk devices
+#pseudo-device	raid		4	# RAIDframe disk driver
+pseudo-device	md		1	# memory disk device (ramdisk)
+pseudo-device	vnd		4	# disk-like interface to files
+pseudo-device	vpd		4	# virtual partition driver
+
+# sound pseudo-devices
+pseudo-device   sndtm	1		# systm sound timer manager
+
+# network pseudo-devices
+pseudo-device	bpfilter	8	# Berkeley packet filter
+pseudo-device	ipfilter		# IP filter (firewall) and NAT
+pseudo-device	loop			# network loopback
+pseudo-device	ppp		2	# Point-to-Point Protocol
+pseudo-device	sl		2	# Serial Line IP
+pseudo-device	strip		2	# Starmode Radio IP (Metricom)
+pseudo-device	tun		2	# network tunneling over tty
+pseudo-device	gre		2	# generic L3 over IP tunnel
+pseudo-device	ipip		2	# IP Encapsulation within IP (RFC 2003)
+
+# miscellaneous pseudo-devices
+pseudo-device	pty		64	# pseudo-terminals
+pseudo-device	tb		1	# tablet line discipline
+pseudo-device	sequencer	1	# MIDI sequencer
+# rnd works; RND_COM does not on port i386 yet.
+#pseudo-device	rnd			# /dev/random and in-kernel generator
+#options 	RND_COM			# use "com" randomness as well (BROKEN)
+
+# a pseudo device needed for Coda	# also needs CODA (above)
+pseudo-device	vcoda		4	# coda minicache <-> venus comm.

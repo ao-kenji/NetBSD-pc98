@@ -1,0 +1,42 @@
+#!/bin/sh
+#
+#	$NecBSD: comstart,v 1.7 1998/03/14 07:01:23 kmatsuda Exp $
+#	$NetBSD$
+#
+# [NetBSD for NEC PC-98 series]
+#  Copyright (c) 1996, 1997, 1998
+#	NetBSD/pc98 porting staff. All rights reserved.
+#
+
+COMCTRL=/sbin/comctrl
+COMCONF=/etc/com.conf
+
+if [ ! -f $COMCTRL ] 
+then
+	echo $COMCTRL not found
+	exit 1
+fi
+
+if [ -f $COMCONF ] 
+then
+	(
+		while read decl dev flags
+		do
+			if [ X"$decl" = Xdevice ]
+			then
+				if [ ! -n "$dev" ]
+				then
+					continue
+				fi
+
+				if [ ! -n "$flags" ]
+				then
+					continue
+				fi
+
+#				echo "$COMCTRL -f $dev $flags"
+				$COMCTRL -f "$dev" $flags
+			fi
+		done
+	) < $COMCONF
+fi

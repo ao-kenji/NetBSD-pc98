@@ -1,0 +1,398 @@
+/*	$NecBSD: menus.md.ja,v 1.15.2.1 1999/08/15 11:21:50 kmatsuda Exp $	*/
+/*	$NetBSD: menus.md.en,v 1.25.4.1 1999/06/24 22:46:31 cgd Exp $	*/
+
+/*
+ * Copyright 1997 Piermont Information Systems Inc.
+ * All rights reserved.
+ *
+ * Written by Philip A. Nelson for Piermont Information Systems Inc.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
+ * 3. All advertising materials mentioning features or use of this software
+ *    must display the following acknowledgement:
+ *      This product includes software developed for the NetBSD Project by
+ *      Piermont Information Systems Inc.
+ * 4. The name of Piermont Information Systems Inc. may not be used to endorse
+ *    or promote products derived from this software without specific prior
+ *    written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY PIERMONT INFORMATION SYSTEMS INC. ``AS IS''
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED. IN NO EVENT SHALL PIERMONT INFORMATION SYSTEMS INC. BE 
+ * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR 
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF 
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF 
+ * THE POSSIBILITY OF SUCH DAMAGE.
+ *
+ */
+
+/* Menu definitions for sysinst. i386 version, machine dependent. */
+
+menu fullpart, title  "以下の選択肢から選んでください";
+	option "既存のMS-DOS領域の1つを使用",    exit, action  {usefull = 0;};
+	option "ディスク全体を使用", 	    exit, action  {usefull = 1;};
+
+menu wdtype, title  "タイプを選んでください";
+	display action { msg_display (MSG_wdtype, diskdev); };
+	option "IDE", 	exit;
+	option "ESDI", 	exit, action
+		{ msg_display (MSG_sectforward);
+		  process_menu (MENU_yesno);
+		  if (yesno)
+			doessf = "sf:";
+		};
+	option "ST506", exit, action
+		{ msg_display (MSG_sectforward);
+		  process_menu (MENU_yesno);
+		  if (yesno)
+			doessf = "sf:";
+		};
+
+
+menu dlgeom, title "オプションを選んでください";
+	display action { msg_display (MSG_dlgeom, diskdev, dlcyl, dlhead,
+				dlsec, disk->dd_cyl, disk->dd_head,
+				disk->dd_sec);
+			};
+	option "BIOSのジオメトリを使用(通常こちらを選択する)", exit, action {
+			disk->dd_cyl = dlcyl;
+			disk->dd_head = dlhead;
+			disk->dd_sec = dlsec;
+		};
+	option "ディスク本来のジオメトリを使用", exit, action {
+			dlcyl  = disk->dd_cyl;
+			dlhead = disk->dd_head;
+			dlsec  = disk->dd_sec;
+		};
+
+/* XXX: compat 1.3.3 */
+menu nobiosgeom, title  "オプションを選んでください", y=16;
+	display action { msg_display (MSG_nobiosgeom, diskdev);
+			 disp_cur_geom();
+			};
+	option "インストールの中止",
+		action (endwin)  { exit(1); };
+	option "ジオメトリ入力",
+		action  { msg_clear(); set_fdisk_geom(); },
+		next menu confirmbiosgeom;
+
+/* XXX: compat 1.3.3 */
+menu confirmbiosgeom, y=16;
+	display action  {
+		extern int mbr_present;	/* XXX */
+		msg_clear();
+		if (mbr_present)
+			msg_display_add(MSG_confirmbiosgeom);
+		msg_display_add(MSG_badgeom);
+		disp_cur_geom ();
+	};
+	option "インストールを続ける",
+		action  {
+			if (check_geom())
+				return TRUE;
+			msg_display(MSG_reentergeom);
+			set_fdisk_geom();
+		};
+	option "BIOSジオメトリの再入力",
+		action  { msg_clear(); set_fdisk_geom(); };
+
+menu editparttable, title  "パーティションを選択してください", y=14, exit;
+	display action  { msg_display (MSG_editparttable);
+			  disp_cur_part (activepart,-1);
+			};
+	option "パーティション番号の入力",  /*sub menu editpart,*/
+		action
+		{	char buf[40];
+
+			/* ask which partition would be edited */
+			msg_printf_add ("\n");
+			msg_prompt_add (MSG_dospn, NULL, buf, 40);
+			editpart = atoi(buf);
+			if (editpart >= 0 && editpart <= 7) {
+				/* part number is valid */
+				process_menu(MENU_editpart);
+			} else {
+				/* part number is out of range */
+
+				/* force to select partition number again. */
+#ifdef	notyet
+#if 1
+				/*
+				 * Print error message bottom to
+				 * menu window (which will appear)
+				 * without overlapping.
+				 * But these error message stay
+				 * until redraw display (^L etc).
+				 * msg_clear(), msg_display() do not
+				 * clear it.
+				 */
+				msg_printf_add ("\n\n\n\n\n");
+				printf ("%s", msg_string (MSG_dospninv));
+#else
+				/*
+				 * Add error message bottom to
+				 * MSG_editparttable.
+				 * But display action above clears this
+				 * error message...
+				 */
+				msg_display_add(MSG_dospninv);
+#endif
+#endif	/* notyet */
+			}
+		};
+	option "サイズ指定を再選択",
+		action  { reask_sizemult(); }; 
+/*
+menu editparttable, title  "  パーティションを選択してください", exit;
+	display action  { msg_display (MSG_editparttable);
+			  disp_cur_part (activepart,-1);
+			};
+	option "パーティション 0 の編集",  sub menu editpart,
+		action  { editpart = 0; };
+	option "パーティション 1 の編集",  sub menu editpart,
+		action  { editpart = 1; };
+	option "パーティション 2 の編集",  sub menu editpart,
+		action  { editpart = 2; };
+	option "パーティション 3 の編集",  sub menu editpart,
+		action  { editpart = 3; };
+	option "パーティション 4 の編集",  sub menu editpart,
+		action  { editpart = 4; };
+	option "パーティション 5 の編集",  sub menu editpart,
+		action  { editpart = 5; };
+	option "パーティション 6 の編集",  sub menu editpart,
+		action  { editpart = 6; };
+	option "パーティション 7 の編集",  sub menu editpart,
+		action  { editpart = 7; };
+	option "サイズ指定を再選択",
+		action  { reask_sizemult(); }; 
+*/
+
+menu editpart, title  "変更したい項目を選択をしてください";
+	display action { msg_display (MSG_editpart, editpart);
+			   disp_cur_part (activepart,editpart);
+			   msg_printf_add ("\n");
+			};
+	option "種類(使用OSの指定)", sub menu chooseid;
+	option "先頭とサイズ", action 
+		{	char buf[40]; int start, size;
+			msg_prompt_add (MSG_start, NULL, buf, 40);
+			start = NUMSEC(atoi(buf),sizemult,dlcylsize);
+/*>>>
+			if (sizemult > 1 && start < bsec)
+				start = bsec;
+<<<*/
+/*>>>*/
+			if (sizemult > 1 && start < bcylsize)
+				start = bcylsize;
+/*<<<*/
+			msg_prompt_add (MSG_size, NULL, buf, 40);
+			size = NUMSEC(atoi(buf),sizemult,dlcylsize);
+			if (sizemult > 1 && start == bsec)
+/*>>>
+				size -= bsec;
+<<<*/
+/*>>>*/
+				size -= bcylsize;
+/*<<<*/
+			if (start + size > bsize)
+				size = bsize - start;
+			if (size < 0) {
+				size = 0;
+				start = 0;
+			}
+			part[editpart][START] = start;
+			part[editpart][SIZE] = size;
+			part[editpart][SET] = 1;
+		};
+	option "アクティブ設定", action { activepart = editpart; };
+	option "この設定で次に進む", exit;
+
+menu chooseid, title  "  パーティション種別? ";
+	option "NetBSD", 	exit,	action
+	{
+/*>>>
+		part[editpart][ID] = 165;
+<<<*/
+/*>>>*/
+		part[editpart][ID] = SYSID_NETBSD;
+/*<<<*/
+		part[editpart][SET] = 1;
+	};
+	option "DOS 32MB 未満",	exit,	action
+	{
+/*>>>
+		part[editpart][ID] = 4;
+<<<*/
+/*>>>*/
+		part[editpart][ID] = SYSID_MSDOS;	/* dubious ? */
+/*<<<*/
+		part[editpart][SET] = 1;
+	};
+	option "DOS 32MB 超",	exit,	action
+	{
+/*>>>
+		part[editpart][ID] = 6;
+<<<*/
+/*>>>*/
+		part[editpart][ID] = SYSID_MSDOS;
+/*<<<*/
+		part[editpart][SET] = 1;
+	};
+	option "未使用",	exit,	action
+	{
+/*>>>
+		part[editpart][ID] = 0;
+<<<*/
+/*>>>*/
+		part[editpart][ID] = 0;
+/*<<<*/
+		part[editpart][SET] = 1;
+	};
+
+menu cyl1024;
+	display action {
+		msg_display(MSG_cyl1024);
+	};
+	option "ディスクラベルおよび MBR の再編集", exit, action
+	{
+		/* XXX UGH */
+		extern int c1024_resp;
+
+		c1024_resp = 1;
+	};
+	option "ディスクラベルの再編集", exit, action
+	{
+		extern int c1024_resp;
+
+		c1024_resp = 2;
+	};
+	option "現在の値を利用",	exit, action
+	{	
+		extern int c1024_resp;
+
+		c1024_resp = 3;
+	};
+
+menu editfsparts, y=12, exit;
+	display action  {
+			ask_sizemult();
+			msg_display(MSG_fspart, multname);
+			disp_cur_fspart(-1, 1);
+		};
+	option "a の変更", action { editpart = A;}, sub menu edfspart;
+	option "b の変更", action { editpart = B;}, sub menu edfspart;
+	option "NetBSD パーティション - 変更不可", action {};
+	option "ディスク全体 - 変更不可", action {};
+	option "e の変更", action { editpart = E;}, sub menu edfspart;
+	option "f の変更", action { editpart = F;}, sub menu edfspart;
+	option "g の変更", action { editpart = G;}, sub menu edfspart;
+	option "h の変更", action { editpart = H;}, sub menu edfspart;
+	option "新しい領域サイズの設定", action { reask_sizemult(); };
+ 
+
+menu md_distcustom, x=30, y=3, exit, title " インストールしたいものを選択してください";
+	display action { show_cur_distsets (); };
+	option  "コンパイラツール",		 action { toggle_getit (3); };
+	option  "ゲーム", 			 action { toggle_getit (4); };
+	option  "オンラインマニュアル",		 action { toggle_getit (5); };
+	option  "その他",	 		 action { toggle_getit (6); };
+	option  "テキスト処理ツール",		 action { toggle_getit (7); };
+	option  "X11 基本およびクライアント",	 action { toggle_getit (8); };
+	option  "X11 フォント群",		 action { toggle_getit (9); };
+	option  "X11 サーバー",			 action { toggle_getit (10); };
+	option  "X 寄贈クライアント",		 action { toggle_getit (11); };
+	option  "X11 プログラミング",		 action { toggle_getit (12); };
+
+/* XXX: compat 1.3.3 */
+menu scsigeom1, title "オプションを選んでください";
+	display action {
+		msg_display (MSG_scsigeom1, diskdev, disk->dd_totsec,
+			dlcyl, dlhead, dlsec, dlcyl*dlhead*dlsec, 
+			disk->dd_cyl, disk->dd_head, disk->dd_sec,
+			disk->dd_cyl*disk->dd_head*disk->dd_sec);
+	};
+	option "BIOSのジオメトリを使用(通常こちらを選択)", exit, action {
+			disk->dd_cyl = dlcyl;
+			disk->dd_head = dlhead;
+			disk->dd_sec = dlsec;
+	};
+	option "ディスク本来のジオメトリを使用", exit, action {
+			dlcyl  = disk->dd_cyl;
+			dlhead = disk->dd_head;
+			dlsec  = disk->dd_sec;
+		};
+	option "ジオメトリを選んでください", action { scsi_fake ();}, exit;
+/*
+menu scsigeom1, title "  Choose an option";
+	display action {
+		msg_display (MSG_scsigeom1, diskdev, disk->dd_totsec,
+			dlcyl, dlhead, dlsec, dlcyl*dlhead*dlsec, 
+			disk->dd_cyl, disk->dd_head, disk->dd_sec,
+			disk->dd_cyl*disk->dd_head*disk->dd_sec);
+	};
+	option "Use real geometry", exit, action {
+			dlcyl  = disk->dd_cyl;
+			dlhead = disk->dd_head;
+			dlsec  = disk->dd_sec;
+		};
+	option "Use disklabel geometry", exit, action {
+			disk->dd_cyl = dlcyl;
+			disk->dd_head = dlhead;
+			disk->dd_sec = dlsec;
+		};
+	option "Choose a fake geometry", action { scsi_fake ();}, exit;
+*/
+
+/* XXX: compat 1.3.3 */
+menu scsigeom2, title "オプションを選んでください";
+	display action {
+		msg_display (MSG_scsigeom2, diskdev, disk->dd_totsec,
+			disk->dd_cyl, disk->dd_head, disk->dd_sec,
+			disk->dd_cyl*disk->dd_head*disk->dd_sec);
+	};
+	option "ディスク本来のジオメトリを使用", exit, action {
+			dlcyl  = disk->dd_cyl;
+			dlhead = disk->dd_head;
+			dlsec  = disk->dd_sec;
+		};
+	option "ジオメトリを選んでください", action { scsi_fake ();}, exit;
+/*
+menu scsigeom2, title "  Choose an option";
+	display action {
+		msg_display (MSG_scsigeom2, diskdev, disk->dd_totsec,
+			disk->dd_cyl, disk->dd_head, disk->dd_sec,
+			disk->dd_cyl*disk->dd_head*disk->dd_sec);
+	option "Use real geometry", exit, action {
+			dlcyl  = disk->dd_cyl;
+			dlhead = disk->dd_head;
+			dlsec  = disk->dd_sec;
+		};
+	option "Choose a fake geometry", action { scsi_fake ();}, exit;
+*/
+
+/* XXX: compat 1.3.3 */
+menu scsi_fake, title "ジオメトリを選んでください";
+	option "ジオメトリ 1", action { fake_sel = 0; }, exit;
+	option "ジオメトリ 2", action { fake_sel = 1; }, exit;
+	option "ジオメトリ 3", action { fake_sel = 2; }, exit;
+	option "ジオメトリ 4", action { fake_sel = 3; }, exit;
+	option "ジオメトリ 5", action { fake_sel = 4; }, exit;
+/*
+menu scsi_fake, title "  Choose a geometry";
+	option "Geometry 1", action { fake_sel = 0; }, exit;
+	option "Geometry 2", action { fake_sel = 1; }, exit;
+	option "Geometry 3", action { fake_sel = 2; }, exit;
+	option "Geometry 4", action { fake_sel = 3; }, exit;
+	option "Geometry 5", action { fake_sel = 4; }, exit;
+*/

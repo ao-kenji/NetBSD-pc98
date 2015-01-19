@@ -1,0 +1,50 @@
+$NecBSD: README,v 1.3.10.1 1999/08/15 17:29:04 honda Exp $
+$NetBSD$
+
+DISKGENプログラム (CURSES version):
+
+御気軽に、fd, vnd, sd, wdにNetBSD領域をsetupするプログラムです。
+
+使い方:
+	0) 必ず、TERM変数が設定されている事。
+
+	1) DOS partitionがある場合。
+		あらかじめ、dospartで、使用するdos partitionを選択
+		しておきます　(fdiskでもOK)。
+		そのあと、diskgenを実行します。
+
+	2) DOS partitionがない場合。(disk全体を使用）
+		いきなり、diskgenを実行します。
+
+起動方法：
+	diskgen target
+
+	targetはfd0, vnd0, wd0, sd0 のように指定します。
+
+使い方：
+	*) partition alphabet(a,b,e,f,g,h)を打ち込むと、サイズを聞いて来ます。
+	サイズを0に設定すると、未使用になります。
+	*を指定すると、残り全てを割り当てます。
+	何度も変更可能です。
+
+	開始、終了cylinderは、自動計算で行われます。
+	b partitionはswapと仮定されています。
+
+	*) label cmd
+	disklabelを書き込み、newfsを実行します。
+
+	*) print cmd
+	現在の設定のfull disklabelを表示します。
+
+	*) unit cmd
+	単位をcylinder もしくは MB に変更します。トグルします。
+
+	*) quit
+	これは良いですね。
+
+	label cmd以外は、頭文字だけでOKです。
+
+補足:   diskgen -s target で、DOS partitions table 自体をedit出来るように
+	機能追加しました(というか、もともと隠し機能だったのですが。。)
+
+	Naofumi Honda

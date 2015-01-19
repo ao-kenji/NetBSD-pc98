@@ -1,0 +1,465 @@
+#	$NecBSD: DORONPA,v 3.19.2.6 1999/09/20 02:04:10 kmatsuda Exp $
+#	$NetBSD$
+#
+#	DORONPA -- kmatsuda's PC-9801NL/R
+#
+
+include "arch/i386/conf/std.i386"
+
+maxusers	32		# estimated number of users
+
+# CPU support.  At least one is REQUIRED.
+options 	I386_CPU
+options 	I486_CPU
+#options 	I586_CPU
+#options 	I686_CPU
+
+# CPU-related options.
+options 	MATH_EMULATE	# floating point emulation
+options 	VM86		# virtual 8086 emulation
+options 	USER_LDT	# user-settable LDT; used by WINE
+# eliminate delay no-ops in I/O; recommended on all but very old machines
+#options 	DUMMY_NOPS
+
+# Misc. i386-specific options
+#options 	XSERVER		# X server support in console drivers
+
+# This option allows you to force a serial console at the specified
+# I/O address.   see console(4) for details.
+#options 	"CONSDEVNAME=\"com\""
+
+# The following options override the memory sizes passed in from the boot
+# block.  Use them *only* if the boot block is unable to determine the correct
+# values.  Note that the BIOS may *correctly* report less than 640k of base
+# memory if the extended BIOS data area is located at the top of base memory
+# (as is the case on most recent systems).
+#options 	FEXTMEM_SIZE=...	# size of extended memory below 16M
+#options 	SEXTMEM_SIZE=...	# size of extended memory >= 16M
+
+# Standard system options
+
+options 	UCONSOLE	# users can use TIOCCONS (for xconsole)
+#options 	INSECURE	# disable kernel security levels
+
+options 	RTC_OFFSET=-540	# hardware clock is this many mins. west of GMT
+#options 	NTP		# NTP phase/frequency locked loop
+
+options 	KTRACE		# system call tracing via ktrace(1)
+
+options 	SYSVMSG		# System V-like message queues
+options 	SYSVSEM		# System V-like semaphores
+options 	SYSVSHM		# System V-like memory sharing
+#options 	SHMMAXPGS=1024	# 1024 pages is the default
+
+options 	LKM		# loadable kernel modules
+
+# Diagnostic/debugging support options
+options 	DIAGNOSTIC	# cheap kernel consistency checks
+#options 	DEBUG		# expensive debugging checks/support
+options 	KMEMSTATS	# kernel memory statistics (vmstat -m)
+options 	DDB		# in-kernel debugger
+options 	DDB_HISTORY_SIZE=1024
+#options 	KGDB		# remote debugger
+#options 	"KGDB_DEVNAME=\"com\"",KGDBADDR=0x3f8,KGDBRATE=9600
+#makeoptions	DEBUG="-g"	# compile full symbol table
+
+# Compatibility options
+options 	COMPAT_NOMID	# compatibility with 386BSD, BSDI, NetBSD 0.8,
+options 	COMPAT_09	# NetBSD 0.9,
+options 	COMPAT_10	# NetBSD 1.0,
+options 	COMPAT_11	# NetBSD 1.1,
+options 	COMPAT_12	# NetBSD 1.2,
+options 	COMPAT_13	# NetBSD 1.3,
+options 	COMPAT_43	# and 4.3BSD
+
+#options 	COMPAT_SVR4	# binary compatibility with SVR4
+#options 	COMPAT_IBCS2	# binary compatibility with SCO and ISC
+options 	COMPAT_LINUX	# binary compatibility with Linux
+options 	COMPAT_FREEBSD	# binary compatibility with FreeBSD
+
+# Executable format options
+options 	EXEC_ELF32	# 32-bit ELF executables (SVR4, Linux)
+
+# File systems
+file-system 	FFS		# UFS
+file-system 	EXT2FS		# second extended file system (linux)
+file-system 	LFS		# log-structured file system
+file-system 	MFS		# memory file system
+file-system 	NFS		# Network File System client
+file-system 	CD9660		# ISO 9660 + Rock Ridge file system
+file-system 	MSDOSFS		# MS-DOS file system
+file-system 	FDESC		# /dev/fd
+file-system 	KERNFS		# /kern
+file-system 	NULLFS		# loopback file system
+file-system 	PORTAL		# portal filesystem (still experimental)
+file-system 	PROCFS		# /proc
+file-system 	UMAPFS		# NULLFS + uid and gid remapping
+file-system 	UNION		# union file system
+
+# File system options
+#options 	QUOTA		# UFS quotas
+options 	NFSSERVER	# Network File System server
+#options 	EXT2FS_SYSTEM_FLAGS # makes ext2fs file flags (append and
+				# immutable) behave as system flags.
+
+# Networking options
+#options 	GATEWAY		# packet forwarding
+options 	INET		# IP + ICMP + TCP + UDP
+#options 	MROUTING	# IP multicast routing
+#options 	NS		# XNS
+#options 	NSIP		# XNS tunneling over IP
+#options 	ISO,TPIP	# OSI
+#options 	EON		# OSI tunneling over IP
+#options 	CCITT,LLC,HDLC	# X.25
+#options 	NETATALK	# AppleTalk networking protocols
+#options 	PPP_BSDCOMP	# BSD-Compress compression support for PPP
+#options 	PPP_DEFLATE	# Deflate compression support for PPP
+#options 	PPP_FILTER	# Active filter support for PPP (requires bpf)
+#options 	PFIL_HOOKS	# pfil(9) packet filter hooks
+#options 	IPFILTER_LOG	# ipmon(8) log support
+
+# Compatibility with 4.2BSD implementation of TCP/IP.  Not recommended.
+#options 	TCP_COMPAT_42
+
+# These options enable verbose messages for several subsystems.
+# Warning, these may compile large string tables into the kernel!
+#options 	PCIVERBOSE	# verbose PCI device autoconfig messages
+options 	SCSIVERBOSE	# human readable SCSI error messages
+
+# Kernel root file system and dump configuration.
+config		netbsd	root on ? type ?
+#config		netbsd	root on wd0h type ffs
+#config		netbsd	root on sd0a type ffs
+#config		netbsd	root on ? type nfs
+
+#
+# Device configuration
+#
+
+options 	CONFIG_DEVICES
+options 	KTHREAD_VM86BIOSD	# Vm86bios tasks
+options 	APM_AUTO_START		# APM automatic start
+options 	PCSD_AUTO_START		# PCSD automatic start
+options 	IPPCTRL_AUTO_START	# IPPCTRL onetime attach
+
+######################################################################
+# HARDWARE DEVICE CONFIGURATION
+
+#options 	CYRIX_5X86_PCR0=0x81	# enable some features for Cyrix 5x86
+
+mainbus0 at root
+
+systm0	at mainbus0		# system devices
+
+isa0	at mainbus0		# isa bus with fixed resources
+
+#options 	AUTO_EOI_1	# enable automatic EOI for master 8259AC
+#options 	AUTO_EOI_2	# enable automatic EOI for slave 8259AC
+#options 	REORDER_IRQ	# pri order irq; PC-98 internal com first
+
+#pci0	at mainbus0 bus ?
+
+#ppb*	at pci? dev ? function ?	# PCI-PCI bridges
+#pci*	at ppb? bus ?
+
+#options 	PCI_BUGGY_SUBCLASS=0xe1
+
+#options 	 PCCSHW_IRQMASK=0x1028
+
+options 	PCCS_DEBUG
+#options 	_PCCS_DEBUG
+#options 	_NEPC_DEBUG
+nepc0	at systm?
+pccs*	at nepc0
+
+#gipc*	at systm?
+#gipc*	at pisa?
+
+#tipc*	at pci?  dev ? function ?
+#ppcb*	at tipc? bus ? function ?
+#gipc*	at ppcb?
+
+#pccs*	at gipc?
+slot*	at pccs?
+
+pisa*	at slot?
+
+# 32 bits bus connection (reserved)
+#cardbus* at slot?
+
+#ippi0	at systm?
+#pisa*	at ippi0
+#options 	 IPP_IRQMASK=0x1028
+
+npx0	at isa? port 0x0f8 irq 14	# math coprocessor
+
+#pc0	at isa? port 0x041 irq 1	# generic PC console device
+
+#options 	FAIL_PROBE_KBD	# if fails to probe kerboard.
+#options 	REVERSE_CRT	# reverse crt
+options 	LINEIS25	# console line is 25
+options 	SCREEN_SAVER	# console screen saver; recommended
+				#  because we can be off later
+options 	VSC_KMESG	#
+options 	KBD_EXT		# kbd extensions; pcvt and syscons compat
+				#  needed in use of X
+options 	FONT_LOAD	# font loading facility
+
+#options 	EXTERNAL_WINDOW_BOARDS	# panic escape in X;
+				# you must specify your graphic board
+#options 	PW		# with graphic board PW801/805i (C bus)
+#options 	PWLB		# with graphic board PW (local bus)
+#options 	PCSKB		# with graphic board EPSON PCSKB
+#options 	PCHKB		# with graphic board EPSON PCHKB
+#options 	PCSKB4		# with graphic board EPSON PCSKB4
+#options 	NECWAB		# with graphic board NEC WAB using S3 928
+				# 		     NEC WAB using S3 864
+#options 	GANB		# with graphic board IO DATA GA98-NB
+#options 	WAB		# with graphic board MELCO WAB-2000
+#options 	WAP		# with graphic board MELCO WAP-2000
+#
+kbdc0	at isa? port 0x041 irq 1 flags 0x00000000
+vsc0	at kbdc0
+#vc0	at vsc? drive 0 iosiz 0x8000 flags 0x00020005
+#vc1	at vsc? drive 1 iosiz 0x8000 flags 0x00020001
+#vc2	at vsc? drive 2 iosiz 0x8000 flags 0x00020001
+#vc3	at vsc? drive 3 iosiz 0x8000 flags 0x00020001
+#vc4	at vsc? drive 4 iosiz 0x8000 flags 0x00020001
+vc0	at vsc? drive 0 iosiz 0x8000 flags 0x00000025
+vc1	at vsc? drive 1 iosiz 0x8000 flags 0x00000001
+vc2	at vsc? drive 2 iosiz 0x8000 flags 0x00000001
+vc3	at vsc? drive 3 iosiz 0x8000 flags 0x00000001
+vc4	at vsc? drive 4 iosiz 0x8000 flags 0x00000001
+vc5	at vsc? drive 5 iosiz 0x8000 flags 0x00000001
+vc6	at vsc? drive 6 iosiz 0x8000 flags 0x00000001
+vc7	at vsc? drive 7 iosiz 0x8000 flags 0x00000001
+vc8	at vsc? drive 8 iosiz 0x8000 flags 0x00000001
+vc9	at vsc? drive 9 iosiz 0x8000 flags 0x00000001
+
+#options 	SERI_B38400		# default 38400
+
+ser*	at isa? port 0x030  irq 4  flags 0x00000000	# PC-98 internal
+#ser*	at isa? port 0x238  irq 5  flags 0x00120000	# PC-98 second com
+#ser*	at isa? port 0x0b0  irq 3  flags 0x00010000	# PC-9861K/9801-101 ext1
+#ser*	at isa? port 0x0b2  irq 12 flags 0x00020000	# PC-9861K/9801-101 ext2
+#ser*	at isa? port 0x0b0  irq 3  flags 0x00030000	# IND-SP/SS ext1
+#ser*	at isa? port 0x0b2  irq 12 flags 0x00040000	# IND-SS ext2
+#ser*	at isa? port 0x64d0 irq 3  flags 0x00100000	# RSA98 ext1/ext2
+#ser*	at isa? port 0xe0   irq 3  flags 0x00140000	# MC-RS98
+#ser*	at isa? port 0x10b0 irq 3  flags 0x00150000	# RSB2000 ext1/ext2
+#ser*	at isa? port 0x10b0 irq 6  flags 0x00160000	# RSB386 ext1
+#ser*	at isa? port 0x10b1 irq 10 flags 0x00160000	# RSB386 ext2
+#ser*   at isa? port 0x18b0 irq 5  flags 0x00190000     # Hayes ESP98
+ser*	at pisa? 					# PCMCIA card (modem)
+
+#serf*	at ser? slave?
+#sertty*	at serf?
+
+seri*	at ser? slave?
+sertty* at seri?
+
+#sera*	at ser? slave?
+#sertty* at sera?
+
+#serb*	at ser? slave?
+#sertty* at serb?
+
+sern*	at ser? slave?
+sertty* at sern?
+
+#serh*	at ser? slave?
+#sertty* at serh?
+
+ttycom* at sertty?
+ttycua* at sertty?
+
+lpt0	at isa? port 0x040 irq 8	# PC-98 internal (traditional mode)
+#lpt0	at isa? port 0x140 irq 14	# PC-98 internal (bidirectional mode)
+#lpt1	at isa? port 0x540 irq 12	# IND-SPT printer port (bidirectional?)
+
+olms0	at isa? port 0x7fd9 irq 13	# PC-98 bus mouse based on lms
+
+ncv*	at pisa? 
+scsibus* at ncv?
+
+stg*	at pisa?
+scsibus* at stg?
+
+nsp*	at pisa?
+scsibus* at nsp?
+
+#aic*	at isa? port 0x1840 irq 5 flags 0x10000	# NEC PC-9801-100
+aic*	at pisa?
+scsibus* at aic?
+
+#spc*	at pisa?
+#scsibus* at spc?
+
+#ahc*	at pci? dev ? function ?	# Adaptec 2940 SCSI controllers
+#scsibus* at ahc?
+
+#options 	NCR_IOMAPPED
+#ncr*	at pci? dev ? function ?	# NCR 538XX SCSI controllers
+#scsibus* at ncr?
+
+#isp*	at pci? dev ? function ?	# Qlogic ISP [12]0x0 SCSI/FibreChannel
+#scsibus* at isp?
+
+#sd0	at scsibus? target 0 lun 0 flags 0x320c0304	# SCSI disk drives
+#sd1	at scsibus? target 1 lun 0 flags 0x320c0304	# SCSI disk drives
+#sd2	at scsibus? target 2 lun 0 flags 0x320c0304	# SCSI disk drives
+#sd3	at scsibus? target 3 lun 0 flags 0x320c0304	# SCSI disk drives
+#sd4	at scsibus? target 4 lun 0 flags 0x320c0304	# SCSI disk drives
+#sd5	at scsibus? target 5 lun 0 flags 0x320c0304	# SCSI disk drives
+#sd6	at scsibus? target 6 lun 0 flags 0x320c0304	# SCSI disk drives
+#st*	at scsibus? target ? lun 0 flags 0x320c0304	# SCSI tape drives
+#cd*	at scsibus? target ? lun ? flags 0x320c0304	# SCSI CD-ROM drives
+sd*	at scsibus? target ? lun 0 flags 0xffff0003	# SCSI fixed disks
+st*	at scsibus? target ? lun 0 flags 0xffff0003	# SCSI tape drives
+cd*	at scsibus? target ? lun ? flags 0xffff0003	# SCSI CD-ROM drives
+
+fdc0	at isa? port 0x090 irq 11 drq 2
+#fd*	at fdc? drive ?
+fd0	at fdc? drive 0
+
+wdc0	at isa? port 0x640 irq 9
+wdc*	at pisa?
+
+atabus*   at wdc? bank ?
+wd*	  at atabus? drive ?
+atapibus* at atabus?
+cd*	  at atapibus? drive ?
+sd*	  at atapibus? drive ?
+
+#ep*	at isa? port 0x40d0 irq 3
+ep*	at pisa?
+
+#ne*	at isa? port 0x00d8 irq 6  flags 0x100000	# LA-98-T
+#ne*	at isa? port 0x00d8 irq 6  flags 0x200000	# SMART COM 98, LANEED
+#ne*	at isa? port 0x00d0 irq 6  flags 0x300000	# EGY-98
+#ne*	at isa? port 0x00d0 irq 6  flags 0x400000	# LGY-98, IND-SP/SS
+#ne*	at isa? port 0x56d0 irq 6  flags 0x500000	# ICM IF-2766/2771
+ne*	at pisa?					# PCMCIA ether card
+
+#sic*	at isa? port 0x00d0 irq 6  iomem 0xc0000 flags 0x100000	# SIC-98
+sic*	at pisa?
+
+#we0	at isa? port 0x10d0 irq 6  iomem 0xc8000 iosiz 8192
+
+#mbe*	at isa? port 0x01d4 irq 3 flags 0x10000		# Allied Telesis RE100x
+mbe*	at pisa?					# PCMCIA ether card
+
+#ix*	at isa? port 0x800 irq 6 flags 0x110000		# Intel EtherExpress 98
+
+#nele0	at isa? port 0x320 irq 10 drq 7		# NE2100
+#le*	at nele?
+#bicc0	at isa? port 0x320 irq 10 drq 7		# BICC IsoLan
+#le*	at bicc?
+#cnle*	at isa? port 0x03d0 irq 6 drq 1		# CONTEC C-NET(98)S-12
+#le*	at cnle?
+
+#options 	FES_DEBUG=3
+#fes*	at isa? port 0x0d0 irq 3 flags 0x10000		# AngeLan AL-98
+
+sm*	at pisa?
+
+options 	SNDEBUG
+sn*	at pisa?
+
+#de*	at pci? dev ? function ?	# DEC 21x4x-based Ethernet
+#en*	at pci? dev ? function ?	# ENI/Adaptec ATM
+#ep*	at pci? dev ? function ?	# 3Com 3c59x/3c90x Ethernet
+#fpa*	at pci? dev ? function ?	# DEC DEFPA FDDI
+#fxp*	at pci? dev ? function ?	# Intel EtherExpress PRO 10+/100B
+#le*	at pci? dev ? function ?	# PCnet-PCI Ethernet
+#tl*	at pci? dev ? function ?	# ThunderLAN-based Ethernet
+
+# MII/PHY support
+exphy*	at mii? phy ?			# 3Com internal PHYs
+icsphy*	at mii? phy ?			# Integrated Circuit Systems ICS1890
+inphy*	at mii? phy ?			# Intel 82555 PHYs
+lxtphy*	at mii? phy ?			# Level One LXT-970 PHYs
+nsphy*	at mii? phy ?			# NS83840 PHYs
+qsphy*	at mii? phy ?			# Quality Semiconductor QS6612 PHYs
+sqphy*	at mii? phy ?			# Seeq 80220/80221/80223 PHYs
+tlphy*	at mii? phy ?			# ThunderLAN PHYs
+ukphy*	at mii? phy ?			# generic unknown PHYs
+
+
+#133->141 NOT YET#spkr0	at isa?
+#133->141 NOT YET#
+#sb0	at isa? port 0x20d2 irq 5 drq 3		# SoundBlaster16
+#mpu*	at isa? port 0x80d2 irq 5 flags 0x30000	# SoundBlaster16 mpu401 map
+#midi*	at sb?					# SoundBlaster8 midi
+#audio*	at sb?
+#pmidi*	at mpu?
+
+#pcm*	at isa? port 0xa460 irq 12		# PC-9801-86 SoundBoard
+#wss*	at isa? port 0xf40 irq 12 drq 1		# Windows Sound System (3rd Vd)
+
+#necss0	at systm?	flags 0xa0000		# Windows Sound System (NEC)
+#necss0	at systm?				# Windows Sound System (NEC)
+#wss*	at necss?				# Wss based system
+#pcm*	at necss?				# PCM86 based system
+#yms*	at necss?				# YM2203, YM2608, YM288
+
+qws*	at pisa?				# PnP QVision WaveStar
+pcm*	at qws?
+yms*	at qws?
+joy*	at qws?
+mpu*	at qws?
+
+#scp*	at pisa?
+#wss*	at scp?
+#mpu*	at scp?
+
+#mpu*	at isa?	port 0xe0d0 irq 5 
+
+#mpu*	at pisa?				# S-MPU98 (PnP)
+
+audio*	at pcm?
+#audio*	at wss?
+audio*	at yms?
+midi*	at mpu?
+
+#joy0	at isa? port 0x4d2
+joy*	at pisa?
+
+apm0	at systm?
+
+nulldv*	at pisa?
+
+
+# Miscellaneous Devices
+
+# Planetconnect Satellite receiver driver.
+#satlink0 at isa? port 0x300 drq 1
+
+include	"arch/i386/conf/GENERIC.local"
+
+# Pseudo-Devices
+
+# disk/mass storage pseudo-devices
+pseudo-device	ccd		4	# concatenated/striped disk devices
+pseudo-device	md		1	# memory disk device (ramdisk)
+pseudo-device	vnd		4	# disk-like interface to files
+pseudo-device	vpd		4	# virtual partition driver
+
+# sound pseudo-devices
+pseudo-device   sndtm	1		# systm sound timer manager
+
+# network pseudo-devices
+pseudo-device	bpfilter	8	# Berkeley packet filter
+pseudo-device	ipfilter		# IP filter (firewall) and NAT
+pseudo-device	loop			# network loopback
+pseudo-device	ppp		2	# Point-to-Point Protocol
+#pseudo-device	sl		2	# Serial Line IP
+#pseudo-device	strip		2	# Starmode Radio IP (Metricom)
+pseudo-device	tun		2	# network tunneling over tty
+
+# miscellaneous pseudo-devices
+pseudo-device	pty		64	# pseudo-terminals
+pseudo-device	tb		1	# tablet line discipline
+# rnd works; RND_COM does not on port i386 yet.
+pseudo-device	rnd			# /dev/random and in-kernel generator
+#options 	RND_COM			# use "com" randomness as well (BROKEN)

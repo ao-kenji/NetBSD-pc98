@@ -1,0 +1,10 @@
+./etc/fstab.sd
+./etc/fstab.wd
+./etc/ld.so.conf
+./etc/com.conf
+./etc/comstart
+./etc/etherstart
+./etc/ipp.conf
+./etc/modemstart
+./etc/pcmcia.conf
+./etc/bootflags.conf

@@ -1,0 +1,404 @@
+#	$NecBSD: COMMON,v 1.179.2.5 1999/08/22 19:46:11 honda Exp $
+#	$NetBSD$
+#
+#	COMMON -- PC-9821 (Ra, V166, Xa, Xs, Nm, and Na)
+#
+#	The points of the COMMON config file are:
+#	1) support all my machines at the same time!
+#	2) devices * allocations (see ser and ed)
+#	3) fat kernel (Ghaaa..)
+#
+#	My basic policy for old isa devices:
+#	scsi 	irq 3
+#	rs232c	irq 5
+#	ether	irq 6
+#
+
+include		"arch/i386/conf/std.i386"
+
+options		I386_CPU
+options		I486_CPU
+options		I586_CPU
+options		I686_CPU
+#options	MATH_EMULATE	# floating point emulation
+options 	VM86		# Virtual 8086 emulation
+options		KTHREAD_VM86BIOSD	# Vm86bios tasks
+
+#options	DUMMY_NOPS	# speed hack; recommanded
+options		XSERVER,UCONSOLE
+
+# VM check (busy objects test)
+#options	FEXTMEM_SIZE= 8192
+#options	SEXTMEM_SIZE= 0
+
+#options	AUTO_EOI_1
+#options 	AUTO_EOI_2
+#options	REORDER_IRQ	#
+
+maxusers	32		# estimated number of users
+options 	RTC_OFFSET=-540	# hardware clock is this many mins. west of GMT
+
+options		DDB		# in-kernel debugger
+#makeoptions	DEBUG="-g"	# compile full symbol table
+options		DIAGNOSTIC	# internally consistency checks
+options		KTRACE		# system call tracing, a la ktrace(1)
+#options		KGDB
+
+options		SYSVMSG		# System V-like message queues
+options		SYSVSEM		# System V-like semaphores
+options		SYSVSHM		# System V-like memory sharing
+#options	SHMMAXPGS=1024	# 1024 pages is the default
+
+options		COMPAT_NOMID	# compatibility with 386BSD, BSDI, NetBSD 0.8,
+options		COMPAT_09	# NetBSD 0.9,
+options		COMPAT_10	# NetBSD 1.0,
+options		COMPAT_11	# NetBSD 1.1,
+options 	COMPAT_12	# NetBSD 1.2,
+options 	COMPAT_13	# NetBSD 1.2,
+options		COMPAT_43	# and 4.3BSD
+options		TCP_COMPAT_42	# TCP bug compatibility with 4.2BSD
+
+#options	COMPAT_SVR4	# binary compatibility with SVR4
+#options	COMPAT_IBCS2	# binary compatibility with SCO and ISC
+options		COMPAT_LINUX	# binary compatibility with Linux
+options		COMPAT_FREEBSD	# binary compatibility with FreeBSD
+
+options 	EXEC_ELF32	# 32-bit ELF executables (SVR4, Linux)
+
+options		USER_LDT	# user-settable LDT; used by WINE
+options		LKM		# loadable kernel modules
+
+file-system 	FFS		# UFS
+file-system 	EXT2FS		# second extended file system (linux)
+#file-system 	LFS		# log-structured file system
+file-system 	MFS		# memory file system
+file-system 	NFS		# Network File System client
+file-system 	CD9660		# ISO 9660 + Rock Ridge file system
+file-system 	MSDOSFS		# MS-DOS file system
+file-system 	FDESC		# /dev/fd
+file-system 	KERNFS		# /kern
+file-system 	NULLFS		# loopback file system
+file-system 	PORTAL		# portal filesystem (still experimental)
+file-system 	PROCFS		# /proc
+file-system 	UMAPFS		# NULLFS + uid and gid remapping
+file-system 	UNION		# union file system
+file-system	CODA		# Coda File System; also needs vcoda (below)
+
+options		QUOTA		# UFS quotas
+options		NFSSERVER	# Network File System server
+#options 	EXT2FS_SYSTEM_FLAGS # makes ext2fs file flags (append and
+options 	NFS_BOOT_BOOTP,NFS_BOOT_BOOTPARAM
+
+#options	GATEWAY		# packet forwarding
+options		INET		# IP + ICMP + TCP + UDP
+#options	NS		# XNS
+#options	ISO,TPIP	# OSI
+#options	EON		# OSI tunneling over IP
+#options	CCITT,LLC,HDLC	# X.25
+options		NETATALK	# apple talk
+options 	PFIL_HOOKS	# pfil(9) packet filter hooks
+
+config		netbsd	root on ? type ?
+options		CONFIG_DEVICES
+options		APM_AUTO_START		# APM automatic start
+options		PCSD_AUTO_START		# PCSD automatic start
+options		IPPCTRL_AUTO_START	# IPPCTRL onetime attach
+
+######################################################################
+# CPU & BUSES	
+######################################################################
+mainbus0 at root
+
+isa0	at mainbus0
+
+systm0	at mainbus0
+
+# PCI BUS
+options	PCIVERBOSE
+pci0	at mainbus0
+
+its*	at pci? dev ? function ?
+
+######################################################################
+# Pc card adapter
+######################################################################
+#options PCCSHW_IRQMASK=0x1028
+
+nepc0	at systm?
+pccs*	at nepc0
+
+tipc*	at pci? dev ? function ?	# PCI legacy mode adapter
+gipc*	at systm? 			# pc card adapter (internal)
+gipc*	at pisa?			# PnP pc card adapter board
+#ppcb*	at tipc? bus ? function ?
+#gipc*	at ppcb?
+
+pccs*	at gipc?
+slot*	at pccs?
+pisa*	at slot?
+
+#######################################################################
+# PnP
+######################################################################
+options IPP_IRQMASK=-1
+ippi0 at systm?
+pisa*	at ippi0
+
+######################################################################
+# NULL
+######################################################################
+#nulldv* at isa?	irq 3 iomem 0xc0000 iosiz 0x2000 port 0x400
+nulldv* at pisa?
+
+######################################################################
+# NPX
+######################################################################
+npx0	at isa? port 0x0f8 irq 14	# math coprocessor
+
+######################################################################
+# VSC
+######################################################################
+#options	LINEIS25	# console line is 25 lines(PC-98)
+options		VSC_KMESG
+options		SCREEN_SAVER	# console screen saver(PC-98)
+options		KBD_EXT		# kbd extensions. needed in use of X.
+options		FONT_LOAD	# font loading facility.
+
+kbdc0	at isa? port 0x041 irq 1 flags 0x00000000
+vsc0	at kbdc0
+vc*	at vsc? drive ? iosiz 0x8000 flags 0x00000021
+
+######################################################################
+# RS232C 
+######################################################################
+options SERF_SPEED=B115200		# default 115200
+#options SERI_SPEED=B115200		# default 115200
+#options SERN_SPEED=B115200		# default 115200
+#options SERA_SPEED=B115200		# default 115200
+options SERB_SPEED=B115200		# default 115200
+
+ser*	at isa? port 0x030  irq 4  flags 0x00000000	# INTERNAL
+ser*    at isa? port 0x238  irq 5  flags 0x00120000	# SECOND COM
+ser*	at isa? port 0x0b0  irq 5  flags 0x00030000	# MELCO EXT1
+ser*	at isa? port 0x0b2  irq 12 flags 0x00040000	# MELCO EXT2
+ser*	at isa? port 0x64d0 irq 5  flags 0x00100000	# RSA98
+ser*    at isa? port 0xe0   irq 5  flags 0x00140000	# MC-RS98
+ser*    at isa? port 0xb0   irq 5  flags 0x00150000	# RSB3000
+ser*	at pci? dev ? function ?			# pci
+ser*    at pisa?					# any
+
+serf*	at ser? slave?
+sertty*	at serf?
+
+seri*	at ser? slave?
+sertty* at seri?
+
+sera*	at ser? slave?
+sertty* at sera?
+
+serb*	at ser? slave?
+sertty* at serb?
+
+sern*	at ser? slave?
+sertty* at sern?
+
+serh*	at ser? slave?
+sertty* at serh?
+
+ttycom* at sertty?
+ttycua* at sertty?
+
+######################################################################
+# LPT
+######################################################################
+lpt0	at isa? port 0x140 irq 14  flags 0x00010000
+#lpt0	at isa? port 0x040 irq 8   flags 0x00000000
+
+######################################################################
+# MOUSE
+######################################################################
+olms0	at isa? port 0x7fd9 irq 13	# PC-98 bus mouse based on lms
+
+######################################################################
+# SCSI
+######################################################################
+#NCR53C406 CHIPS
+ncv* at pisa? 
+scsibus* at ncv?
+
+#spc*	at pisa?
+#scsibus0 at spc?
+
+#aic*	at isa? port 0x1840 irq 5 flags 0x10000	# NEC PC-9801-100
+aic*	at pisa?
+scsibus* at aic?
+
+# TMC18C30 (MELCO, etc)
+stg*	at pisa?
+scsibus* at stg?
+
+# NinjaSCSI
+nsp*	at pisa?
+scsibus* at nsp?
+
+# AIC(PCI)
+ahc*	 at pci? dev ? function ?	# Adaptec 2940 SCSI controllers
+scsibus* at ahc?
+
+# IO DATA NCR53C815(PCI) IO MAPPING TYPE
+options 	NCR_IOMAPPED
+ncr*	at pci? dev ? function ?	# NCR 538XX SCSI controllers
+scsibus* at ncr?
+
+# IFC-UPS-M2 (with IDE)
+adv*	at pci? dev ? function ?	# AdvanSys 1200[A,B], 9xx[U,UA] SCSI
+scsibus* at adv?
+
+# WD33C93A CHIPS
+ct*	at isa? flags 0x20000			#  TEXA
+ct*	at pisa?
+scsibus* at ct?
+
+# JULIAN SCSI
+options SCSIBIOS_SCSIBUS_ID=0
+sd*	at scsibus? target ? lun 0 flags 0xffff0003	# SCSI fixed disks
+st*	at scsibus? target ? lun 0 flags 0xffff0003	# SCSI tape drives
+cd*	at scsibus? target ? lun ? flags 0xffff0003	# SCSI CD-ROM drives
+
+######################################################################
+# FD
+######################################################################
+fdc0	at isa? port 0x090 irq 11 drq 2
+fd*	at fdc? drive ? 
+
+######################################################################
+# WD
+######################################################################
+#options	PCIIDE_NODMA_TRANSFER
+pciide*	  at pci? dev ? function ?
+wdc0	  at isa? port 0x640 irq 9
+wdc*	  at pisa?
+
+atabus*   at pciide? channel ?
+atabus*   at wdc? bank ?
+
+wd*	  at atabus? drive ?
+atapibus* at atabus? 
+cd*	  at atapibus?	drive ?
+sd*	  at atapibus?	drive ?
+
+######################################################################
+# ETHER
+######################################################################
+# PLANET ENW-9501-F
+de*	at pci? dev ? function ?		# DC21X4X-based ethernet cards
+
+#fxp*	at pci? dev ? function ?		# Intel EEPRO 10/100B
+ofxp*	at pci? dev ? function ?		# Intel EEPRO 10/100B
+
+# 3COM FAMILY
+ep*	at isa? port 0x40d0 irq 6
+ep*	at pisa?
+
+# DP8390 FAMILY SUPPORT:
+sic*	at isa? port 0x00d0 irq 6  iomem 0xc0000	# SIC-98
+sic*	at pisa? 
+
+# DP8390 FAMILY SUPPORT:
+ne*	at isa? port 0x00d0 irq 6  flags 0x400000 # LGY98
+ne*	at isa? port 0x00d8 irq 6  flags 0x200000 # SMARTCOM 98
+
+# DP8390 FAMILY SUPPORT with PnP:
+ne*	at pisa?
+
+# MB86960 FAMILY SUPPORT:
+mbe*	at isa? port 0xd2 irq 12 flags 0x20000	 # Allied Telesis RE100x
+mbe*	at pisa?
+
+# ether JACK
+sm*	at pisa?
+
+# NS
+sn*	at pisa?
+
+# check!!
+fpa*	at pci? dev ? function ?	# DEC DEFPA FDDI
+#tl*	at pci? dev ? function ?	# ThunderLAN-based Ethernet
+
+######################################################################
+# SOUNDS and GAMES
+######################################################################
+necss0  at systm? flags 0xa0000	# Window Sound System (NEC)
+
+# NECSS
+necss0  at systm?			# Window Sound System (NEC)
+wss*	at necss?
+pcm*	at necss?
+yms*	at necss?
+#
+## SCP
+scp*	at pisa?
+wss*	at scp?
+mpu*	at scp?
+#
+## QWS
+qws*	at pisa?
+pcm*	at qws?
+yms*	at qws?
+joy*	at qws?
+mpu*	at qws?
+#
+audio*	at wss?
+audio*	at pcm?
+audio*	at yms?
+midi*	at mpu?
+pmidi*	at mpu?
+
+#
+## SB
+sb0	at isa? port 0x20d2 irq 5 drq 3		# SoundBlaster16
+mpu*	at isa? port 0x80d2 irq 5 flags 0x30000	# SoundBlaster16 mpu401
+midi*	at sb?					# SoundBlaster8 midi
+audio*	at sb?
+
+## Super MPU (Roland)
+mpu*	at pisa?
+
+## Pc Joy card
+joy*	at pisa?
+
+######################################################################
+# SPKR
+######################################################################
+#spkr0	at isa?
+
+######################################################################
+# APM
+######################################################################
+apm0	at systm?
+
+######################################################################
+# INCLUDES
+######################################################################
+include	"arch/i386/conf/GENERIC.local"
+
+######################################################################
+# PSUEDO
+######################################################################
+pseudo-device	loop	1		# network loopback
+pseudo-device	bpfilter 4		# packet filter
+pseudo-device	sl	1		# CSLIP
+pseudo-device	ppp	1		# PPP
+pseudo-device	pty	32		# pseudo-terminals
+pseudo-device	vnd	4		# paging to files
+pseudo-device	vpd	4		# virtual partition driver
+pseudo-device	tun	2		# network tunneling over tty
+pseudo-device	gre	2		# generic L3 over IP tunnel
+pseudo-device	ipip	2		# IP Encapsulation within IP (RFC 2003)
+pseudo-device   ipfilter 1
+pseudo-device   sndtm	1		# systm sound timer manager
+pseudo-device	sequencer	1	# MIDI sequencer
+pseudo-device	rnd			# /dev/random and in-kernel generator
+pseudo-device	vcoda		4	# coda minicache <-> venus comm.
+#pseudo-device	tb	1		# tablet line discipline
+#pseudo-device	md	1		# memory disk device (ramdisk)

@@ -1,0 +1,5908 @@
+LOCALE PATCH        LOCALE PATCH for NetBSD 1.4.1 or later         LOCALE PATCH
+
+NAME
+
+	locale.141.dif - locale patch for NetBSD 1.4.1
+
+
+DESCRIPTION
+
+	1) This patch is available to only LC_CTYPE category.    LC_ALL,
+	   LC_COLLATE, LC_MONETARY, LC_NUMERIC, LC_TIME, and LC_MESSAGES
+	   categories are not available.
+
+	2) src.skel/usr.bin/Makefile  in this patch  depends  on  NetBSD
+	   version.  If src/usr.bin/Makefile is updated, you should copy
+	   src/usr.bin/Makefile   to   src.skel/usr.bin/Makefile   after
+	   aplliing   this   patch,      and   then   you   should   add
+	   ``SUBDIR+=mklocale''.
+
+	3) When  you  appliy  this  patch,        you  should  not  link
+	   ``src/lib/libc/locale/ctypeio.c''.   If you want to know why,
+	   read ``src.skel/lib/libc/locale/setlocale.c''.
+
+PATCH
+
+diff -urN /tmp/src.skel/include/Makefile ./src.skel/include/Makefile
+--- /tmp/src.skel/include/Makefile	Thu Jan  1 09:00:00 1970
++++ ./src.skel/include/Makefile	Mon Aug 16 20:46:28 1999
+@@ -0,0 +1,29 @@
++#	$NetBSD: Makefile,v 1.75 1999/03/19 22:06:36 thorpej Exp $
++#	@(#)Makefile	8.2 (Berkeley) 1/4/94
++
++# Doing a make includes builds /usr/include
++
++# Missing: mp.h
++
++INCS=	a.out.h ar.h assert.h bitstring.h bm.h cpio.h ctype.h db.h dirent.h \
++	disktab.h dlfcn.h err.h errno.h fnmatch.h fstab.h fts.h glob.h grp.h \
++	hesiod.h ieeefp.h iso646.h kvm.h langinfo.h libgen.h limits.h link.h \
++	link_aout.h link_elf.h locale.h malloc.h math.h md4.h memory.h mpool.h \
++	ndbm.h netdb.h netgroup.h nlist.h nl_types.h nsswitch.h paths.h pwd.h \
++	ranlib.h re_comp.h regex.h regexp.h resolv.h rmt.h search.h setjmp.h \
++	sgtty.h signal.h stab.h stddef.h stdio.h stdlib.h string.h strings.h \
++	stringlist.h struct.h sysexits.h tar.h time.h ttyent.h tzfile.h \
++	unistd.h util.h utime.h utmp.h vis.h
++INCS+=	arpa/ftp.h arpa/inet.h arpa/nameser.h arpa/telnet.h arpa/tftp.h
++INCS+=	protocols/dumprestore.h protocols/routed.h protocols/rwhod.h \
++	protocols/talkd.h protocols/timed.h
++INCS+=	rpc/auth.h rpc/auth_unix.h rpc/clnt.h rpc/pmap_clnt.h rpc/pmap_prot.h \
++	rpc/pmap_rmt.h rpc/rpc.h rpc/rpc_msg.h rpc/svc.h rpc/svc_auth.h \
++	rpc/types.h rpc/xdr.h
++INCS+=	rpcsvc/yp_prot.h rpcsvc/ypclnt.h
++INCS+=	rune.h runetype.h
++INCSDIR=/usr/include
++
++MKOBJ=	no
++
++.include <bsd.prog.mk>
+diff -urN /tmp/src.skel/include/ctype.h ./src.skel/include/ctype.h
+--- /tmp/src.skel/include/ctype.h	Thu Jan  1 09:00:00 1970
++++ ./src.skel/include/ctype.h	Mon Aug 16 20:46:28 1999
+@@ -0,0 +1,264 @@
++/*	$NetBSD: ctype.h,v 1.17 1998/05/10 16:57:51 kleink Exp $	*/
++
++/*
++ * Copyright (c) 1989 The Regents of the University of California.
++ * All rights reserved.
++ * (c) UNIX System Laboratories, Inc.
++ * All or some portions of this file are derived from material licensed
++ * to the University of California by American Telephone and Telegraph
++ * Co. or Unix System Laboratories, Inc. and are reproduced herein with
++ * the permission of UNIX System Laboratories, Inc.
++ *
++ * Redistribution and use in source and binary forms, with or without
++ * modification, are permitted provided that the following conditions
++ * are met:
++ * 1. Redistributions of source code must retain the above copyright
++ *    notice, this list of conditions and the following disclaimer.
++ * 2. Redistributions in binary form must reproduce the above copyright
++ *    notice, this list of conditions and the following disclaimer in the
++ *    documentation and/or other materials provided with the distribution.
++ * 3. All advertising materials mentioning features or use of this software
++ *    must display the following acknowledgement:
++ *	This product includes software developed by the University of
++ *	California, Berkeley and its contributors.
++ * 4. Neither the name of the University nor the names of its contributors
++ *    may be used to endorse or promote products derived from this software
++ *    without specific prior written permission.
++ *
++ * THIS SOFTWARE IS PROVIDED BY THE REGENTS AND CONTRIBUTORS ``AS IS'' AND
++ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
++ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
++ * ARE DISCLAIMED.  IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE LIABLE
++ * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
++ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
++ * OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
++ * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
++ * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
++ * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
++ * SUCH DAMAGE.
++ *
++ *	@(#)ctype.h	5.3 (Berkeley) 4/3/91
++ */
++
++#ifndef _CTYPE_H_
++#define _CTYPE_H_
++
++#include <sys/featuretest.h>
++
++#if	defined(ORIGINAL_CODE) || defined(_NO_RUNE_LOCALE_)
++#include <sys/cdefs.h>
++#else	/* LOCALE */
++#include <runetype.h>
++#endif	/* LOCALE */
++
++#if	defined(ORIGINAL_CODE) || defined(_NO_RUNE_LOCALE_)
++#define	_U	0x01
++#define	_L	0x02
++#define	_N	0x04
++#define	_S	0x08
++#define	_P	0x10
++#define	_C	0x20
++#define	_X	0x40
++#define	_B	0x80
++#else	/* LOCALE */
++#define	_A	0x00000100L		/* Alpha */
++#define	_C	0x00000200L		/* Control */
++#define	_D	0x00000400L		/* Digit */
++#define	_G	0x00000800L		/* Graph */
++#define	_L	0x00001000L		/* Lower */
++#define	_P	0x00002000L		/* Punct */
++#define	_S	0x00004000L		/* Space */
++#define	_U	0x00008000L		/* Upper */
++#define	_X	0x00010000L		/* X digit */
++#define	_B	0x00020000L		/* Blank */
++#define	_R	0x00040000L		/* Print */
++#define	_I	0x00080000L		/* Ideogram */
++#define	_T	0x00100000L		/* Special */
++#define	_Q	0x00200000L		/* Phonogram */
++#endif	/* LOCALE */
++
++#if	defined(ORIGINAL_CODE) || defined(_NO_RUNE_LOCALE_)
++extern const unsigned char	*_ctype_;
++extern const short	*_tolower_tab_;
++extern const short	*_toupper_tab_;
++#endif	/* !LOCALE */
++
++
++__BEGIN_DECLS
++extern int	isalnum __P ((int));
++extern int	isalpha __P ((int));
++extern int	iscntrl __P ((int));
++extern int	isdigit __P ((int));
++extern int	isgraph __P ((int));
++extern int	islower __P ((int));
++extern int	isprint __P ((int));
++extern int	ispunct __P ((int));
++extern int	isspace __P ((int));
++extern int	isupper __P ((int));
++extern int	isxdigit __P ((int));
++#if	defined(ORIGINAL_CODE) || defined(_NO_RUNE_LOCALE_)
++extern int	tolower __P ((int));
++extern int	toupper __P ((int));
++#endif	/* !LOCALE */
++
++#if !defined(_ANSI_SOURCE) && !defined(_POSIX_C_SOURCE) || \
++    defined(_XOPEN_SOURCE)
++extern int	isascii __P ((int));
++extern int	toascii __P ((int));
++extern int	_tolower __P ((int));
++extern int	_toupper __P ((int));
++#endif
++
++#if !defined(_ANSI_SOURCE) && !defined(_POSIX_C_SOURCE) && \
++    !defined(_XOPEN_SOURCE)
++extern int	isblank __P ((int));
++#endif
++__END_DECLS
++
++#if	defined(ORIGINAL_CODE) || defined(_NO_RUNE_LOCALE_)
++#define	isdigit(c)	((int)((_ctype_ + 1)[(int)(c)] & _N))
++#define	islower(c)	((int)((_ctype_ + 1)[(int)(c)] & _L))
++#define	isspace(c)	((int)((_ctype_ + 1)[(int)(c)] & _S))
++#define	ispunct(c)	((int)((_ctype_ + 1)[(int)(c)] & _P))
++#define	isupper(c)	((int)((_ctype_ + 1)[(int)(c)] & _U))
++#define	isalpha(c)	((int)((_ctype_ + 1)[(int)(c)] & (_U|_L)))
++#define	isxdigit(c)	((int)((_ctype_ + 1)[(int)(c)] & (_N|_X)))
++#define	isalnum(c)	((int)((_ctype_ + 1)[(int)(c)] & (_U|_L|_N)))
++#define	isprint(c)	((int)((_ctype_ + 1)[(int)(c)] & (_P|_U|_L|_N|_B)))
++#define	isgraph(c)	((int)((_ctype_ + 1)[(int)(c)] & (_P|_U|_L|_N)))
++#define	iscntrl(c)	((int)((_ctype_ + 1)[(int)(c)] & _C))
++#define	tolower(c)	((int)((_tolower_tab_ + 1)[(int)(c)]))
++#define	toupper(c)	((int)((_toupper_tab_ + 1)[(int)(c)]))
++
++#if !defined(_ANSI_SOURCE) && !defined (_POSIX_C_SOURCE) || \
++    defined(_XOPEN_SOURCE)
++#define	isascii(c)	((unsigned)(c) <= 0177)
++#define	toascii(c)	((c) & 0177)
++#define _tolower(c)	((c) - 'A' + 'a')
++#define _toupper(c)	((c) - 'a' + 'A')
++#endif
++
++#if !defined(_ANSI_SOURCE) && !defined(_POSIX_C_SOURCE) && \
++    !defined(_XOPEN_SOURCE)
++#if notyet
++#define isblank(c)	((int)((_ctype_ + 1)[(int)(c)] & _B))
++#endif
++#endif
++#else	/* LOCALE */
++#define isalnum(c)      __istype((c), (_A|_D))
++#define isalpha(c)      __istype((c),     _A)
++#define iscntrl(c)      __istype((c),     _C)
++#define isdigit(c)      __isctype((c),    _D)	/* ANSI -- locale independent */
++#define isgraph(c)      __istype((c),     _G)
++#define islower(c)      __istype((c),     _L)
++#define isprint(c)      __istype((c),     _R)
++#define ispunct(c)      __istype((c),     _P)
++#define isspace(c)      __istype((c),     _S)
++#define isupper(c)      __istype((c),     _U)
++#define isxdigit(c)     __isctype((c),    _X)	/* ANSI -- locale independent */
++ 
++#if !defined(_ANSI_SOURCE) && !defined (_POSIX_C_SOURCE) || \
++    defined(_XOPEN_SOURCE)
++#define	isascii(c)	((unsigned)(c) <= 0177)
++#define	isascii(c)	((unsigned)(c) <= 0177)
++#define	toascii(c)	((c) & 0177)
++#define _tolower(c)	((c) - 'A' + 'a')
++#define _toupper(c)	((c) - 'a' + 'A')
++#endif
++#define	isrune(c)	__istype((c),  0xFFFFFF00L)
++#define isblank(c)	__istype((c), _B)
++#if	0
++#define	digittoint(c)	__istype((c), 0xFF)
++#define	isideogram(c)	__istype((c), _I)
++#define	isphonogram(c)	__istype((c), _T)
++#define	isspecial(c)	__istype((c), _Q)
++#define	isnumber(c)	__istype((c), _D)
++#define	ishexnumber(c)	__istype((c), _X)
++#endif
++#endif	/* LOCALE */
++
++#ifdef _CTYPE_PRIVATE
++#define _CTYPE_NUM_CHARS	(1<<(sizeof(char)<<3))
++
++#define _CTYPE_ID	 	"BSDCTYPE"
++#define _CTYPE_REV		2
++
++extern const u_int8_t _C_ctype_[];
++extern const int16_t _C_toupper_[];
++extern const int16_t _C_tolower_[];
++#endif
++
++#if	!defined(ORIGINAL_CODE) && !defined(_NO_RUNE_LOCALE_)
++/* See comments in <machine/ansi.h> about _BSD_RUNE_T_. */
++__BEGIN_DECLS
++unsigned long	___runetype __P((_BSD_RUNE_T_));
++_BSD_RUNE_T_	___tolower __P((_BSD_RUNE_T_));
++_BSD_RUNE_T_	___toupper __P((_BSD_RUNE_T_));
++__END_DECLS
++  
++/*
++ * If your compiler supports prototypes and inline functions,
++ * #define _USE_CTYPE_INLINE_.  Otherwise, use the C library
++ * functions.
++ */
++#if !defined(_USE_CTYPE_CLIBRARY_) && defined(__GNUC__) || defined(__cplusplus)
++#define	_USE_CTYPE_INLINE_	1
++#endif
++
++#if defined(_USE_CTYPE_INLINE_)
++__BEGIN_DECLS
++static __inline int __istype __P((_BSD_RUNE_T_, unsigned long));
++static __inline int __isctype __P((_BSD_RUNE_T_, unsigned long));
++
++static __inline int
++__istype(_BSD_RUNE_T_ c, unsigned long f)
++{
++	return((((c & _CRMASK) ? ___runetype(c) :
++	    _CurrentRuneLocale->runetype[c]) & f) ? 1 : 0);
++}
++
++static __inline int
++__isctype(_BSD_RUNE_T_ c, unsigned long f)
++{
++	return((((c & _CRMASK) ? 0 :
++	    _DefaultRuneLocale.runetype[c]) & f) ? 1 : 0);
++}
++__END_DECLS
++
++/* _ANSI_LIBRARY is defined by lib/libc/gen/isctype.c. */
++#if !defined(_ANSI_LIBRARY)
++__BEGIN_DECLS
++static __inline _BSD_RUNE_T_ toupper __P((_BSD_RUNE_T_));
++static __inline _BSD_RUNE_T_ tolower __P((_BSD_RUNE_T_));
++
++static __inline _BSD_RUNE_T_
++toupper(_BSD_RUNE_T_ c)
++{
++	return((c & _CRMASK) ?
++	    ___toupper(c) : _CurrentRuneLocale->mapupper[c]);
++}
++
++static __inline _BSD_RUNE_T_
++tolower(_BSD_RUNE_T_ c)
++{
++	return((c & _CRMASK) ?
++	    ___tolower(c) : _CurrentRuneLocale->maplower[c]);
++}
++__END_DECLS
++#else /* _ANSI_LIBRARY */
++
++extern int	tolower __P ((int));
++extern int	toupper __P ((int));
++#endif	/* _ANSI_LINBRARY */
++
++#else /* !_USE_CTYPE_INLINE_ */
++
++__BEGIN_DECLS
++int		__istype __P((_BSD_RUNE_T_, unsigned long));
++int		__isctype __P((_BSD_RUNE_T_, unsigned long));
++_BSD_RUNE_T_	toupper __P((_BSD_RUNE_T_));
++_BSD_RUNE_T_	tolower __P((_BSD_RUNE_T_));
++__END_DECLS
++#endif /* _USE_CTYPE_INLINE_ */
++#endif /* LOCALE */
++#endif /* !_CTYPE_H_ */
+diff -urN /tmp/src.skel/include/rune.h ./src.skel/include/rune.h
+--- /tmp/src.skel/include/rune.h	Thu Jan  1 09:00:00 1970
++++ ./src.skel/include/rune.h	Mon Aug 16 20:46:28 1999
+@@ -0,0 +1,64 @@
++/*-
++ * Copyright (c) 1993
++ *	The Regents of the University of California.  All rights reserved.
++ *
++ * This code is derived from software contributed to Berkeley by
++ * Paul Borman at Krystal Technologies.
++ *
++ * Redistribution and use in source and binary forms, with or without
++ * modification, are permitted provided that the following conditions
++ * are met:
++ * 1. Redistributions of source code must retain the above copyright
++ *    notice, this list of conditions and the following disclaimer.
++ * 2. Redistributions in binary form must reproduce the above copyright
++ *    notice, this list of conditions and the following disclaimer in the
++ *    documentation and/or other materials provided with the distribution.
++ * 3. All advertising materials mentioning features or use of this software
++ *    must display the following acknowledgement:
++ *	This product includes software developed by the University of
++ *	California, Berkeley and its contributors.
++ * 4. Neither the name of the University nor the names of its contributors
++ *    may be used to endorse or promote products derived from this software
++ *    without specific prior written permission.
++ *
++ * THIS SOFTWARE IS PROVIDED BY THE REGENTS AND CONTRIBUTORS ``AS IS'' AND
++ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
++ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
++ * ARE DISCLAIMED.  IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE LIABLE
++ * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
++ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
++ * OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
++ * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
++ * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
++ * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
++ * SUCH DAMAGE.
++ *
++ *	@(#)rune.h	8.1 (Berkeley) 6/27/93
++ */
++
++#ifndef	_RUNE_H_
++#define	_RUNE_H_
++
++#include <runetype.h>
++#include <stdio.h>
++
++#define _INVALID_RUNE   _CurrentRuneLocale->invalid_rune
++
++#define __sgetrune      _CurrentRuneLocale->sgetrune
++#define __sputrune      _CurrentRuneLocale->sputrune
++
++#define sgetrune(s, n, r)       (*__sgetrune)((s), (n), (r))
++#define sputrune(c, s, n, r)    (*__sputrune)((c), (s), (n), (r))
++
++__BEGIN_DECLS
++char	*mbrune __P((const char *, rune_t));
++char	*mbrrune __P((const char *, rune_t));
++char	*mbmb __P((const char *, char *));
++long	 fgetrune __P((FILE *));
++int	 fputrune __P((rune_t, FILE *));
++int	 fungetrune __P((rune_t, FILE *));
++int	 setrunelocale __P((char *));
++void	 setinvalidrune __P((rune_t));
++__END_DECLS
++
++#endif	/*! _RUNE_H_ */
+diff -urN /tmp/src.skel/include/runetype.h ./src.skel/include/runetype.h
+--- /tmp/src.skel/include/runetype.h	Thu Jan  1 09:00:00 1970
++++ ./src.skel/include/runetype.h	Mon Aug 16 20:46:28 1999
+@@ -0,0 +1,108 @@
++/*-
++ * Copyright (c) 1993
++ *	The Regents of the University of California.  All rights reserved.
++ *
++ * This code is derived from software contributed to Berkeley by
++ * Paul Borman at Krystal Technologies.
++ *
++ * Redistribution and use in source and binary forms, with or without
++ * modification, are permitted provided that the following conditions
++ * are met:
++ * 1. Redistributions of source code must retain the above copyright
++ *    notice, this list of conditions and the following disclaimer.
++ * 2. Redistributions in binary form must reproduce the above copyright
++ *    notice, this list of conditions and the following disclaimer in the
++ *    documentation and/or other materials provided with the distribution.
++ * 3. All advertising materials mentioning features or use of this software
++ *    must display the following acknowledgement:
++ *	This product includes software developed by the University of
++ *	California, Berkeley and its contributors.
++ * 4. Neither the name of the University nor the names of its contributors
++ *    may be used to endorse or promote products derived from this software
++ *    without specific prior written permission.
++ *
++ * THIS SOFTWARE IS PROVIDED BY THE REGENTS AND CONTRIBUTORS ``AS IS'' AND
++ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
++ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
++ * ARE DISCLAIMED.  IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE LIABLE
++ * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
++ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
++ * OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
++ * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
++ * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
++ * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
++ * SUCH DAMAGE.
++ *
++ *	@(#)runetype.h	8.1 (Berkeley) 6/2/93
++ */
++
++#ifndef	_RUNETYPE_H_
++#define	_RUNETYPE_H_
++
++#include <machine/ansi.h>
++#include <sys/cdefs.h>
++
++#ifdef	_BSD_WCHAR_T_
++#ifndef	_WCHAR_T
++#define	_WCHAR_T
++typedef	_BSD_WCHAR_T_	wchar_t;
++#endif
++#undef	_BSD_WCHAR_T_
++#endif
++
++#ifndef	_RUNE_T
++#define	_RUNE_T
++typedef	_BSD_RUNE_T_	rune_t;
++#endif
++
++#define	_CACHED_RUNES	(1 <<8 )	/* Must be a power of 2 */
++#define	_CRMASK		(~(_CACHED_RUNES - 1))
++
++/*
++ * The lower 8 bits of runetype[] contain the digit value of the rune.
++ */
++typedef struct {
++	rune_t		min;		/* First rune of the range */
++	rune_t		max;		/* Last rune (inclusive) of the range */
++	rune_t		map;		/* What first maps to in maps */
++	unsigned long	*types;		/* Array of types in range */
++} _RuneEntry;
++
++typedef struct {
++	int		nranges;	/* Number of ranges stored */
++	_RuneEntry	*ranges;	/* Pointer to the ranges */
++} _RuneRange;
++
++typedef struct {
++	char		magic[8];	/* Magic saying what version we are */
++	char		encoding[32];	/* ASCII name of this encoding */
++
++	rune_t		(*sgetrune)
++	    __P((const char *, unsigned int, char const **));
++	int		(*sputrune)
++	    __P((rune_t, char *, unsigned int, char **));
++	rune_t		invalid_rune;
++
++	unsigned long	runetype[_CACHED_RUNES];
++	rune_t		maplower[_CACHED_RUNES];
++	rune_t		mapupper[_CACHED_RUNES];
++
++	/*
++	 * The following are to deal with Runes larger than _CACHED_RUNES - 1.
++	 * Their data is actually contiguous with this structure so as to make
++	 * it easier to read/write from/to disk.
++	 */
++	_RuneRange	runetype_ext;
++	_RuneRange	maplower_ext;
++	_RuneRange	mapupper_ext;
++
++	void		*variable;	/* Data which depends on the encoding */
++	int		variable_len;	/* how long that data is */
++} _RuneLocale;
++
++#define	_RUNE_MAGIC_1	"RuneMagi"	/* Indicates version 0 of RuneLocale */
++
++extern _RuneLocale _DefaultRuneLocale;
++extern _RuneLocale *_CurrentRuneLocale;
++
++#endif	/* !_RUNETYPE_H_ */
+diff -urN /tmp/src.skel/include/stddef.h ./src.skel/include/stddef.h
+--- /tmp/src.skel/include/stddef.h	Thu Jan  1 09:00:00 1970
++++ ./src.skel/include/stddef.h	Mon Aug 16 20:46:28 1999
+@@ -0,0 +1,76 @@
++/*	$NetBSD: stddef.h,v 1.5 1998/02/02 17:13:49 perry Exp $	*/
++
++/*-
++ * Copyright (c) 1990, 1993
++ *	The Regents of the University of California.  All rights reserved.
++ *
++ * Redistribution and use in source and binary forms, with or without
++ * modification, are permitted provided that the following conditions
++ * are met:
++ * 1. Redistributions of source code must retain the above copyright
++ *    notice, this list of conditions and the following disclaimer.
++ * 2. Redistributions in binary form must reproduce the above copyright
++ *    notice, this list of conditions and the following disclaimer in the
++ *    documentation and/or other materials provided with the distribution.
++ * 3. All advertising materials mentioning features or use of this software
++ *    must display the following acknowledgement:
++ *	This product includes software developed by the University of
++ *	California, Berkeley and its contributors.
++ * 4. Neither the name of the University nor the names of its contributors
++ *    may be used to endorse or promote products derived from this software
++ *    without specific prior written permission.
++ *
++ * THIS SOFTWARE IS PROVIDED BY THE REGENTS AND CONTRIBUTORS ``AS IS'' AND
++ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
++ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
++ * ARE DISCLAIMED.  IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE LIABLE
++ * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
++ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
++ * OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
++ * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
++ * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
++ * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
++ * SUCH DAMAGE.
++ *
++ *	@(#)stddef.h	8.1 (Berkeley) 6/2/93
++ */
++
++#ifndef _STDDEF_H_
++#define _STDDEF_H_
++
++#include <machine/ansi.h>
++
++typedef	_BSD_PTRDIFF_T_	ptrdiff_t;
++
++#ifdef	_BSD_SIZE_T_
++typedef	_BSD_SIZE_T_	size_t;
++#undef	_BSD_SIZE_T_
++#endif
++
++#if	defined(ORIGINAL_CODE) || defined(_NO_RUNE_LOCALE_)
++#ifdef	_BSD_WCHAR_T_
++typedef	_BSD_WCHAR_T_	wchar_t;
++#undef	_BSD_WCHAR_T_
++#endif
++#else	/* LOCALE */
++#ifdef	_BSD_WCHAR_T_
++#ifndef	_WCHAR_T
++#define	_WCHAR_T
++typedef	_BSD_WCHAR_T_	wchar_t;
++#endif
++#undef	_BSD_WCHAR_T_
++#endif
++
++#ifndef	_RUNE_T
++#define	_RUNE_T
++typedef	_BSD_RUNE_T_	rune_t;
++#endif
++#endif	/* LOCALE */
++
++#ifndef	NULL
++#define	NULL	0
++#endif
++
++#define	offsetof(type, member)	((size_t)(&((type *)0)->member))
++
++#endif /* _STDDEF_H_ */
+diff -urN /tmp/src.skel/include/stdlib.h ./src.skel/include/stdlib.h
+--- /tmp/src.skel/include/stdlib.h	Thu Jan  1 09:00:00 1970
++++ ./src.skel/include/stdlib.h	Mon Aug 16 20:46:28 1999
+@@ -0,0 +1,266 @@
++/*	$NetBSD: stdlib.h,v 1.42 1999/02/06 15:04:05 kleink Exp $	*/
++
++/*-
++ * Copyright (c) 1990, 1993
++ *	The Regents of the University of California.  All rights reserved.
++ *
++ * Redistribution and use in source and binary forms, with or without
++ * modification, are permitted provided that the following conditions
++ * are met:
++ * 1. Redistributions of source code must retain the above copyright
++ *    notice, this list of conditions and the following disclaimer.
++ * 2. Redistributions in binary form must reproduce the above copyright
++ *    notice, this list of conditions and the following disclaimer in the
++ *    documentation and/or other materials provided with the distribution.
++ * 3. All advertising materials mentioning features or use of this software
++ *    must display the following acknowledgement:
++ *	This product includes software developed by the University of
++ *	California, Berkeley and its contributors.
++ * 4. Neither the name of the University nor the names of its contributors
++ *    may be used to endorse or promote products derived from this software
++ *    without specific prior written permission.
++ *
++ * THIS SOFTWARE IS PROVIDED BY THE REGENTS AND CONTRIBUTORS ``AS IS'' AND
++ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
++ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
++ * ARE DISCLAIMED.  IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE LIABLE
++ * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
++ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
++ * OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
++ * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
++ * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
++ * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
++ * SUCH DAMAGE.
++ *
++ *	@(#)stdlib.h	8.5 (Berkeley) 5/19/95
++ */
++
++#ifndef _STDLIB_H_
++#define _STDLIB_H_
++
++#include <sys/cdefs.h>
++#include <sys/featuretest.h>
++
++#if !defined(_ANSI_SOURCE) && !defined(_POSIX_C_SOURCE) && \
++    !defined(_XOPEN_SOURCE)
++#include <sys/types.h>		/* for quad_t, etc. */
++#endif
++
++#include <machine/ansi.h>
++
++#ifdef	_BSD_SIZE_T_
++typedef	_BSD_SIZE_T_	size_t;
++#undef	_BSD_SIZE_T_
++#endif
++
++#if	defined(ORIGINAL_CODE) || defined(_NO_RUNE_LOCALE_)
++#ifdef	_BSD_WCHAR_T_
++typedef	_BSD_WCHAR_T_	wchar_t;
++#undef	_BSD_WCHAR_T_
++#endif
++#else	/* LOCALE */
++#ifdef	_BSD_WCHAR_T_
++#ifndef	_WCHAR_T
++#define	_WCHAR_T
++typedef	_BSD_WCHAR_T_   wchar_t;
++#endif
++#undef	_BSD_WCHAR_T_
++#endif
++
++#ifndef	_RUNE_T
++#define	_RUNE_T
++typedef	_BSD_RUNE_T_	rune_t;
++#endif
++#endif	/* LOCALE */
++
++typedef struct {
++	int quot;		/* quotient */
++	int rem;		/* remainder */
++} div_t;
++
++typedef struct {
++	long quot;		/* quotient */
++	long rem;		/* remainder */
++} ldiv_t;
++
++#if !defined(_ANSI_SOURCE) && !defined(_POSIX_C_SOURCE) && \
++    !defined(_XOPEN_SOURCE)
++typedef struct {
++	quad_t quot;		/* quotient */
++	quad_t rem;		/* remainder */
++} qdiv_t;
++#endif
++
++
++#ifndef	NULL
++#define	NULL	0
++#endif
++
++#define	EXIT_FAILURE	1
++#define	EXIT_SUCCESS	0
++
++#define	RAND_MAX	0x7fffffff
++
++#if	defined(ORIGINAL_CODE) || defined(_NO_RUNE_LOCALE_)
++#if 0	/* no wide char stuff (yet) */
++extern int __mb_cur_max;
++#define	MB_CUR_MAX	__mb_cur_max
++#else
++#define	MB_CUR_MAX	1	/* XXX */
++#endif
++#else	/* LOCALE */
++extern	int __mb_cur_max;
++#define	MB_CUR_MAX	__mb_cur_max
++#endif	/* LOCALE */
++
++__BEGIN_DECLS
++__dead	 void abort __P((void)) __attribute__((__noreturn__));
++__pure	 int abs __P((int));
++int	 atexit __P((void (*)(void)));
++double	 atof __P((const char *));
++int	 atoi __P((const char *));
++long	 atol __P((const char *));
++void	*bsearch __P((const void *, const void *, size_t,
++	    size_t, int (*)(const void *, const void *)));
++void	*calloc __P((size_t, size_t));
++div_t	 div __P((int, int));
++__dead	 void exit __P((int)) __attribute__((__noreturn__));
++void	 free __P((void *));
++__aconst char *getenv __P((const char *));
++__pure long
++	 labs __P((long));
++ldiv_t	 ldiv __P((long, long));
++void	*malloc __P((size_t));
++void	 qsort __P((void *, size_t, size_t,
++	    int (*)(const void *, const void *)));
++int	 rand __P((void));
++void	*realloc __P((void *, size_t));
++void	 srand __P((unsigned));
++double	 strtod __P((const char *, char **));
++long	 strtol __P((const char *, char **, int));
++unsigned long
++	 strtoul __P((const char *, char **, int));
++int	 system __P((const char *));
++
++/* These are currently just stubs. */
++int	 mblen __P((const char *, size_t));
++size_t	 mbstowcs __P((wchar_t *, const char *, size_t));
++int	 wctomb __P((char *, wchar_t));
++int	 mbtowc __P((wchar_t *, const char *, size_t));
++size_t	 wcstombs __P((char *, const wchar_t *, size_t));
++
++#if !defined(_ANSI_SOURCE)
++
++
++/*
++ * IEEE Std 1003.1c-95, also adopted by X/Open CAE Spec Issue 5 Version 2
++ */
++#if (!defined(_POSIX_C_SOURCE) && !defined(_XOPEN_SOURCE)) || \
++    (_POSIX_C_SOURCE - 0) >= 199506L || (_XOPEN_SOURCE - 0) >= 500 || \
++    defined(_REENTRANT)
++int	 rand_r __P((unsigned int *));
++#endif
++
++
++/*
++ * X/Open Portability Guide >= Issue 4
++ */
++#if (!defined(_POSIX_C_SOURCE) && !defined(_XOPEN_SOURCE)) || \
++    (_XOPEN_SOURCE - 0) >= 4
++double	 drand48 __P((void));
++double	 erand48 __P((unsigned short[3]));
++long	 jrand48 __P((unsigned short[3]));
++void	 lcong48 __P((unsigned short[7]));
++long	 lrand48 __P((void));
++long	 mrand48 __P((void));
++long	 nrand48 __P((unsigned short[3]));
++unsigned short *
++	 seed48 __P((unsigned short[3]));
++void	 srand48 __P((long));
++
++int	 putenv __P((const char *));
++#endif
++
++
++/*
++ * X/Open Portability Guide >= Issue 4 Version 2
++ */
++#if (!defined(_POSIX_C_SOURCE) && !defined(_XOPEN_SOURCE)) || \
++    (defined(_XOPEN_SOURCE) && defined(_XOPEN_SOURCE_EXTENDED)) || \
++    (_XOPEN_SOURCE - 0) >= 500
++long	 a64l __P((const char *));
++char	*l64a __P((long));
++
++char	*initstate __P((unsigned long, char *, size_t));
++long	 random __P((void));
++char	*setstate __P((char *));
++void	 srandom __P((unsigned long));
++
++char	*mkdtemp __P((char *));
++int	 mkstemp __P((char *));
++#ifndef __AUDIT__
++char	*mktemp __P((char *));
++#endif
++
++int	 setkey __P((const char *));
++
++char	*realpath __P((const char *, char *));
++
++int	 ttyslot __P((void));
++
++void	*valloc __P((size_t));		/* obsoleted by malloc() */
++#endif
++
++
++/*
++ * Implementation-defined extensions
++ */
++#if !defined(_POSIX_C_SOURCE) && !defined(_XOPEN_SOURCE)
++#if defined(alloca) && (alloca == __builtin_alloca) && (__GNUC__ < 2)
++void	*alloca __P((int));     /* built-in for gcc */ 
++#else 
++void	*alloca __P((size_t)); 
++#endif /* __GNUC__ */ 
++
++char	*getbsize __P((int *, long *));
++char	*cgetcap __P((char *, const char *, int));
++int	 cgetclose __P((void));
++int	 cgetent __P((char **, char **, const char *));
++int	 cgetfirst __P((char **, char **));
++int	 cgetmatch __P((const char *, const char *));
++int	 cgetnext __P((char **, char **));
++int	 cgetnum __P((char *, const char *, long *));
++int	 cgetset __P((const char *));
++int	 cgetstr __P((char *, const char *, char **));
++int	 cgetustr __P((char *, const char *, char **));
++
++int	 daemon __P((int, int));
++__aconst char *devname __P((dev_t, mode_t));
++int	 getloadavg __P((double [], int));
++
++void	 cfree __P((void *));
++
++int	 heapsort __P((void *, size_t, size_t,
++	    int (*)(const void *, const void *)));
++int	 mergesort __P((void *, size_t, size_t,
++	    int (*)(const void *, const void *)));
++int	 radixsort __P((const unsigned char **, int, const unsigned char *,
++	    unsigned));
++int	 sradixsort __P((const unsigned char **, int, const unsigned char *,
++	    unsigned));
++
++int	 setenv __P((const char *, const char *, int));
++void	 unsetenv __P((const char *));
++void	 setproctitle __P((const char *, ...));
++
++quad_t	 qabs __P((quad_t));
++qdiv_t	 qdiv __P((quad_t, quad_t));
++quad_t	 strtoq __P((const char *, char **, int));
++u_quad_t strtouq __P((const char *, char **, int));
++
++int	 l64a_r __P((long, char *, int));
++#endif /* !_POSIX_C_SOURCE && !_XOPEN_SOURCE */
++#endif /* !_ANSI_SOURCE */
++__END_DECLS
++
++#endif /* !_STDLIB_H_ */
+diff -urN /tmp/src.skel/lib/libc/gen/ctype_.c ./src.skel/lib/libc/gen/ctype_.c
+--- /tmp/src.skel/lib/libc/gen/ctype_.c	Thu Jan  1 09:00:00 1970
++++ ./src.skel/lib/libc/gen/ctype_.c	Mon Aug 16 20:46:28 1999
+@@ -0,0 +1,77 @@
++/*	$NetBSD: ctype_.c,v 1.14 1997/07/13 19:45:45 christos Exp $	*/
++
++/*
++ * Copyright (c) 1989 The Regents of the University of California.
++ * All rights reserved.
++ * (c) UNIX System Laboratories, Inc.
++ * All or some portions of this file are derived from material licensed
++ * to the University of California by American Telephone and Telegraph
++ * Co. or Unix System Laboratories, Inc. and are reproduced herein with
++ * the permission of UNIX System Laboratories, Inc.
++ *
++ * Redistribution and use in source and binary forms, with or without
++ * modification, are permitted provided that the following conditions
++ * are met:
++ * 1. Redistributions of source code must retain the above copyright
++ *    notice, this list of conditions and the following disclaimer.
++ * 2. Redistributions in binary form must reproduce the above copyright
++ *    notice, this list of conditions and the following disclaimer in the
++ *    documentation and/or other materials provided with the distribution.
++ * 3. All advertising materials mentioning features or use of this software
++ *    must display the following acknowledgement:
++ *	This product includes software developed by the University of
++ *	California, Berkeley and its contributors.
++ * 4. Neither the name of the University nor the names of its contributors
++ *    may be used to endorse or promote products derived from this software
++ *    without specific prior written permission.
++ *
++ * THIS SOFTWARE IS PROVIDED BY THE REGENTS AND CONTRIBUTORS ``AS IS'' AND
++ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
++ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
++ * ARE DISCLAIMED.  IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE LIABLE
++ * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
++ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
++ * OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
++ * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
++ * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
++ * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
++ * SUCH DAMAGE.
++ */
++
++#include <sys/cdefs.h>
++#if defined(LIBC_SCCS) && !defined(lint)
++#if 0
++/*static char *sccsid = "from: @(#)ctype_.c	5.6 (Berkeley) 6/1/90";*/
++#else
++__RCSID("$NetBSD: ctype_.c,v 1.14 1997/07/13 19:45:45 christos Exp $");
++#endif
++#endif /* LIBC_SCCS and not lint */
++
++#define _CTYPE_PRIVATE
++#undef	_NO_RUNE_LOCALE_
++#define	_NO_RUNE_LOCALE_
++
++#include <sys/types.h>
++#include <ctype.h>
++
++const unsigned char _C_ctype_[1 + _CTYPE_NUM_CHARS] = {
++	0,
++	_C,	_C,	_C,	_C,	_C,	_C,	_C,	_C,
++	_C,	_C|_S,	_C|_S,	_C|_S,	_C|_S,	_C|_S,	_C,	_C,
++	_C,	_C,	_C,	_C,	_C,	_C,	_C,	_C,
++	_C,	_C,	_C,	_C,	_C,	_C,	_C,	_C,
++	_S|_B,	_P,	_P,	_P,	_P,	_P,	_P,	_P,
++	_P,	_P,	_P,	_P,	_P,	_P,	_P,	_P,
++	_N,	_N,	_N,	_N,	_N,	_N,	_N,	_N,
++	_N,	_N,	_P,	_P,	_P,	_P,	_P,	_P,
++	_P,	_U|_X,	_U|_X,	_U|_X,	_U|_X,	_U|_X,	_U|_X,	_U,
++	_U,	_U,	_U,	_U,	_U,	_U,	_U,	_U,
++	_U,	_U,	_U,	_U,	_U,	_U,	_U,	_U,
++	_U,	_U,	_U,	_P,	_P,	_P,	_P,	_P,
++	_P,	_L|_X,	_L|_X,	_L|_X,	_L|_X,	_L|_X,	_L|_X,	_L,
++	_L,	_L,	_L,	_L,	_L,	_L,	_L,	_L,
++	_L,	_L,	_L,	_L,	_L,	_L,	_L,	_L,
++	_L,	_L,	_L,	_P,	_P,	_P,	_P,	_C
++};
++
++const unsigned char *_ctype_ = _C_ctype_;
+diff -urN /tmp/src.skel/lib/libc/gen/isctype.c ./src.skel/lib/libc/gen/isctype.c
+--- /tmp/src.skel/lib/libc/gen/isctype.c	Thu Jan  1 09:00:00 1970
++++ ./src.skel/lib/libc/gen/isctype.c	Mon Aug 16 20:46:28 1999
+@@ -0,0 +1,235 @@
++/*	$NetBSD: isctype.c,v 1.14 1997/07/13 19:46:04 christos Exp $	*/
++
++/*
++ * Copyright (c) 1989 The Regents of the University of California.
++ * All rights reserved.
++ * (c) UNIX System Laboratories, Inc.
++ * All or some portions of this file are derived from material licensed
++ * to the University of California by American Telephone and Telegraph
++ * Co. or Unix System Laboratories, Inc. and are reproduced herein with
++ * the permission of UNIX System Laboratories, Inc.
++ *
++ * Redistribution and use in source and binary forms, with or without
++ * modification, are permitted provided that the following conditions
++ * are met:
++ * 1. Redistributions of source code must retain the above copyright
++ *    notice, this list of conditions and the following disclaimer.
++ * 2. Redistributions in binary form must reproduce the above copyright
++ *    notice, this list of conditions and the following disclaimer in the
++ *    documentation and/or other materials provided with the distribution.
++ * 3. All advertising materials mentioning features or use of this software
++ *    must display the following acknowledgement:
++ *	This product includes software developed by the University of
++ *	California, Berkeley and its contributors.
++ * 4. Neither the name of the University nor the names of its contributors
++ *    may be used to endorse or promote products derived from this software
++ *    without specific prior written permission.
++ *
++ * THIS SOFTWARE IS PROVIDED BY THE REGENTS AND CONTRIBUTORS ``AS IS'' AND
++ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
++ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
++ * ARE DISCLAIMED.  IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE LIABLE
++ * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
++ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
++ * OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
++ * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
++ * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
++ * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
++ * SUCH DAMAGE.
++ */
++
++#include <sys/cdefs.h>
++#if defined(LIBC_SCCS) && !defined(lint)
++#if 0
++static char sccsid[] = "@(#)isctype.c	5.2 (Berkeley) 6/1/90";
++#else
++__RCSID("$NetBSD: isctype.c,v 1.14 1997/07/13 19:46:04 christos Exp $");
++#endif
++#endif /* LIBC_SCCS and not lint */
++
++#define _ANSI_LIBRARY
++#include <ctype.h>
++
++#undef isalnum
++int
++isalnum(c)
++	int c;
++{
++#if	defined(ORIGINAL_CODE) || defined(_NO_RUNE_LOCALE_)
++	return((_ctype_ + 1)[c] & (_U|_L|_N));
++#else
++	return(__istype((c), (_A|_D)));
++#endif
++}
++
++#undef isalpha
++int
++isalpha(c)
++	int c;
++{
++#if	defined(ORIGINAL_CODE) || defined(_NO_RUNE_LOCALE_)
++	return((_ctype_ + 1)[c] & (_U|_L));
++#else
++	return (__istype((c), _A));
++#endif
++}
++
++#undef isblank
++int
++isblank(c)
++	int c;
++{
++#if	defined(ORIGINAL_CODE) || defined(_NO_RUNE_LOCALE_)
++	return(c == ' ' || c == '\t');
++#else
++	return (__istype((c), _B));
++#endif
++}
++
++#undef iscntrl
++int
++iscntrl(c)
++	int c;
++{
++#if	defined(ORIGINAL_CODE) || defined(_NO_RUNE_LOCALE_)
++	return((_ctype_ + 1)[c] & _C);
++#else
++	return (__istype((c), _C));
++#endif
++}
++
++#undef isdigit
++int
++isdigit(c)
++	int c;
++{
++#if	defined(ORIGINAL_CODE) || defined(_NO_RUNE_LOCALE_)
++	return((_ctype_ + 1)[c] & _N);
++#else
++	return (__isctype((c), _D));
++#endif
++}
++
++#undef isgraph
++int
++isgraph(c)
++	int c;
++{
++#if	defined(ORIGINAL_CODE) || defined(_NO_RUNE_LOCALE_)
++	return((_ctype_ + 1)[c] & (_P|_U|_L|_N));
++#else
++	return (__istype((c), _G));
++#endif
++}
++
++#undef islower
++int
++islower(c)
++	int c;
++{
++#if	defined(ORIGINAL_CODE) || defined(_NO_RUNE_LOCALE_)
++	return((_ctype_ + 1)[c] & _L);
++#else
++	return (__istype((c), _L));
++#endif
++}
++
++#undef isprint
++int
++isprint(c)
++	int c;
++{
++#if	defined(ORIGINAL_CODE) || defined(_NO_RUNE_LOCALE_)
++	return((_ctype_ + 1)[c] & (_P|_U|_L|_N|_B));
++#else
++	return (__istype((c), _R));
++#endif
++}
++
++#undef ispunct
++int
++ispunct(c)
++	int c;
++{
++#if	defined(ORIGINAL_CODE) || defined(_NO_RUNE_LOCALE_)
++	return((_ctype_ + 1)[c] & _P);
++#else
++	return (__istype((c), _P));
++#endif
++}
++
++#undef isspace
++int
++isspace(c)
++	int c;
++{
++#if	defined(ORIGINAL_CODE) || defined(_NO_RUNE_LOCALE_)
++	return((_ctype_ + 1)[c] & _S);
++#else
++	return (__istype((c), _S));
++#endif
++}
++
++#undef isupper
++int
++isupper(c)
++	int c;
++{
++#if	defined(ORIGINAL_CODE) || defined(_NO_RUNE_LOCALE_)
++	return((_ctype_ + 1)[c] & _U);
++#else
++	return (__istype((c), _U));
++#endif
++}
++
++#undef isxdigit
++int
++isxdigit(c)
++	int c;
++{
++#if	defined(ORIGINAL_CODE) || defined(_NO_RUNE_LOCALE_)
++	return((_ctype_ + 1)[c] & (_N|_X));
++#else
++	return (__isctype((c), _X));
++#endif
++}
++
++#undef isascii
++int
++isascii(c)
++	int c;
++{
++	return ((unsigned)(c) <= 0177);
++}
++
++#undef toascii
++int
++toascii(c)
++	int c;
++{
++	return ((c) & 0177);
++}
++
++#undef _toupper
++int
++_toupper(c)
++	int c;
++{
++#if	defined(ORIGINAL_CODE) || defined(_NO_RUNE_LOCALE_)
++	return (c - 'a' + 'A');
++#else
++	return((c & _CRMASK) ? ___tolower(c) : _CurrentRuneLocale->maplower[c]);
++#endif
++}
++
++#undef _tolower
++int
++_tolower(c)
++	int c;
++{
++#if	defined(ORIGINAL_CODE) || defined(_NO_RUNE_LOCALE_)
++	return (c - 'A' + 'a');
++#else
++	return((c & _CRMASK) ? ___toupper(c) : _CurrentRuneLocale->mapupper[c]);
++#endif
++}
+diff -urN /tmp/src.skel/lib/libc/gen/tolower_.c ./src.skel/lib/libc/gen/tolower_.c
+--- /tmp/src.skel/lib/libc/gen/tolower_.c	Thu Jan  1 09:00:00 1970
++++ ./src.skel/lib/libc/gen/tolower_.c	Mon Aug 16 20:46:28 1999
+@@ -0,0 +1,72 @@
++/*	$NetBSD: tolower_.c,v 1.8 1997/07/13 19:46:22 christos Exp $	*/
++
++/*
++ * Written by J.T. Conklin <jtc@netbsd.org>.
++ * Public domain.
++ */
++
++#include <sys/cdefs.h>
++#if defined(LIBC_RCS) && !defined(lint)
++__RCSID("$NetBSD: tolower_.c,v 1.8 1997/07/13 19:46:22 christos Exp $");
++#endif /* LIBC_RCS and not lint */
++
++#include <stdio.h>
++#if	!defined(ORIGINAL_CODE) && !defined(_NO_RUNE_LOCALE_)
++#define	_USE_CTYPE_CLIBRARY_	1
++#endif
++#include <ctype.h>
++
++#if EOF != -1
++#error "EOF != -1"
++#endif
++
++const short _C_tolower_[1 + 256] = {
++	EOF,
++	0x00,	0x01,	0x02,	0x03,	0x04,	0x05,	0x06,	0x07,
++	0x08,	0x09,	0x0a,	0x0b,	0x0c,	0x0d,	0x0e,	0x0f,
++	0x10,	0x11,	0x12,	0x13,	0x14,	0x15,	0x16,	0x17,
++	0x18,	0x19,	0x1a,	0x1b,	0x1c,	0x1d,	0x1e,	0x1f,
++	0x20,	0x21,	0x22,	0x23,	0x24,	0x25,	0x26,	0x27,
++	0x28,	0x29,	0x2a,	0x2b,	0x2c,	0x2d,	0x2e,	0x2f,
++	0x30,	0x31,	0x32,	0x33,	0x34,	0x35,	0x36,	0x37,
++	0x38,	0x39,	0x3a,	0x3b,	0x3c,	0x3d,	0x3e,	0x3f,
++	0x40,	'a',	'b',	'c',	'd',	'e',	'f',	'g',
++	'h',	'i',	'j',	'k',	'l',	'm',	'n',	'o',
++	'p',	'q',	'r',	's',	't',	'u',	'v',	'w',
++	'x',	'y',	'z',	0x5b,	0x5c,	0x5d,	0x5e,	0x5f,
++	0x60,	0x61,	0x62,	0x63,	0x64,	0x65,	0x66,	0x67,
++	0x68,	0x69,	0x6a,	0x6b,	0x6c,	0x6d,	0x6e,	0x6f,
++	0x70,	0x71,	0x72,	0x73,	0x74,	0x75,	0x76,	0x77,
++	0x78,	0x79,	0x7a,	0x7b,	0x7c,	0x7d,	0x7e,	0x7f,
++	0x80,	0x81,	0x82,	0x83,	0x84,	0x85,	0x86,	0x87,
++	0x88,	0x89,	0x8a,	0x8b,	0x8c,	0x8d,	0x8e,	0x8f,
++	0x90,	0x91,	0x92,	0x93,	0x94,	0x95,	0x96,	0x97,
++	0x98,	0x99,	0x9a,	0x9b,	0x9c,	0x9d,	0x9e,	0x9f,
++	0xa0,	0xa1,	0xa2,	0xa3,	0xa4,	0xa5,	0xa6,	0xa7,
++	0xa8,	0xa9,	0xaa,	0xab,	0xac,	0xad,	0xae,	0xaf,
++	0xb0,	0xb1,	0xb2,	0xb3,	0xb4,	0xb5,	0xb6,	0xb7,
++	0xb8,	0xb9,	0xba,	0xbb,	0xbc,	0xbd,	0xbe,	0xbf,
++	0xc0,	0xc1,	0xc2,	0xc3,	0xc4,	0xc5,	0xc6,	0xc7,
++	0xc8,	0xc9,	0xca,	0xcb,	0xcc,	0xcd,	0xce,	0xcf,
++	0xd0,	0xd1,	0xd2,	0xd3,	0xd4,	0xd5,	0xd6,	0xd7,
++	0xd8,	0xd9,	0xda,	0xdb,	0xdc,	0xdd,	0xde,	0xdf,
++	0xe0,	0xe1,	0xe2,	0xe3,	0xe4,	0xe5,	0xe6,	0xe7,
++	0xe8,	0xe9,	0xea,	0xeb,	0xec,	0xed,	0xee,	0xef,
++	0xf0,	0xf1,	0xf2,	0xf3,	0xf4,	0xf5,	0xf6,	0xf7,
++	0xf8,	0xf9,	0xfa,	0xfb,	0xfc,	0xfd,	0xfe,	0xff
++};
++
++const short *_tolower_tab_ = _C_tolower_;
++
++#undef tolower
++int
++tolower(c)
++	int c;
++{
++#if	defined(ORIGINAL_CODE) || defined(_NO_RUNE_LOCALE_)
++	return((_tolower_tab_ + 1)[c]);
++#else
++	return((c & _CRMASK) ?
++		___tolower(c) : _CurrentRuneLocale->maplower[c]);
++#endif
++}
+diff -urN /tmp/src.skel/lib/libc/gen/toupper_.c ./src.skel/lib/libc/gen/toupper_.c
+--- /tmp/src.skel/lib/libc/gen/toupper_.c	Thu Jan  1 09:00:00 1970
++++ ./src.skel/lib/libc/gen/toupper_.c	Mon Aug 16 20:46:28 1999
+@@ -0,0 +1,72 @@
++/*	$NetBSD: toupper_.c,v 1.8 1997/07/13 19:46:23 christos Exp $	*/
++
++/*
++ * Written by J.T. Conklin <jtc@netbsd.org>.
++ * Public domain.
++ */
++
++#include <sys/cdefs.h>
++#if defined(LIBC_RCS) && !defined(lint)
++__RCSID("$NetBSD: toupper_.c,v 1.8 1997/07/13 19:46:23 christos Exp $");
++#endif /* LIBC_RCS and not lint */
++
++#include <stdio.h>
++#if	!defined(ORIGINAL_CODE) && !defined(_NO_RUNE_LOCALE_)
++#define	_USE_CTYPE_CLIBRARY_	1
++#endif
++#include <ctype.h>
++
++#if EOF != -1
++#error "EOF != -1"
++#endif
++
++const short _C_toupper_[1 + 256] = {
++	EOF,
++	0x00,	0x01,	0x02,	0x03,	0x04,	0x05,	0x06,	0x07,
++	0x08,	0x09,	0x0a,	0x0b,	0x0c,	0x0d,	0x0e,	0x0f,
++	0x10,	0x11,	0x12,	0x13,	0x14,	0x15,	0x16,	0x17,
++	0x18,	0x19,	0x1a,	0x1b,	0x1c,	0x1d,	0x1e,	0x1f,
++	0x20,	0x21,	0x22,	0x23,	0x24,	0x25,	0x26,	0x27,
++	0x28,	0x29,	0x2a,	0x2b,	0x2c,	0x2d,	0x2e,	0x2f,
++	0x30,	0x31,	0x32,	0x33,	0x34,	0x35,	0x36,	0x37,
++	0x38,	0x39,	0x3a,	0x3b,	0x3c,	0x3d,	0x3e,	0x3f,
++	0x40,	0x41,	0x42,	0x43,	0x44,	0x45,	0x46,	0x47,
++	0x48,	0x49,	0x4a,	0x4b,	0x4c,	0x4d,	0x4e,	0x4f,
++	0x50,	0x51,	0x52,	0x53,	0x54,	0x55,	0x56,	0x57,
++	0x58,	0x59,	0x5a,	0x5b,	0x5c,	0x5d,	0x5e,	0x5f,
++	0x60,	'A',	'B',	'C',	'D',	'E',	'F',	'G',
++	'H',	'I',	'J',	'K',	'L',	'M',	'N',	'O',
++	'P',	'Q',	'R',	'S',	'T',	'U',	'V',	'W',
++	'X',	'Y',	'Z',	0x7b,	0x7c,	0x7d,	0x7e,	0x7f,
++	0x80,	0x81,	0x82,	0x83,	0x84,	0x85,	0x86,	0x87,
++	0x88,	0x89,	0x8a,	0x8b,	0x8c,	0x8d,	0x8e,	0x8f,
++	0x90,	0x91,	0x92,	0x93,	0x94,	0x95,	0x96,	0x97,
++	0x98,	0x99,	0x9a,	0x9b,	0x9c,	0x9d,	0x9e,	0x9f,
++	0xa0,	0xa1,	0xa2,	0xa3,	0xa4,	0xa5,	0xa6,	0xa7,
++	0xa8,	0xa9,	0xaa,	0xab,	0xac,	0xad,	0xae,	0xaf,
++	0xb0,	0xb1,	0xb2,	0xb3,	0xb4,	0xb5,	0xb6,	0xb7,
++	0xb8,	0xb9,	0xba,	0xbb,	0xbc,	0xbd,	0xbe,	0xbf,
++	0xc0,	0xc1,	0xc2,	0xc3,	0xc4,	0xc5,	0xc6,	0xc7,
++	0xc8,	0xc9,	0xca,	0xcb,	0xcc,	0xcd,	0xce,	0xcf,
++	0xd0,	0xd1,	0xd2,	0xd3,	0xd4,	0xd5,	0xd6,	0xd7,
++	0xd8,	0xd9,	0xda,	0xdb,	0xdc,	0xdd,	0xde,	0xdf,
++	0xe0,	0xe1,	0xe2,	0xe3,	0xe4,	0xe5,	0xe6,	0xe7,
++	0xe8,	0xe9,	0xea,	0xeb,	0xec,	0xed,	0xee,	0xef,
++	0xf0,	0xf1,	0xf2,	0xf3,	0xf4,	0xf5,	0xf6,	0xf7,
++	0xf8,	0xf9,	0xfa,	0xfb,	0xfc,	0xfd,	0xfe,	0xff
++};
++
++const short *_toupper_tab_ = _C_toupper_;
++
++#undef toupper
++int
++toupper(c)
++	int c;
++{
++#if	defined(ORIGINAL_CODE) || defined(_NO_RUNE_LOCALE_)
++	return((_toupper_tab_ + 1)[c]);
++#else
++	return((c & _CRMASK) ?
++		___toupper(c) : _CurrentRuneLocale->mapupper[c]);
++#endif
++}
+diff -urN /tmp/src.skel/lib/libc/locale/Makefile.inc ./src.skel/lib/libc/locale/Makefile.inc
+--- /tmp/src.skel/lib/libc/locale/Makefile.inc	Thu Jan  1 09:00:00 1970
++++ ./src.skel/lib/libc/locale/Makefile.inc	Mon Aug 16 20:46:28 1999
+@@ -0,0 +1,15 @@
++#	from: @(#)Makefile.inc	5.1 (Berkeley) 2/18/91
++#	$NetBSD: Makefile.inc,v 1.16 1999/02/24 15:05:20 drochner Exp $
++
++# locale sources
++.PATH: ${ARCHDIR}/locale ${.CURDIR}/locale
++
++SRCS+=	_def_messages.c _def_monetary.c _def_numeric.c _def_time.c \
++	ctypeio.c localeconv.c nl_langinfo.c setlocale.c
++
++SRCS+=	rune.c mbrune.c frune.c table.c
++SRCS+=	euc.c none.c utf2.c mskanji.c
++
++MAN+=	nl_langinfo.3 setlocale.3
++
++MLINKS+=setlocale.3 localeconv.3
+diff -urN /tmp/src.skel/lib/libc/locale/ctypeio.c ./src.skel/lib/libc/locale/ctypeio.c
+--- /tmp/src.skel/lib/libc/locale/ctypeio.c	Thu Jan  1 09:00:00 1970
++++ ./src.skel/lib/libc/locale/ctypeio.c	Mon Aug 16 20:58:24 1999
+@@ -0,0 +1,170 @@
++/*	$NetBSD: ctypeio.c,v 1.2 1998/11/13 15:49:03 christos Exp $	*/
++
++/*
++ * Copyright (c) 1997 Christos Zoulas.  All rights reserved.
++ *
++ * Redistribution and use in source and binary forms, with or without
++ * modification, are permitted provided that the following conditions
++ * are met:
++ * 1. Redistributions of source code must retain the above copyright
++ *    notice, this list of conditions and the following disclaimer.
++ * 2. Redistributions in binary form must reproduce the above copyright
++ *    notice, this list of conditions and the following disclaimer in the
++ *    documentation and/or other materials provided with the distribution.
++ * 3. All advertising materials mentioning features or use of this software
++ *    must display the following acknowledgement:
++ *	This product includes software developed by Christos Zoulas.
++ * 4. The name of the author may not be used to endorse or promote products
++ *    derived from this software without specific prior written permission.
++ *
++ * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
++ * IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
++ * OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
++ * IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT,
++ * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT
++ * NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
++ * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
++ * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
++ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
++ * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
++ */
++
++#if	defined(ORIGINAL_CODE) || defined(_NO_RUNE_LOCALE_)
++#include <sys/types.h>
++#include <stdio.h>
++#include <stdlib.h>
++#define _CTYPE_PRIVATE
++#include <ctype.h>
++#include "ctypeio.h"
++
++int
++__loadctype(name)
++	const char *name;
++{
++	FILE *fp;
++	char id[sizeof(_CTYPE_ID) - 1];
++	u_int32_t i, len;
++	unsigned char *new_ctype = NULL;
++	short *new_toupper = NULL, *new_tolower = NULL;
++
++	if ((fp = fopen(name, "r")) == NULL)
++		return 0;
++
++	if (fread(id, sizeof(id), 1, fp) != 1)
++		goto bad;
++
++	if (memcmp(id, _CTYPE_ID, sizeof(id)) != 0)
++		goto bad;
++
++	if (fread(&i, sizeof(u_int32_t), 1, fp) != 1) 
++		goto bad;
++
++	if ((i = ntohl(i)) != _CTYPE_REV)
++		goto bad;
++
++	if (fread(&len, sizeof(u_int32_t), 1, fp) != 1)
++		goto bad;
++
++	if ((len = ntohl(len)) != _CTYPE_NUM_CHARS)
++		goto bad;
++
++	if ((new_ctype = malloc(sizeof(u_int8_t) * (1 + len))) == NULL)
++		goto bad;
++
++	new_ctype[0] = 0;
++	if (fread(&new_ctype[1], sizeof(u_int8_t), len, fp) != len)
++		goto bad;
++
++	if ((new_toupper = malloc(sizeof(int16_t) * (1 + len))) == NULL)
++		goto bad;
++
++	new_toupper[0] = EOF;
++	if (fread(&new_toupper[1], sizeof(int16_t), len, fp) != len)
++		goto bad;
++
++	if ((new_tolower = malloc(sizeof(int16_t) * (1 + len))) == NULL)
++		goto bad;
++
++	new_tolower[0] = EOF;
++	if (fread(&new_tolower[1], sizeof(int16_t), len, fp) != len)
++		goto bad;
++
++#if BYTE_ORDER == LITTLE_ENDIAN
++	for (i = 1; i <= len; i++) {
++		new_toupper[i] = ntohs(new_toupper[i]);
++		new_tolower[i] = ntohs(new_tolower[i]);
++	}
++#endif
++
++	(void) fclose(fp);
++	if (_ctype_ != _C_ctype_) {
++		/* LINTED const castaway ok */
++		free((void *) _ctype_);
++	}
++	_ctype_ = new_ctype;
++	if (_toupper_tab_ != _C_toupper_) {
++		/* LINTED const castaway ok */
++		free((void *) _toupper_tab_);
++	}
++	_toupper_tab_ = new_toupper;
++	if (_tolower_tab_ != _C_tolower_) {
++		/* LINTED const castaway ok */
++		free((void *) _tolower_tab_);
++	}
++	_tolower_tab_ = new_tolower;
++
++	return 1;
++bad:
++	free(new_tolower);
++	free(new_toupper);
++	free(new_ctype);
++	(void) fclose(fp);
++	return 0;
++}
++
++int
++__savectype(name, new_ctype, new_toupper, new_tolower)
++	const char *name;
++	unsigned char *new_ctype;
++	short *new_toupper, *new_tolower;
++{
++	FILE *fp;
++	u_int32_t i, len = _CTYPE_NUM_CHARS;
++
++	if ((fp = fopen(name, "w")) == NULL)
++		return 0;
++
++	if (fwrite(_CTYPE_ID, sizeof(_CTYPE_ID) - 1, 1, fp) != 1)
++		goto bad;
++
++	i = htonl(_CTYPE_REV);
++	if (fwrite(&i, sizeof(u_int32_t), 1, fp) != 1) 
++		goto bad;
++
++	i = htonl(len);
++	if (fwrite(&i, sizeof(u_int32_t), 1, fp) != 1)
++		goto bad;
++
++	if (fwrite(&new_ctype[1], sizeof(u_int8_t), len, fp) != len)
++		goto bad;
++
++#if BYTE_ORDER == LITTLE_ENDIAN
++	for (i = 1; i <= len; i++) {
++		new_toupper[i] = htons(new_toupper[i]);
++		new_tolower[i] = htons(new_tolower[i]);
++	}
++#endif
++	if (fwrite(&new_toupper[1], sizeof(int16_t), len, fp) != len)
++		goto bad;
++
++	if (fwrite(&new_tolower[1], sizeof(int16_t), len, fp) != len)
++		goto bad;
++
++
++	(void) fclose(fp);
++	return 1;
++bad:
++	(void) fclose(fp);
++	return 0;
++}
++#endif	/* LOCALE */
+diff -urN /tmp/src.skel/lib/libc/locale/euc.c ./src.skel/lib/libc/locale/euc.c
+--- /tmp/src.skel/lib/libc/locale/euc.c	Thu Jan  1 09:00:00 1970
++++ ./src.skel/lib/libc/locale/euc.c	Mon Aug 16 20:46:28 1999
+@@ -0,0 +1,223 @@
++/*-
++ * Copyright (c) 1993
++ *	The Regents of the University of California.  All rights reserved.
++ *
++ * This code is derived from software contributed to Berkeley by
++ * Paul Borman at Krystal Technologies.
++ *
++ * Redistribution and use in source and binary forms, with or without
++ * modification, are permitted provided that the following conditions
++ * are met:
++ * 1. Redistributions of source code must retain the above copyright
++ *    notice, this list of conditions and the following disclaimer.
++ * 2. Redistributions in binary form must reproduce the above copyright
++ *    notice, this list of conditions and the following disclaimer in the
++ *    documentation and/or other materials provided with the distribution.
++ * 3. All advertising materials mentioning features or use of this software
++ *    must display the following acknowledgement:
++ *	This product includes software developed by the University of
++ *	California, Berkeley and its contributors.
++ * 4. Neither the name of the University nor the names of its contributors
++ *    may be used to endorse or promote products derived from this software
++ *    without specific prior written permission.
++ *
++ * THIS SOFTWARE IS PROVIDED BY THE REGENTS AND CONTRIBUTORS ``AS IS'' AND
++ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
++ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
++ * ARE DISCLAIMED.  IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE LIABLE
++ * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
++ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
++ * OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
++ * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
++ * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
++ * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
++ * SUCH DAMAGE.
++ */
++
++#include <sys/cdefs.h>
++#if defined(LIBC_SCCS) && !defined(lint)
++__RCSID("@(#)euc.c	8.1 (Berkeley) 6/4/93");
++#endif /* LIBC_SCCS and not lint */
++
++#include <sys/types.h>
++
++#include <errno.h>
++#include <rune.h>
++#include <stddef.h>
++#include <stdio.h>
++#include <stdlib.h>
++
++rune_t	_EUC_sgetrune __P((const char *, size_t, char const **));
++int	_EUC_sputrune __P((rune_t, char *, size_t, char **));
++int _EUC_init __P((_RuneLocale *));
++static __inline int _euc_set __P((u_int));
++
++typedef struct {
++	int	count[4];
++	rune_t	bits[4];
++	rune_t	mask;
++} _EucInfo;
++
++int
++_EUC_init(rl)
++	_RuneLocale *rl;
++{
++	_EucInfo *ei;
++	int x;
++	char *v, *e;
++
++	rl->sgetrune = _EUC_sgetrune;
++	rl->sputrune = _EUC_sputrune;
++
++	if (!rl->variable) {
++		free(rl);
++		return (EFTYPE);
++	}
++	v = (char *) rl->variable;
++
++	while (*v == ' ' || *v == '\t')
++		++v;
++
++	if ((ei = malloc(sizeof(_EucInfo))) == NULL) {
++		free(rl);
++		return (ENOMEM);
++	}
++	for (x = 0; x < 4; ++x) {
++		ei->count[x] = (int) strtol(v, &e, 0);
++		if (v == e || !(v = e)) {
++			free(rl);
++			free(ei);
++			return (EFTYPE);
++		}
++		while (*v == ' ' || *v == '\t')
++			++v;
++		ei->bits[x] = (int) strtol(v, &e, 0);
++		if (v == e || !(v = e)) {
++			free(rl);
++			free(ei);
++			return (EFTYPE);
++		}
++		while (*v == ' ' || *v == '\t')
++			++v;
++	}
++	ei->mask = (int)strtol(v, &e, 0);
++	if (v == e || !(v = e)) {
++		free(rl);
++		free(ei);
++		return (EFTYPE);
++	}
++	if (sizeof(_EucInfo) <= rl->variable_len) {
++		memcpy(rl->variable, ei, sizeof(_EucInfo));
++		free(ei);
++	} else {
++		rl->variable = &ei;
++	}
++	rl->variable_len = sizeof(_EucInfo);
++	_CurrentRuneLocale = rl;
++	__mb_cur_max = 3;
++	return (0);
++}
++
++#define	CEI	((_EucInfo *)(_CurrentRuneLocale->variable))
++
++#define	_SS2	0x008e
++#define	_SS3	0x008f
++
++static __inline int
++_euc_set(c)
++	u_int c;
++{
++	c &= 0xff;
++
++	return ((c & 0x80) ? c == _SS3 ? 3 : c == _SS2 ? 2 : 1 : 0);
++}
++rune_t
++_EUC_sgetrune(string, n, result)
++	const char *string;
++	size_t n;
++	char const **result;
++{
++	rune_t rune = 0;
++	int len, set;
++
++	if (n < 1 || (len = CEI->count[set = _euc_set(*string)]) > n) {
++		if (result)
++			*result = string;
++		return (_INVALID_RUNE);
++	}
++	switch (set) {
++	case 3:
++	case 2:
++		--len;
++		++string;
++		/* FALLTHROUGH */
++	case 1:
++	case 0:
++		while (len-- > 0)
++			rune = (rune << 8) | ((u_int)(*string++) & 0xff);
++		break;
++	}
++	if (result)
++		*result = string;
++	return ((rune & ~CEI->mask) | CEI->bits[set]);
++}
++
++int
++_EUC_sputrune(c, string, n, result)
++	rune_t c;
++	char *string, **result;
++	size_t n;
++{
++	rune_t m = c & CEI->mask;
++	rune_t nm = c & ~m;
++	int i, len;
++
++	if (m == CEI->bits[1]) {
++CodeSet1:
++		/* Codeset 1: The first byte must have 0x80 in it. */
++		i = len = CEI->count[1];
++		if (n >= len) {
++			if (result)
++				*result = string + len;
++			while (i-- > 0)
++				*string++ = (nm >> (i << 3)) | 0x80;
++		} else
++			if (result)
++				*result = (char *) 0;
++	} else {
++		if (m == CEI->bits[0]) {
++			i = len = CEI->count[0];
++			if (n < len) {
++				if (result)
++					*result = NULL;
++				return (len);
++			}
++		} else
++			if (m == CEI->bits[2]) {
++				i = len = CEI->count[2];
++				if (n < len) {
++					if (result)
++						*result = NULL;
++					return (len);
++				}
++				*string++ = _SS2;
++				--i;
++			} else
++				if (m == CEI->bits[3]) {
++					i = len = CEI->count[3];
++					if (n < len) {
++						if (result)
++							*result = NULL;
++						return (len);
++					}
++					*string++ = _SS3;
++					--i;
++				} else
++					goto CodeSet1;	/* Bletch */
++		while (i-- > 0)
++			*string++ = (nm >> (i << 3)) & 0xff;
++		if (result)
++			*result = string;
++	}
++	return (len);
++}
+diff -urN /tmp/src.skel/lib/libc/locale/frune.c ./src.skel/lib/libc/locale/frune.c
+--- /tmp/src.skel/lib/libc/locale/frune.c	Thu Jan  1 09:00:00 1970
++++ ./src.skel/lib/libc/locale/frune.c	Mon Aug 16 20:46:28 1999
+@@ -0,0 +1,104 @@
++/*-
++ * Copyright (c) 1993
++ *	The Regents of the University of California.  All rights reserved.
++ *
++ * This code is derived from software contributed to Berkeley by
++ * Paul Borman at Krystal Technologies.
++ *
++ * Redistribution and use in source and binary forms, with or without
++ * modification, are permitted provided that the following conditions
++ * are met:
++ * 1. Redistributions of source code must retain the above copyright
++ *    notice, this list of conditions and the following disclaimer.
++ * 2. Redistributions in binary form must reproduce the above copyright
++ *    notice, this list of conditions and the following disclaimer in the
++ *    documentation and/or other materials provided with the distribution.
++ * 3. All advertising materials mentioning features or use of this software
++ *    must display the following acknowledgement:
++ *	This product includes software developed by the University of
++ *	California, Berkeley and its contributors.
++ * 4. Neither the name of the University nor the names of its contributors
++ *    may be used to endorse or promote products derived from this software
++ *    without specific prior written permission.
++ *
++ * THIS SOFTWARE IS PROVIDED BY THE REGENTS AND CONTRIBUTORS ``AS IS'' AND
++ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
++ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
++ * ARE DISCLAIMED.  IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE LIABLE
++ * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
++ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
++ * OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
++ * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
++ * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
++ * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
++ * SUCH DAMAGE.
++ */
++
++#include <sys/cdefs.h>
++#if defined(LIBC_SCCS) && !defined(lint)
++__RCSID("@(#)frune.c	8.1 (Berkeley) 6/4/93");
++#endif /* LIBC_SCCS and not lint */
++
++#include <limits.h>
++#include <rune.h>
++#include <stddef.h>
++#include <stdio.h>
++
++long
++fgetrune(fp)
++	FILE *fp;
++{
++	rune_t  r;
++	int c, len;
++	char buf[MB_LEN_MAX];
++	char const *result;
++
++	len = 0;
++	do {
++		if ((c = getc(fp)) == EOF) {
++			if (len)
++				break;
++			return (EOF);
++		}
++		buf[len++] = c;
++
++		if ((r = sgetrune(buf, len, &result)) != _INVALID_RUNE)
++			return (r);
++	} while (result == buf && len < MB_LEN_MAX);
++
++	while (--len > 0)
++		ungetc(buf[len], fp);
++	return (_INVALID_RUNE);
++}
++
++int
++fungetrune(r, fp)
++	rune_t r;
++	FILE* fp;
++{
++	int len;
++	char buf[MB_LEN_MAX];
++
++	len = sputrune(r, buf, MB_LEN_MAX, 0);
++	while (len-- > 0)
++		if (ungetc(buf[len], fp) == EOF)
++			return (EOF);
++	return (0);
++}
++
++int
++fputrune(r, fp)
++	rune_t r;
++	FILE *fp;
++{
++	int i, len;
++	char buf[MB_LEN_MAX];
++
++	len = sputrune(r, buf, MB_LEN_MAX, 0);
++
++	for (i = 0; i < len; ++i)
++		if (putc(buf[i], fp) == EOF)
++			return (EOF);
++
++	return (0);
++}
+diff -urN /tmp/src.skel/lib/libc/locale/mbrune.c ./src.skel/lib/libc/locale/mbrune.c
+--- /tmp/src.skel/lib/libc/locale/mbrune.c	Thu Jan  1 09:00:00 1970
++++ ./src.skel/lib/libc/locale/mbrune.c	Mon Aug 16 20:46:28 1999
+@@ -0,0 +1,113 @@
++/*-
++ * Copyright (c) 1993
++ *	The Regents of the University of California.  All rights reserved.
++ *
++ * This code is derived from software contributed to Berkeley by
++ * Paul Borman at Krystal Technologies.
++ *
++ * Redistribution and use in source and binary forms, with or without
++ * modification, are permitted provided that the following conditions
++ * are met:
++ * 1. Redistributions of source code must retain the above copyright
++ *    notice, this list of conditions and the following disclaimer.
++ * 2. Redistributions in binary form must reproduce the above copyright
++ *    notice, this list of conditions and the following disclaimer in the
++ *    documentation and/or other materials provided with the distribution.
++ * 3. All advertising materials mentioning features or use of this software
++ *    must display the following acknowledgement:
++ *	This product includes software developed by the University of
++ *	California, Berkeley and its contributors.
++ * 4. Neither the name of the University nor the names of its contributors
++ *    may be used to endorse or promote products derived from this software
++ *    without specific prior written permission.
++ *
++ * THIS SOFTWARE IS PROVIDED BY THE REGENTS AND CONTRIBUTORS ``AS IS'' AND
++ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
++ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
++ * ARE DISCLAIMED.  IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE LIABLE
++ * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
++ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
++ * OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
++ * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
++ * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
++ * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
++ * SUCH DAMAGE.
++ */
++
++#include <sys/cdefs.h>
++#if defined(LIBC_SCCS) && !defined(lint)
++__RCSID("@(#)mbrune.c	8.1 (Berkeley) 6/27/93");
++#endif /* LIBC_SCCS and not lint */
++
++#include <limits.h>
++#include <rune.h>
++#include <stddef.h>
++#include <string.h>
++
++char *
++mbrune(string, c)
++	const char *string;
++	rune_t c;
++{
++	char const *result;
++	rune_t r;
++
++	while ((r = sgetrune(string, MB_LEN_MAX, &result))) {
++		if (r == c)
++			return ((char *)string);
++		string = result == string ? string + 1 : result;
++	}
++
++	return (c == *string ? (char *)string : NULL);
++}
++
++char *
++mbrrune(string, c)
++	const char *string;
++	rune_t c;
++{
++	const char *last = 0;
++	char const *result;
++	rune_t  r;
++
++	while ((r = sgetrune(string, MB_LEN_MAX, &result))) {
++		if (r == c)
++			last = string;
++		string = result == string ? string + 1 : result;
++	}
++	return (c == *string ? (char *)string : (char *)last);
++}
++
++char *
++mbmb(string, pattern)
++	const char *string;
++	char *pattern;
++{
++	rune_t first, r;
++	size_t plen, slen;
++	char const *result;
++
++	plen = strlen(pattern);
++	slen = strlen(string);
++	if (plen > slen)
++		return (0);
++
++	first = sgetrune(pattern, plen, &result);
++	if (result == string)
++		return (0);
++
++	while (slen >= plen && (r = sgetrune(string, slen, &result))) {
++		if (r == first) {
++			if (strncmp(string, pattern, slen) == 0)
++				return ((char *) string);
++		}
++		if (result == string) {
++			--slen;
++			++string;
++		} else {
++			slen -= result - string;
++			string = result;
++		}
++	}
++	return (0);
++}
+diff -urN /tmp/src.skel/lib/libc/locale/mskanji.c ./src.skel/lib/libc/locale/mskanji.c
+--- /tmp/src.skel/lib/libc/locale/mskanji.c	Thu Jan  1 09:00:00 1970
++++ ./src.skel/lib/libc/locale/mskanji.c	Mon Aug 16 20:46:28 1999
+@@ -0,0 +1,80 @@
++/*
++ * mskanji.c - locale ja_JP.SJIS support
++ * Copyright (c) 1995
++ *	Sin'ichiro MIYATANI  Phase One Inc.  All rights reserved.
++ */
++
++#include <sys/cdefs.h>
++#if defined(LIBC_SCCS) && !defined(lint)
++__RCSID("@(#)mskanji.c	1.0 (Phase One) 5/5/95");
++#endif /* LIBC_SCCS and not lint */
++
++#include <sys/types.h>
++
++#include <errno.h>
++#include <rune.h>
++#include <stddef.h>
++#include <stdio.h>
++#include <stdlib.h>
++
++rune_t	_MSKanji_sgetrune __P((const char *, size_t, char const **));
++int	_MSKanji_sputrune __P((rune_t, char *, size_t, char **));
++int 	_MSKanji_init __P((_RuneLocale *));
++
++int
++_MSKanji_init(rl)
++	_RuneLocale *rl;
++{
++	rl->sgetrune = _MSKanji_sgetrune;
++	rl->sputrune = _MSKanji_sputrune;
++
++	_CurrentRuneLocale = rl;
++	__mb_cur_max = 2;
++	return (0);
++}
++
++rune_t
++_MSKanji_sgetrune(string, n, result)
++	const char *string;
++	size_t n;
++	char const **result;
++{
++	rune_t rune = 0;
++
++	if (n < 1 ) {
++		rune = _INVALID_RUNE;
++	} else {
++		rune = *( string++ ) & 0xff;
++		if ( ( rune > 0x80 && rune < 0xa0 )
++		|| ( rune >= 0xe0 && rune < 0xfa ) ) {
++			if ( n < 2 ) {
++				rune = (rune_t)_INVALID_RUNE;
++				--string;
++			} else {
++				rune = ( rune << 8 ) | ( *( string++ ) & 0xff );
++			}
++		}
++	}
++	if (result) *result = string;
++	return rune;
++}
++
++int
++_MSKanji_sputrune(c, string, n, result)
++	rune_t c;
++	char *string, **result;
++	size_t n;
++{
++	int	len, i;
++
++	len = ( c > 0x100 ) ? 2 : 1;
++	if ( n < len ) {
++		if ( result ) *result = (char *) 0;
++	} else {
++		if ( result ) *result = string + len;
++		for ( i = len; i-- > 0; ) {
++			*( string++ ) = c >> ( i << 3 );
++		}
++	}
++	return len;
++}
+diff -urN /tmp/src.skel/lib/libc/locale/none.c ./src.skel/lib/libc/locale/none.c
+--- /tmp/src.skel/lib/libc/locale/none.c	Thu Jan  1 09:00:00 1970
++++ ./src.skel/lib/libc/locale/none.c	Mon Aug 16 20:46:28 1999
+@@ -0,0 +1,94 @@
++/*-
++ * Copyright (c) 1993
++ *	The Regents of the University of California.  All rights reserved.
++ *
++ * This code is derived from software contributed to Berkeley by
++ * Paul Borman at Krystal Technologies.
++ *
++ * Redistribution and use in source and binary forms, with or without
++ * modification, are permitted provided that the following conditions
++ * are met:
++ * 1. Redistributions of source code must retain the above copyright
++ *    notice, this list of conditions and the following disclaimer.
++ * 2. Redistributions in binary form must reproduce the above copyright
++ *    notice, this list of conditions and the following disclaimer in the
++ *    documentation and/or other materials provided with the distribution.
++ * 3. All advertising materials mentioning features or use of this software
++ *    must display the following acknowledgement:
++ *	This product includes software developed by the University of
++ *	California, Berkeley and its contributors.
++ * 4. Neither the name of the University nor the names of its contributors
++ *    may be used to endorse or promote products derived from this software
++ *    without specific prior written permission.
++ *
++ * THIS SOFTWARE IS PROVIDED BY THE REGENTS AND CONTRIBUTORS ``AS IS'' AND
++ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
++ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
++ * ARE DISCLAIMED.  IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE LIABLE
++ * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
++ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
++ * OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
++ * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
++ * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
++ * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
++ * SUCH DAMAGE.
++ */
++
++#include <sys/cdefs.h>
++#if defined(LIBC_SCCS) && !defined(lint)
++__RCSID("@(#)none.c	8.1 (Berkeley) 6/4/93");
++#endif /* LIBC_SCCS and not lint */
++
++#include <stddef.h>
++#include <stdio.h>
++#include <rune.h>
++#include <errno.h>
++#include <stdlib.h>
++
++rune_t	_none_sgetrune __P((const char *, size_t, char const **));
++int	_none_sputrune __P((rune_t, char *, size_t, char **));
++int 	_none_init __P((_RuneLocale *));
++
++int
++_none_init(rl)
++	_RuneLocale *rl;
++{
++	rl->sgetrune = _none_sgetrune;
++	rl->sputrune = _none_sputrune;
++	_CurrentRuneLocale = rl;
++	__mb_cur_max = 1;
++	return(0);
++}
++
++rune_t
++_none_sgetrune(string, n, result)
++	const char *string;
++	size_t n;
++	char const **result;
++{
++
++	if (n < 1) {
++		if (result)
++			*result = string;
++		return(_INVALID_RUNE);
++	}
++	if (result)
++		*result = string + 1;
++	return(*string & 0xff);
++}
++
++int
++_none_sputrune(c, string, n, result)
++	rune_t c;
++	char *string, **result;
++	size_t n;
++{
++	if (n >= 1) {
++		if (string)
++			*string = c;
++		if (result)
++			*result = string + 1;
++	} else if (result)
++		*result = (char *)0;
++	return(1);
++}
+diff -urN /tmp/src.skel/lib/libc/locale/rune.c ./src.skel/lib/libc/locale/rune.c
+--- /tmp/src.skel/lib/libc/locale/rune.c	Thu Jan  1 09:00:00 1970
++++ ./src.skel/lib/libc/locale/rune.c	Mon Aug 16 20:46:28 1999
+@@ -0,0 +1,338 @@
++/*-
++ * Copyright (c) 1993
++ *	The Regents of the University of California.  All rights reserved.
++ *
++ * This code is derived from software contributed to Berkeley by
++ * Paul Borman at Krystal Technologies.
++ *
++ * Redistribution and use in source and binary forms, with or without
++ * modification, are permitted provided that the following conditions
++ * are met:
++ * 1. Redistributions of source code must retain the above copyright
++ *    notice, this list of conditions and the following disclaimer.
++ * 2. Redistributions in binary form must reproduce the above copyright
++ *    notice, this list of conditions and the following disclaimer in the
++ *    documentation and/or other materials provided with the distribution.
++ * 3. All advertising materials mentioning features or use of this software
++ *    must display the following acknowledgement:
++ *	This product includes software developed by the University of
++ *	California, Berkeley and its contributors.
++ * 4. Neither the name of the University nor the names of its contributors
++ *    may be used to endorse or promote products derived from this software
++ *    without specific prior written permission.
++ *
++ * THIS SOFTWARE IS PROVIDED BY THE REGENTS AND CONTRIBUTORS ``AS IS'' AND
++ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
++ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
++ * ARE DISCLAIMED.  IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE LIABLE
++ * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
++ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
++ * OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
++ * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
++ * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
++ * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
++ * SUCH DAMAGE.
++ */
++
++#include <sys/cdefs.h>
++#if defined(LIBC_SCCS) && !defined(lint)
++__RCSID("@(#)rune.c	8.1 (Berkeley) 6/4/93");
++#endif /* LIBC_SCCS and not lint */
++
++#include <sys/types.h>
++#include <sys/stat.h>
++
++#include <ctype.h>
++#include <errno.h>
++#include <limits.h>
++#include <rune.h>
++#include <stdio.h>
++#include <stdlib.h>
++#include <paths.h>
++
++extern int		_none_init __P((_RuneLocale *));
++extern int		_UTF2_init __P((_RuneLocale *));
++extern int		_EUC_init __P((_RuneLocale *));
++extern int		_MSKanji_init __P((_RuneLocale *));
++static _RuneLocale	*_Read_RuneMagi __P((FILE *));
++
++static char *PathLocale = 0;
++
++int
++setrunelocale(encoding)
++	char *encoding;
++{
++	FILE *fp;
++	char name[PATH_MAX];
++	_RuneLocale *rl;
++
++	if (!encoding)
++	    return(EFAULT);
++
++	/*
++	 * The "C" and "POSIX" locale are always here.
++	 */
++	if (!strcmp(encoding, "C") || !strcmp(encoding, "POSIX")) {
++		_CurrentRuneLocale = &_DefaultRuneLocale;
++		return(0);
++	}
++
++	if (!PathLocale)
++		PathLocale = _PATH_LOCALE;
++
++	sprintf(name, "%s/%s/LC_CTYPE", PathLocale, encoding);
++
++	if ((fp = fopen(name, "r")) == NULL)
++		return(ENOENT);
++
++	if ((rl = _Read_RuneMagi(fp)) == 0) {
++		fclose(fp);
++		return(EFTYPE);
++	}
++
++	if (!rl->encoding[0] || !strcmp(rl->encoding, "UTF2")) {
++		return(_UTF2_init(rl));
++	} else if (!strcmp(rl->encoding, "NONE")) {
++		return(_none_init(rl));
++	} else if (!strcmp(rl->encoding, "EUC")) {
++		return(_EUC_init(rl));
++	} else if (!strcmp(rl->encoding, "MSKanji")) {
++		return(_MSKanji_init(rl));
++	} else
++		return(EINVAL);
++}
++
++void
++setinvalidrune(ir)
++	rune_t ir;
++{
++	_INVALID_RUNE = ir;
++}
++
++static _RuneLocale *
++_Read_RuneMagi(fp)
++	FILE *fp;
++{
++	char *data;
++	void *lastp;
++	_RuneLocale *rl;
++	_RuneEntry *rr;
++	struct stat sb;
++	int x;
++
++	if (fstat(fileno(fp), &sb) < 0)
++		return(0);
++
++	if (sb.st_size < sizeof(_RuneLocale))
++		return(0);
++
++	if ((data = malloc(sb.st_size)) == NULL)
++		return(0);
++
++	rewind(fp); /* Someone might have read the magic number once already */
++
++	if (fread(data, sb.st_size, 1, fp) != 1) {
++		free(data);
++		return(0);
++	}
++
++	rl = (_RuneLocale *)data;
++	lastp = data + sb.st_size;
++
++	rl->variable = rl + 1;
++
++	if (memcmp(rl->magic, _RUNE_MAGIC_1, sizeof(rl->magic))) {
++		free(data);
++		return(0);
++	}
++
++	rl->invalid_rune = ntohl(rl->invalid_rune);
++	rl->variable_len = ntohl(rl->variable_len);
++	rl->runetype_ext.nranges = ntohl(rl->runetype_ext.nranges);
++	rl->maplower_ext.nranges = ntohl(rl->maplower_ext.nranges);
++	rl->mapupper_ext.nranges = ntohl(rl->mapupper_ext.nranges);
++
++	for (x = 0; x < _CACHED_RUNES; ++x) {
++		rl->runetype[x] = ntohl(rl->runetype[x]);
++		rl->maplower[x] = ntohl(rl->maplower[x]);
++		rl->mapupper[x] = ntohl(rl->mapupper[x]);
++	}
++
++	rl->runetype_ext.ranges = (_RuneEntry *)rl->variable;
++	rl->variable = rl->runetype_ext.ranges + rl->runetype_ext.nranges;
++	if (rl->variable > lastp) {
++		free(data);
++		return(0);
++	}
++
++	rl->maplower_ext.ranges = (_RuneEntry *)rl->variable;
++	rl->variable = rl->maplower_ext.ranges + rl->maplower_ext.nranges;
++	if (rl->variable > lastp) {
++		free(data);
++		return(0);
++	}
++
++	rl->mapupper_ext.ranges = (_RuneEntry *)rl->variable;
++	rl->variable = rl->mapupper_ext.ranges + rl->mapupper_ext.nranges;
++	if (rl->variable > lastp) {
++		free(data);
++		return(0);
++	}
++
++	for (x = 0; x < rl->runetype_ext.nranges; ++x) {
++		rr = rl->runetype_ext.ranges;
++
++		rr[x].min = ntohl(rr[x].min);
++		rr[x].max = ntohl(rr[x].max);
++		if ((rr[x].map = ntohl(rr[x].map)) == 0) {
++			int len = rr[x].max - rr[x].min + 1;
++			rr[x].types = rl->variable;
++			rl->variable = rr[x].types + len;
++			if (rl->variable > lastp) {
++				free(data);
++				return(0);
++			}
++			while (len-- > 0)
++				rr[x].types[len] = ntohl(rr[x].types[len]);
++		} else
++			rr[x].types = 0;
++	}
++
++	for (x = 0; x < rl->maplower_ext.nranges; ++x) {
++		rr = rl->maplower_ext.ranges;
++
++		rr[x].min = ntohl(rr[x].min);
++		rr[x].max = ntohl(rr[x].max);
++		rr[x].map = ntohl(rr[x].map);
++	}
++
++	for (x = 0; x < rl->mapupper_ext.nranges; ++x) {
++		rr = rl->mapupper_ext.ranges;
++
++		rr[x].min = ntohl(rr[x].min);
++		rr[x].max = ntohl(rr[x].max);
++		rr[x].map = ntohl(rr[x].map);
++	}
++	if (((char *)rl->variable) + rl->variable_len > (char *)lastp) {
++		free(data);
++		return(0);
++	}
++
++	/*
++	 * Go out and zero pointers that should be zero.
++	 */
++	if (!rl->variable_len)
++		rl->variable = 0;
++
++	if (!rl->runetype_ext.nranges)
++		rl->runetype_ext.ranges = 0;
++
++	if (!rl->maplower_ext.nranges)
++		rl->maplower_ext.ranges = 0;
++
++	if (!rl->mapupper_ext.nranges)
++		rl->mapupper_ext.ranges = 0;
++	    
++	return(rl);
++}
++
++unsigned long
++___runetype(c)
++	_BSD_RUNE_T_ c;
++{
++	int x;
++	_RuneRange *rr = &_CurrentRuneLocale->runetype_ext;
++	_RuneEntry *re = rr->ranges;
++
++	if (c == EOF)
++		return(0);
++	for (x = 0; x < rr->nranges; ++x, ++re) {
++		if (c < re->min)
++			return(0L);
++		if (c <= re->max) {
++			if (re->types)
++			    return(re->types[c - re->min]);
++			else
++			    return(re->map);
++		}
++	}
++	return(0L);
++}
++
++_BSD_RUNE_T_
++___toupper(c)
++	_BSD_RUNE_T_ c;
++{
++	int x;
++	_RuneRange *rr = &_CurrentRuneLocale->mapupper_ext;
++	_RuneEntry *re = rr->ranges;
++
++	if (c == EOF)
++		return(EOF);
++	for (x = 0; x < rr->nranges; ++x, ++re) {
++		if (c < re->min)
++			return(c);
++		if (c <= re->max)
++			return(re->map + c - re->min);
++	}
++	return(c);
++}
++
++_BSD_RUNE_T_
++___tolower(c)
++	_BSD_RUNE_T_ c;
++{
++	int x;
++	_RuneRange *rr = &_CurrentRuneLocale->maplower_ext;
++	_RuneEntry *re = rr->ranges;
++
++	if (c == EOF)
++		return(EOF);
++	for (x = 0; x < rr->nranges; ++x, ++re) {
++		if (c < re->min)
++			return(c);
++		if (c <= re->max)
++			return(re->map + c - re->min);
++	}
++	return(c);
++}
++
++
++#if !defined(_USE_CTYPE_INLINE_) && !defined(_USE_CTYPE_MACROS_)
++/*
++ * See comments in <machine/ansi.h>
++ */
++int
++__istype(c, f)
++	_BSD_RUNE_T_ c;
++	unsigned long f;
++{
++	return ((((c & _CRMASK) ? ___runetype(c)
++           : _CurrentRuneLocale->runetype[c]) & f) ? 1 : 0);
++}
++
++int
++__isctype(c, f)
++	_BSD_RUNE_T_ c;
++	unsigned long f;
++{
++	return ((((c & _CRMASK) ? 0
++           : _DefaultRuneLocale.runetype[c]) & f) ? 1 : 0);
++}
++
++_BSD_RUNE_T_
++toupper(c)
++	_BSD_RUNE_T_ c;
++{
++	return ((c & _CRMASK) ?
++	    ___toupper(c) : _CurrentRuneLocale->mapupper[c]);
++}
++
++_BSD_RUNE_T_
++tolower(c)
++	_BSD_RUNE_T_ c;
++{
++	return ((c & _CRMASK) ?
++	    ___tolower(c) : _CurrentRuneLocale->maplower[c]);
++}
++#endif
+diff -urN /tmp/src.skel/lib/libc/locale/rune_compat.c ./src.skel/lib/libc/locale/rune_compat.c
+--- /tmp/src.skel/lib/libc/locale/rune_compat.c	Thu Jan  1 09:00:00 1970
++++ ./src.skel/lib/libc/locale/rune_compat.c	Mon Aug 16 20:46:28 1999
+@@ -0,0 +1,232 @@
++/*-
++ * Copyright (c) 1993
++ *	The Regents of the University of California.  All rights reserved.
++ *
++ * This code is derived from software contributed to Berkeley by
++ * Paul Borman at Krystal Technologies.
++ *
++ * Redistribution and use in source and binary forms, with or without
++ * modification, are permitted provided that the following conditions
++ * are met:
++ * 1. Redistributions of source code must retain the above copyright
++ *    notice, this list of conditions and the following disclaimer.
++ * 2. Redistributions in binary form must reproduce the above copyright
++ *    notice, this list of conditions and the following disclaimer in the
++ *    documentation and/or other materials provided with the distribution.
++ * 3. All advertising materials mentioning features or use of this software
++ *    must display the following acknowledgement:
++ *	This product includes software developed by the University of
++ *	California, Berkeley and its contributors.
++ * 4. Neither the name of the University nor the names of its contributors
++ *    may be used to endorse or promote products derived from this software
++ *    without specific prior written permission.
++ *
++ * THIS SOFTWARE IS PROVIDED BY THE REGENTS AND CONTRIBUTORS ``AS IS'' AND
++ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
++ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
++ * ARE DISCLAIMED.  IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE LIABLE
++ * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
++ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
++ * OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
++ * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
++ * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
++ * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
++ * SUCH DAMAGE.
++ */
++#include <sys/types.h>
++
++#define	_A	0x00000100L		/* Alpha */
++#define	_C	0x00000200L		/* Control */
++#define	_D	0x00000400L		/* Digit */
++#define	_G	0x00000800L		/* Graph */
++#define	_L	0x00001000L		/* Lower */
++#define	_P	0x00002000L		/* Punct */
++#define	_S	0x00004000L		/* Space */
++#define	_U	0x00008000L		/* Upper */
++#define	_X	0x00010000L		/* X digit */
++#define	_B	0x00020000L		/* Blank */
++#define	_R	0x00040000L		/* Print */
++#define	_I	0x00080000L		/* Ideogram */
++#define	_T	0x00100000L		/* Special */
++#define	_Q	0x00200000L		/* Phonogram */
++
++#define	_BSD_RUNE_T_	int
++
++typedef	_BSD_RUNE_T_	rune_t;
++
++#define	_CACHED_RUNES	(1 <<8 )	/* Must be a power of 2 */
++#define	_CRMASK		(~(_CACHED_RUNES - 1))
++
++typedef struct {
++	rune_t		min;		/* First rune of the range */
++	rune_t		max;		/* Last rune (inclusive) of the range */
++	rune_t		map;		/* What first maps to in maps */
++	unsigned long	*types;		/* Array of types in range */
++} _RuneEntry;
++
++typedef struct {
++	int		nranges;	/* Number of ranges stored */
++	_RuneEntry	*ranges;	/* Pointer to the ranges */
++} _RuneRange;
++
++typedef struct {
++	char		magic[8];	/* Magic saying what version we are */
++	char		encoding[32];	/* ASCII name of this encoding */
++
++	rune_t		(*sgetrune)
++	    __P((const char *, unsigned int, char const **));
++	int		(*sputrune)
++	    __P((rune_t, char *, unsigned int, char **));
++	rune_t		invalid_rune;
++
++	unsigned long	runetype[_CACHED_RUNES];
++	rune_t		maplower[_CACHED_RUNES];
++	rune_t		mapupper[_CACHED_RUNES];
++
++	/*
++	 * The following are to deal with Runes larger than _CACHED_RUNES - 1.
++	 * Their data is actually contiguous with this structure so as to make
++	 * it easier to read/write from/to disk.
++	 */
++	_RuneRange	runetype_ext;
++	_RuneRange	maplower_ext;
++	_RuneRange	mapupper_ext;
++
++	void		*variable;	/* Data which depends on the encoding */
++	int		variable_len;	/* how long that data is */
++} _RuneLocale;
++
++#define	_RUNE_MAGIC_1	"RuneMagi"	/* Indicates version 0 of RuneLocale */
++
++_RuneLocale _DefaultRuneLocale = {
++    _RUNE_MAGIC_1,
++    "none",
++    0,
++    0,
++    0xFFFD,
++
++    {	/*00*/	_C,		_C,		_C,		_C,
++		_C,		_C,		_C,		_C,
++	/*08*/	_C,		_C|_S|_B,	_C|_S,		_C|_S,
++		_C|_S,		_C|_S,		_C,		_C,
++	/*10*/	_C,		_C,		_C,		_C,
++		_C,		_C,		_C,		_C,
++	/*18*/	_C,		_C,		_C,		_C,
++		_C,		_C,		_C,		_C,
++	/*20*/	_S|_B|_R,	_P|_R|_G,	_P|_R|_G,	_P|_R|_G,
++		_P|_R|_G,	_P|_R|_G,	_P|_R|_G,	_P|_R|_G,
++	/*28*/	_P|_R|_G,	_P|_R|_G,	_P|_R|_G,	_P|_R|_G,
++		_P|_R|_G,	_P|_R|_G,	_P|_R|_G,	_P|_R|_G,
++	/*30*/	_D|_R|_G|_X|0,	_D|_R|_G|_X|1,	_D|_R|_G|_X|2,	_D|_R|_G|_X|3,
++		_D|_R|_G|_X|4,	_D|_R|_G|_X|5,	_D|_R|_G|_X|6,	_D|_R|_G|_X|7,
++	/*38*/	_D|_R|_G|_X|8,	_D|_R|_G|_X|9,	_P|_R|_G,	_P|_R|_G,
++		_P|_R|_G,	_P|_R|_G,	_P|_R|_G,	_P|_R|_G,
++	/*40*/	_P|_R|_G, _U|_X|_R|_G|_A|10, _U|_X|_R|_G|_A|11, _U|_X|_R|_G|_A|12,
++		_U|_X|_R|_G|_A|13, _U|_X|_R|_G|_A|14, _U|_X|_R|_G|_A|15, _U|_R|_G|_A,
++	/*48*/	_U|_R|_G|_A,	_U|_R|_G|_A,	_U|_R|_G|_A,	_U|_R|_G|_A,
++		_U|_R|_G|_A,	_U|_R|_G|_A,	_U|_R|_G|_A,	_U|_R|_G|_A,
++	/*50*/	_U|_R|_G|_A,	_U|_R|_G|_A,	_U|_R|_G|_A,	_U|_R|_G|_A,
++		_U|_R|_G|_A,	_U|_R|_G|_A,	_U|_R|_G|_A,	_U|_R|_G|_A,
++	/*58*/	_U|_R|_G|_A,	_U|_R|_G|_A,	_U|_R|_G|_A,	_P|_R|_G,
++		_P|_R|_G,	_P|_R|_G,	_P|_R|_G,	_P|_R|_G,
++	/*60*/	_P|_R|_G, _L|_X|_R|_G|_A|10, _L|_X|_R|_G|_A|11, _L|_X|_R|_G|_A|12,
++		_L|_X|_R|_G|_A|13, _L|_X|_R|_G|_A|14, _L|_X|_R|_G|_A|15, _L|_R|_G|_A,
++	/*68*/	_L|_R|_G|_A,	_L|_R|_G|_A,	_L|_R|_G|_A,	_L|_R|_G|_A,
++		_L|_R|_G|_A,	_L|_R|_G|_A,	_L|_R|_G|_A,	_L|_R|_G|_A,
++	/*70*/	_L|_R|_G|_A,	_L|_R|_G|_A,	_L|_R|_G|_A,	_L|_R|_G|_A,
++		_L|_R|_G|_A,	_L|_R|_G|_A,	_L|_R|_G|_A,	_L|_R|_G|_A,
++	/*78*/	_L|_R|_G|_A,	_L|_R|_G|_A,	_L|_R|_G|_A,	_P|_R|_G,
++		_P|_R|_G,	_P|_R|_G,	_P|_R|_G,	_C,
++    },
++    {	0x00,	0x01,	0x02,	0x03,	0x04,	0x05,	0x06,	0x07,
++     	0x08,	0x09,	0x0a,	0x0b,	0x0c,	0x0d,	0x0e,	0x0f,
++	0x10,	0x11,	0x12,	0x13,	0x14,	0x15,	0x16,	0x17,
++     	0x18,	0x19,	0x1a,	0x1b,	0x1c,	0x1d,	0x1e,	0x1f,
++	0x20,	0x21,	0x22,	0x23,	0x24,	0x25,	0x26,	0x27,
++     	0x28,	0x29,	0x2a,	0x2b,	0x2c,	0x2d,	0x2e,	0x2f,
++	0x30,	0x31,	0x32,	0x33,	0x34,	0x35,	0x36,	0x37,
++     	0x38,	0x39,	0x3a,	0x3b,	0x3c,	0x3d,	0x3e,	0x3f,
++	0x40,	'a',	'b',	'c',	'd',	'e',	'f',	'g',
++     	'h',	'i',	'j',	'k',	'l',	'm',	'n',	'o',
++	'p',	'q',	'r',	's',	't',	'u',	'v',	'w',
++     	'x',	'y',	'z',	0x5b,	0x5c,	0x5d,	0x5e,	0x5f,
++	0x60,	'a',	'b',	'c',	'd',	'e',	'f',	'g',
++     	'h',	'i',	'j',	'k',	'l',	'm',	'n',	'o',
++	'p',	'q',	'r',	's',	't',	'u',	'v',	'w',
++     	'x',	'y',	'z',	0x7b,	0x7c,	0x7d,	0x7e,	0x7f,
++	0x80,	0x81,	0x82,	0x83,	0x84,	0x85,	0x86,	0x87,
++     	0x88,	0x89,	0x8a,	0x8b,	0x8c,	0x8d,	0x8e,	0x8f,
++	0x90,	0x91,	0x92,	0x93,	0x94,	0x95,	0x96,	0x97,
++     	0x98,	0x99,	0x9a,	0x9b,	0x9c,	0x9d,	0x9e,	0x9f,
++	0xa0,	0xa1,	0xa2,	0xa3,	0xa4,	0xa5,	0xa6,	0xa7,
++     	0xa8,	0xa9,	0xaa,	0xab,	0xac,	0xad,	0xae,	0xaf,
++	0xb0,	0xb1,	0xb2,	0xb3,	0xb4,	0xb5,	0xb6,	0xb7,
++     	0xb8,	0xb9,	0xba,	0xbb,	0xbc,	0xbd,	0xbe,	0xbf,
++	0xc0,	0xc1,	0xc2,	0xc3,	0xc4,	0xc5,	0xc6,	0xc7,
++     	0xc8,	0xc9,	0xca,	0xcb,	0xcc,	0xcd,	0xce,	0xcf,
++	0xd0,	0xd1,	0xd2,	0xd3,	0xd4,	0xd5,	0xd6,	0xd7,
++     	0xd8,	0xd9,	0xda,	0xdb,	0xdc,	0xdd,	0xde,	0xdf,
++	0xe0,	0xe1,	0xe2,	0xe3,	0xe4,	0xe5,	0xe6,	0xe7,
++     	0xe8,	0xe9,	0xea,	0xeb,	0xec,	0xed,	0xee,	0xef,
++	0xf0,	0xf1,	0xf2,	0xf3,	0xf4,	0xf5,	0xf6,	0xf7,
++     	0xf8,	0xf9,	0xfa,	0xfb,	0xfc,	0xfd,	0xfe,	0xff,
++    },
++    {	0x00,	0x01,	0x02,	0x03,	0x04,	0x05,	0x06,	0x07,
++     	0x08,	0x09,	0x0a,	0x0b,	0x0c,	0x0d,	0x0e,	0x0f,
++	0x10,	0x11,	0x12,	0x13,	0x14,	0x15,	0x16,	0x17,
++     	0x18,	0x19,	0x1a,	0x1b,	0x1c,	0x1d,	0x1e,	0x1f,
++	0x20,	0x21,	0x22,	0x23,	0x24,	0x25,	0x26,	0x27,
++     	0x28,	0x29,	0x2a,	0x2b,	0x2c,	0x2d,	0x2e,	0x2f,
++	0x30,	0x31,	0x32,	0x33,	0x34,	0x35,	0x36,	0x37,
++     	0x38,	0x39,	0x3a,	0x3b,	0x3c,	0x3d,	0x3e,	0x3f,
++	0x40,	'A',	'B',	'C',	'D',	'E',	'F',	'G',
++     	'H',	'I',	'J',	'K',	'L',	'M',	'N',	'O',
++	'P',	'Q',	'R',	'S',	'T',	'U',	'V',	'W',
++     	'X',	'Y',	'Z',	0x5b,	0x5c,	0x5d,	0x5e,	0x5f,
++	0x60,	'A',	'B',	'C',	'D',	'E',	'F',	'G',
++     	'H',	'I',	'J',	'K',	'L',	'M',	'N',	'O',
++	'P',	'Q',	'R',	'S',	'T',	'U',	'V',	'W',
++     	'X',	'Y',	'Z',	0x7b,	0x7c,	0x7d,	0x7e,	0x7f,
++	0x80,	0x81,	0x82,	0x83,	0x84,	0x85,	0x86,	0x87,
++     	0x88,	0x89,	0x8a,	0x8b,	0x8c,	0x8d,	0x8e,	0x8f,
++	0x90,	0x91,	0x92,	0x93,	0x94,	0x95,	0x96,	0x97,
++     	0x98,	0x99,	0x9a,	0x9b,	0x9c,	0x9d,	0x9e,	0x9f,
++	0xa0,	0xa1,	0xa2,	0xa3,	0xa4,	0xa5,	0xa6,	0xa7,
++     	0xa8,	0xa9,	0xaa,	0xab,	0xac,	0xad,	0xae,	0xaf,
++	0xb0,	0xb1,	0xb2,	0xb3,	0xb4,	0xb5,	0xb6,	0xb7,
++     	0xb8,	0xb9,	0xba,	0xbb,	0xbc,	0xbd,	0xbe,	0xbf,
++	0xc0,	0xc1,	0xc2,	0xc3,	0xc4,	0xc5,	0xc6,	0xc7,
++     	0xc8,	0xc9,	0xca,	0xcb,	0xcc,	0xcd,	0xce,	0xcf,
++	0xd0,	0xd1,	0xd2,	0xd3,	0xd4,	0xd5,	0xd6,	0xd7,
++     	0xd8,	0xd9,	0xda,	0xdb,	0xdc,	0xdd,	0xde,	0xdf,
++	0xe0,	0xe1,	0xe2,	0xe3,	0xe4,	0xe5,	0xe6,	0xe7,
++     	0xe8,	0xe9,	0xea,	0xeb,	0xec,	0xed,	0xee,	0xef,
++	0xf0,	0xf1,	0xf2,	0xf3,	0xf4,	0xf5,	0xf6,	0xf7,
++     	0xf8,	0xf9,	0xfa,	0xfb,	0xfc,	0xfd,	0xfe,	0xff,
++    },
++};
++
++_RuneLocale *_CurrentRuneLocale = &_DefaultRuneLocale;
++
++int __mb_cur_max = 1;
++
++unsigned long
++___runetype(c)
++	_BSD_RUNE_T_ c;
++{
++	return(0L);
++}
++
++_BSD_RUNE_T_
++___toupper(c)
++	_BSD_RUNE_T_ c;
++{
++	return(c);
++}
++
++_BSD_RUNE_T_
++___tolower(c)
++	_BSD_RUNE_T_ c;
++{
++	return(c);
++}
+diff -urN /tmp/src.skel/lib/libc/locale/setlocale.3 ./src.skel/lib/libc/locale/setlocale.3
+--- /tmp/src.skel/lib/libc/locale/setlocale.3	Thu Jan  1 09:00:00 1970
++++ ./src.skel/lib/libc/locale/setlocale.3	Mon Aug 16 21:14:02 1999
+@@ -0,0 +1,322 @@
++.\"	$NetBSD: setlocale.3,v 1.6 1999/03/22 19:44:49 garbled Exp $
++.\"
++.\" Copyright (c) 1993
++.\"	The Regents of the University of California.  All rights reserved.
++.\"
++.\" This code is derived from software contributed to Berkeley by
++.\" Donn Seeley at BSDI.
++.\"
++.\" Redistribution and use in source and binary forms, with or without
++.\" modification, are permitted provided that the following conditions
++.\" are met:
++.\" 1. Redistributions of source code must retain the above copyright
++.\"    notice, this list of conditions and the following disclaimer.
++.\" 2. Redistributions in binary form must reproduce the above copyright
++.\"    notice, this list of conditions and the following disclaimer in the
++.\"    documentation and/or other materials provided with the distribution.
++.\" 3. All advertising materials mentioning features or use of this software
++.\"    must display the following acknowledgement:
++.\"	This product includes software developed by the University of
++.\"	California, Berkeley and its contributors.
++.\" 4. Neither the name of the University nor the names of its contributors
++.\"    may be used to endorse or promote products derived from this software
++.\"    without specific prior written permission.
++.\"
++.\" THIS SOFTWARE IS PROVIDED BY THE REGENTS AND CONTRIBUTORS ``AS IS'' AND
++.\" ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
++.\" IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
++.\" ARE DISCLAIMED.  IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE LIABLE
++.\" FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
++.\" DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
++.\" OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
++.\" HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
++.\" LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
++.\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
++.\" SUCH DAMAGE.
++.\"
++.\"	@(#)setlocale.3	8.1 (Berkeley) 6/9/93
++.\"
++.Dd June 9, 1993
++.Dt SETLOCALE 3
++.Os
++.Sh NAME
++.Nm setlocale ,
++.Nm localeconv
++.Nd natural language formatting for C
++.Sh LIBRARY
++.Lb libc
++.Sh SYNOPSIS
++.Fd #include <locale.h>
++.Ft char *
++.Fn setlocale "int category" "const char *locale"
++.Ft struct lconv *
++.Fn localeconv "void"
++.Sh DESCRIPTION
++The
++.Fn setlocale
++function sets the C library's notion
++of natural language formatting style
++for particular sets of routines.
++Each such style is called a
++.Sq locale
++and is invoked using an appropriate name passed as a C string.
++The
++.Fn localeconv
++routine returns the current locale's parameters
++for formatting numbers.
++.Pp
++The
++.Fn setlocale
++function recognizes several categories of routines.
++These are the categories and the sets of routines they select:
++.Pp
++.Bl -tag -width LC_MONETARY
++.It Dv LC_ALL
++Set the entire locale generically.
++.It Dv LC_COLLATE
++Set a locale for string collation routines.
++This controls alphabetic ordering in
++.Fn strcoll
++and
++.Fn strxfrm .
++.It Dv LC_CTYPE
++Set a locale for the
++.Xr ctype 3
++functions.
++This controls recognition of upper and lower case,
++alphabetic or non-alphabetic characters,
++and so on.  The real work is done by the
++.Fn setrunelocale
++function.
++.It Dv LC_MONETARY
++Set a locale for formatting monetary values;
++this affects the
++.Fn localeconv
++function.
++.It Dv LC_NUMERIC
++Set a locale for formatting numbers.
++This controls the formatting of decimal points
++in input and output of floating point numbers
++in functions such as
++.Fn printf
++and
++.Fn scanf ,
++as well as values returned by
++.Fn localeconv .
++.It Dv LC_TIME
++Set a locale for formatting dates and times using the
++.Fn strftime
++function.
++.El
++.Pp
++Only three locales are defined by default,
++the empty string
++.Li "\&""\|""
++which denotes the native environment, and the
++.Li "\&""C""
++and
++.Li "\&""POSIX""
++locales, which denote the C language environment.
++A
++.Fa locale
++argument of
++.Dv NULL
++causes
++.Fn setlocale
++to return the current locale.
++By default, C programs start in the
++.Li "\&""C""
++locale.
++The only function in the library that sets the locale is
++.Fn setlocale ;
++the locale is never changed as a side effect of some other routine.
++.Pp
++The
++.Fn localeconv
++function returns a pointer to a structure
++which provides parameters for formatting numbers,
++especially currency values:
++.Bd -literal -offset indent
++struct lconv {
++	char	*decimal_point;
++	char	*thousands_sep;
++	char	*grouping;
++	char	*int_curr_symbol;
++	char	*currency_symbol;
++	char	*mon_decimal_point;
++	char	*mon_thousands_sep;
++	char	*mon_grouping;
++	char	*positive_sign;
++	char	*negative_sign;
++	char	int_frac_digits;
++	char	frac_digits;
++	char	p_cs_precedes;
++	char	p_sep_by_space;
++	char	n_cs_precedes;
++	char	n_sep_by_space;
++	char	p_sign_posn;
++	char	n_sign_posn;
++};
++.Ed
++.Pp
++The individual fields have the following meanings:
++.Pp
++.Bl -tag -width mon_decimal_point
++.It Fa decimal_point
++The decimal point character, except for currency values.
++.It Fa thousands_sep
++The separator between groups of digits
++before the decimal point, except for currency values.
++.It Fa grouping
++The sizes of the groups of digits, except for currency values.
++This is a pointer to a vector of integers, each of size
++.Va char ,
++representing group size from low order digit groups
++to high order (right to left).
++The list may be terminated with 0 or
++.Dv CHAR_MAX .
++If the list is terminated with 0,
++the last group size before the 0 is repeated to account for all the digits.
++If the list is terminated with
++.Dv CHAR_MAX ,
++no more grouping is performed.
++.It Fa int_curr_symbol
++The standardized international currency symbol.
++.It Fa currency_symbol
++The local currency symbol.
++.It Fa mon_decimal_point
++The decimal point character for currency values.
++.It Fa mon_thousands_sep
++The separator for digit groups in currency values.
++.It Fa mon_grouping
++Like
++.Fa grouping
++but for currency values.
++.It Fa positive_sign
++The character used to denote nonnegative currency values,
++usually the empty string.
++.It Fa negative_sign
++The character used to denote negative currency values,
++usually a minus sign.
++.It Fa int_frac_digits
++The number of digits after the decimal point
++in an international-style currency value.
++.It Fa frac_digits
++The number of digits after the decimal point
++in the local style for currency values.
++.It Fa p_cs_precedes
++1 if the currency symbol precedes the currency value
++for nonnegative values, 0 if it follows.
++.It Fa p_sep_by_space
++1 if a space is inserted between the currency symbol
++and the currency value for nonnegative values, 0 otherwise.
++.It Fa n_cs_precedes
++Like
++.Fa p_cs_precedes
++but for negative values.
++.It Fa n_sep_by_space
++Like
++.Fa p_sep_by_space
++but for negative values.
++.It Fa p_sign_posn
++The location of the
++.Fa positive_sign
++with respect to a nonnegative quantity and the
++.Fa currency_symbol ,
++coded as follows:
++.Bl -tag -width 3n -compact
++.It Li 0
++Parentheses around the entire string.
++.It Li 1
++Before the string.
++.It Li 2
++After the string.
++.It Li 3
++Just before
++.Fa currency_symbol .
++.It Li 4
++Just after
++.Fa currency_symbol .
++.El
++.It Fa n_sign_posn
++Like
++.Fa p_sign_posn
++but for negative currency values.
++.El
++.Pp
++Unless mentioned above,
++an empty string as a value for a field
++indicates a zero length result or
++a value that is not in the current locale.
++A
++.Dv CHAR_MAX
++result similarly denotes an unavailable value.
++.Sh "RETURN VALUES
++The
++.Fn setlocale
++function returns
++.Dv NULL
++and fails to change the locale
++if the given combination of
++.Fa category
++and
++.Fa locale
++makes no sense.
++The
++.Fn localeconv
++function returns a pointer to a static object
++which may be altered by later calls to
++.Fn setlocale
++or
++.Fn localeconv .
++.Sh FILES
++.Bl -tag -width /usr/share/locale/locale/category -compact
++.It Pa $PATH_LOCALE/\fIlocale\fP/\fIcategory\fP
++.It Pa /usr/share/locale/\fIlocale\fP/\fIcategory\fP
++locale file for the locale \fIlocale\fP
++and the category \fIcategory\fP.
++.El
++.Sh "SEE ALSO
++.Xr euc 4 ,
++.Xr mbrune 3 ,
++.Xr multibyte 3 ,
++.Xr rune 3 ,
++.Xr strcoll 3 ,
++.Xr strxfrm 3 ,
++.Xr utf2 4
++.Sh STANDARDS
++The
++.Fn setlocale
++and
++.Fn localeconv
++functions conform to
++.St -ansiC .
++.Sh HISTORY
++The
++.Fn setlocale
++and
++.Fn localeconv
++functions first appeared in
++.Bx 4.4 .
++.Sh BUGS
++The current implementation supports only the
++.Li "\&""C""
++and
++.Li "\&""POSIX""
++locales for all but the LC_CTYPE locale.
++.Pp
++In spite of the gnarly currency support in
++.Fn localeconv ,
++the standards don't include any functions
++for generalized currency formatting.
++.Pp
++.Dv LC_COLLATE
++does not make sense for many languages.
++Use of
++.Dv LC_MONETARY
++could lead to misleading results until we have a real time currency
++conversion function.
++.Dv LC_NUMERIC
++and
++.Dv LC_TIME
++are personal choices and should not be wrapped up with the other categories.
+diff -urN /tmp/src.skel/lib/libc/locale/setlocale.c ./src.skel/lib/libc/locale/setlocale.c
+--- /tmp/src.skel/lib/libc/locale/setlocale.c	Thu Jan  1 09:00:00 1970
++++ ./src.skel/lib/libc/locale/setlocale.c	Mon Aug 16 20:46:28 1999
+@@ -0,0 +1,291 @@
++/*	$NetBSD: setlocale.c,v 1.16 1998/11/13 15:49:04 christos Exp $	*/
++
++/*
++ * Copyright (c) 1991, 1993
++ *	The Regents of the University of California.  All rights reserved.
++ *
++ * This code is derived from software contributed to Berkeley by
++ * Paul Borman at Krystal Technologies.
++ *
++ * Redistribution and use in source and binary forms, with or without
++ * modification, are permitted provided that the following conditions
++ * are met:
++ * 1. Redistributions of source code must retain the above copyright
++ *    notice, this list of conditions and the following disclaimer.
++ * 2. Redistributions in binary form must reproduce the above copyright
++ *    notice, this list of conditions and the following disclaimer in the
++ *    documentation and/or other materials provided with the distribution.
++ * 3. All advertising materials mentioning features or use of this software
++ *    must display the following acknowledgement:
++ *	This product includes software developed by the University of
++ *	California, Berkeley and its contributors.
++ * 4. Neither the name of the University nor the names of its contributors
++ *    may be used to endorse or promote products derived from this software
++ *    without specific prior written permission.
++ *
++ * THIS SOFTWARE IS PROVIDED BY THE REGENTS AND CONTRIBUTORS ``AS IS'' AND
++ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
++ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
++ * ARE DISCLAIMED.  IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE LIABLE
++ * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
++ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
++ * OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
++ * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
++ * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
++ * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
++ * SUCH DAMAGE.
++ */
++
++#include <sys/cdefs.h>
++#if defined(LIBC_SCCS) && !defined(lint)
++#if 0
++static char sccsid[] = "@(#)setlocale.c	8.1 (Berkeley) 7/4/93";
++#else
++__RCSID("$NetBSD: setlocale.c,v 1.16 1998/11/13 15:49:04 christos Exp $");
++#endif
++#endif /* LIBC_SCCS and not lint */
++
++#define _CTYPE_PRIVATE
++
++#include "namespace.h"
++#include <sys/localedef.h>
++#include <ctype.h>
++#include <limits.h>
++#include <locale.h>
++#ifndef	ORIGINAL_CODE
++#include <rune.h>
++#endif	/* LOCALE */
++#include <paths.h>
++#include <stdio.h>
++#include <stdlib.h>
++#include <string.h>
++#include "ctypeio.h"
++
++/*
++ * Category names for getenv()
++ */
++static const char *const categories[_LC_LAST] = {
++    "LC_ALL",
++    "LC_COLLATE",
++    "LC_CTYPE",
++    "LC_MONETARY",
++    "LC_NUMERIC",
++    "LC_TIME",
++    "LC_MESSAGES"
++};
++
++/*
++ * Current locales for each category
++ */
++static char current_categories[_LC_LAST][32] = {
++    "C",
++    "C",
++    "C",
++    "C",
++    "C",
++    "C",
++    "C"
++};
++
++/*
++ * The locales we are going to try and load
++ */
++static char new_categories[_LC_LAST][32];
++
++static char current_locale_string[_LC_LAST * 33];
++static char *PathLocale;
++
++static char	*currentlocale __P((void));
++static char	*loadlocale __P((int));
++
++char *
++setlocale(category, locale)
++	int category;
++	const char *locale;
++{
++	int i;
++	size_t len;
++	char *env, *r;
++
++	/*
++	 * XXX potential security problem here with set-id programs
++	 * being able to read files the user can not normally read.
++	 */
++	if (!PathLocale && !(PathLocale = getenv("PATH_LOCALE")))
++		PathLocale = _PATH_LOCALE;
++
++	if (category < 0 || category >= _LC_LAST)
++		return (NULL);
++
++	if (!locale)
++		return (category ?
++		    current_categories[category] : currentlocale());
++
++	/*
++	 * Default to the current locale for everything.
++	 */
++	for (i = 1; i < _LC_LAST; ++i)
++		(void)strncpy(new_categories[i], current_categories[i],
++		    sizeof(new_categories[i]) - 1);
++
++	/*
++	 * Now go fill up new_categories from the locale argument
++	 */
++	if (!*locale) {
++		env = getenv(categories[category]);
++
++		if (!env || !*env)
++			env = getenv(categories[0]);
++
++		if (!env || !*env)
++			env = getenv("LANG");
++
++		if (!env || !*env)
++			env = "C";
++
++		(void)strncpy(new_categories[category], env, 31);
++		new_categories[category][31] = 0;
++		if (!category) {
++			for (i = 1; i < _LC_LAST; ++i) {
++				if (!(env = getenv(categories[i])) || !*env)
++					env = new_categories[0];
++				(void)strncpy(new_categories[i], env, 31);
++				new_categories[i][31] = 0;
++			}
++		}
++	} else if (category) {
++		(void)strncpy(new_categories[category], locale, 31);
++		new_categories[category][31] = 0;
++	} else {
++		if ((r = strchr(locale, '/')) == 0) {
++			for (i = 1; i < _LC_LAST; ++i) {
++				(void)strncpy(new_categories[i], locale, 31);
++				new_categories[i][31] = 0;
++			}
++		} else {
++			for (i = 1; r[1] == '/'; ++r);
++			if (!r[1])
++				return (NULL);	/* Hmm, just slashes... */
++			do {
++				len = r - locale > 31 ? 31 : r - locale;
++				(void)strncpy(new_categories[i++], locale, len);
++				new_categories[i++][len] = 0;
++				locale = r;
++				while (*locale == '/')
++				    ++locale;
++				while (*++r && *r != '/');
++			} while (*locale);
++			while (i < _LC_LAST)
++				(void)strncpy(new_categories[i],
++				    new_categories[i-1],
++				    sizeof(new_categories[i]) - 1);
++		}
++	}
++
++	if (category)
++		return (loadlocale(category));
++
++	for (i = 1; i < _LC_LAST; ++i)
++		if (loadlocale(i) == NULL)
++			return (NULL);
++
++	return (currentlocale());
++}
++
++static char *
++currentlocale()
++{
++	int i;
++
++	(void)strncpy(current_locale_string, current_categories[1],
++	    sizeof(current_locale_string) - 1);
++
++	for (i = 2; i < _LC_LAST; ++i)
++		if (strcmp(current_categories[1], current_categories[i])) {
++			(void)snprintf(current_locale_string,
++			    sizeof(current_locale_string), "%s/%s/%s/%s/%s",
++			    current_categories[1], current_categories[2],
++			    current_categories[3], current_categories[4],
++			    current_categories[5]);
++			break;
++		}
++	return (current_locale_string);
++}
++
++static char *
++loadlocale(category)
++	int category;
++{
++#ifdef	ORIGINAL_CODE
++	char name[PATH_MAX];
++#endif	/* !LOCALE */
++
++	if (strcmp(new_categories[category], current_categories[category]) == 0)
++		return (current_categories[category]);
++
++#ifdef	ORIGINAL_CODE
++	if (!strcmp(new_categories[category], "C") ||
++	    !strcmp(new_categories[category], "POSIX")) {
++
++		switch (category) {
++		case LC_CTYPE:
++			if (_ctype_ != _C_ctype_) {
++				/* LINTED const castaway */
++				free((void *)_ctype_);
++				_ctype_ = _C_ctype_;
++			}
++			if (_toupper_tab_ != _C_toupper_) {
++				/* LINTED const castaway */
++				free((void *)_toupper_tab_);
++				_toupper_tab_ = _C_toupper_;
++			}
++			if (_tolower_tab_ != _C_tolower_) {
++				/* LINTED const castaway */
++				free((void *)_tolower_tab_);
++				_tolower_tab_ = _C_tolower_;
++			}
++		}
++
++		(void)strncpy(current_categories[category],
++		    new_categories[category],
++		    sizeof(current_categories[category]) - 1);
++		return current_categories[category];
++	}
++
++	/*
++	 * Some day we will actually look at this file.
++	 */
++	(void)snprintf(name, sizeof(name), "%s/%s/%s",
++	    PathLocale, new_categories[category], categories[category]);
++
++	switch (category) {
++	case LC_CTYPE:
++		if (__loadctype(name)) {
++			(void)strncpy(current_categories[category],
++			    new_categories[category],
++			    sizeof(current_categories[category]) - 1);
++			return current_categories[category];
++		}
++		return NULL;
++
++	case LC_COLLATE:
++	case LC_MESSAGES:
++	case LC_MONETARY:
++	case LC_NUMERIC:
++	case LC_TIME:
++		return NULL;
++	}
++
++	return NULL;
++#else	/* LOCALE */
++	if (category == LC_CTYPE)
++		if (setrunelocale(new_categories[category]))
++			return (NULL);
++
++	(void)strncpy(current_categories[category],
++	              new_categories[category],
++	              sizeof(current_categories[category]) - 1);
++
++	return current_categories[category];
++#endif	/* LOCALE */
++}
+diff -urN /tmp/src.skel/lib/libc/locale/table.c ./src.skel/lib/libc/locale/table.c
+--- /tmp/src.skel/lib/libc/locale/table.c	Thu Jan  1 09:00:00 1970
++++ ./src.skel/lib/libc/locale/table.c	Mon Aug 16 20:46:28 1999
+@@ -0,0 +1,161 @@
++/*-
++ * Copyright (c) 1993
++ *	The Regents of the University of California.  All rights reserved.
++ *
++ * This code is derived from software contributed to Berkeley by
++ * Paul Borman at Krystal Technologies.
++ *
++ * Redistribution and use in source and binary forms, with or without
++ * modification, are permitted provided that the following conditions
++ * are met:
++ * 1. Redistributions of source code must retain the above copyright
++ *    notice, this list of conditions and the following disclaimer.
++ * 2. Redistributions in binary form must reproduce the above copyright
++ *    notice, this list of conditions and the following disclaimer in the
++ *    documentation and/or other materials provided with the distribution.
++ * 3. All advertising materials mentioning features or use of this software
++ *    must display the following acknowledgement:
++ *	This product includes software developed by the University of
++ *	California, Berkeley and its contributors.
++ * 4. Neither the name of the University nor the names of its contributors
++ *    may be used to endorse or promote products derived from this software
++ *    without specific prior written permission.
++ *
++ * THIS SOFTWARE IS PROVIDED BY THE REGENTS AND CONTRIBUTORS ``AS IS'' AND
++ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
++ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
++ * ARE DISCLAIMED.  IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE LIABLE
++ * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
++ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
++ * OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
++ * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
++ * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
++ * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
++ * SUCH DAMAGE.
++ */
++
++#include <sys/cdefs.h>
++#if defined(LIBC_SCCS) && !defined(lint)
++__RCSID("@(#)table.c	8.1 (Berkeley) 6/27/93");
++#endif /* LIBC_SCCS and not lint */
++
++#include <sys/types.h>
++
++#include <ctype.h>
++#include <rune.h>
++
++extern rune_t	_none_sgetrune __P((const char *, size_t, char const **));
++extern int	_none_sputrune __P((rune_t, char *, size_t, char **));
++extern int	_none_init __P((char *, char **));
++
++_RuneLocale _DefaultRuneLocale = {
++    _RUNE_MAGIC_1,
++    "none",
++    _none_sgetrune,
++    _none_sputrune,
++    0xFFFD,
++
++    {	/*00*/	_C,		_C,		_C,		_C,
++		_C,		_C,		_C,		_C,
++	/*08*/	_C,		_C|_S|_B,	_C|_S,		_C|_S,
++		_C|_S,		_C|_S,		_C,		_C,
++	/*10*/	_C,		_C,		_C,		_C,
++		_C,		_C,		_C,		_C,
++	/*18*/	_C,		_C,		_C,		_C,
++		_C,		_C,		_C,		_C,
++	/*20*/	_S|_B|_R,	_P|_R|_G,	_P|_R|_G,	_P|_R|_G,
++		_P|_R|_G,	_P|_R|_G,	_P|_R|_G,	_P|_R|_G,
++	/*28*/	_P|_R|_G,	_P|_R|_G,	_P|_R|_G,	_P|_R|_G,
++		_P|_R|_G,	_P|_R|_G,	_P|_R|_G,	_P|_R|_G,
++	/*30*/	_D|_R|_G|_X|0,	_D|_R|_G|_X|1,	_D|_R|_G|_X|2,	_D|_R|_G|_X|3,
++		_D|_R|_G|_X|4,	_D|_R|_G|_X|5,	_D|_R|_G|_X|6,	_D|_R|_G|_X|7,
++	/*38*/	_D|_R|_G|_X|8,	_D|_R|_G|_X|9,	_P|_R|_G,	_P|_R|_G,
++		_P|_R|_G,	_P|_R|_G,	_P|_R|_G,	_P|_R|_G,
++	/*40*/	_P|_R|_G, _U|_X|_R|_G|_A|10, _U|_X|_R|_G|_A|11, _U|_X|_R|_G|_A|12,
++		_U|_X|_R|_G|_A|13, _U|_X|_R|_G|_A|14, _U|_X|_R|_G|_A|15, _U|_R|_G|_A,
++	/*48*/	_U|_R|_G|_A,	_U|_R|_G|_A,	_U|_R|_G|_A,	_U|_R|_G|_A,
++		_U|_R|_G|_A,	_U|_R|_G|_A,	_U|_R|_G|_A,	_U|_R|_G|_A,
++	/*50*/	_U|_R|_G|_A,	_U|_R|_G|_A,	_U|_R|_G|_A,	_U|_R|_G|_A,
++		_U|_R|_G|_A,	_U|_R|_G|_A,	_U|_R|_G|_A,	_U|_R|_G|_A,
++	/*58*/	_U|_R|_G|_A,	_U|_R|_G|_A,	_U|_R|_G|_A,	_P|_R|_G,
++		_P|_R|_G,	_P|_R|_G,	_P|_R|_G,	_P|_R|_G,
++	/*60*/	_P|_R|_G, _L|_X|_R|_G|_A|10, _L|_X|_R|_G|_A|11, _L|_X|_R|_G|_A|12,
++		_L|_X|_R|_G|_A|13, _L|_X|_R|_G|_A|14, _L|_X|_R|_G|_A|15, _L|_R|_G|_A,
++	/*68*/	_L|_R|_G|_A,	_L|_R|_G|_A,	_L|_R|_G|_A,	_L|_R|_G|_A,
++		_L|_R|_G|_A,	_L|_R|_G|_A,	_L|_R|_G|_A,	_L|_R|_G|_A,
++	/*70*/	_L|_R|_G|_A,	_L|_R|_G|_A,	_L|_R|_G|_A,	_L|_R|_G|_A,
++		_L|_R|_G|_A,	_L|_R|_G|_A,	_L|_R|_G|_A,	_L|_R|_G|_A,
++	/*78*/	_L|_R|_G|_A,	_L|_R|_G|_A,	_L|_R|_G|_A,	_P|_R|_G,
++		_P|_R|_G,	_P|_R|_G,	_P|_R|_G,	_C,
++    },
++    {	0x00,	0x01,	0x02,	0x03,	0x04,	0x05,	0x06,	0x07,
++     	0x08,	0x09,	0x0a,	0x0b,	0x0c,	0x0d,	0x0e,	0x0f,
++	0x10,	0x11,	0x12,	0x13,	0x14,	0x15,	0x16,	0x17,
++     	0x18,	0x19,	0x1a,	0x1b,	0x1c,	0x1d,	0x1e,	0x1f,
++	0x20,	0x21,	0x22,	0x23,	0x24,	0x25,	0x26,	0x27,
++     	0x28,	0x29,	0x2a,	0x2b,	0x2c,	0x2d,	0x2e,	0x2f,
++	0x30,	0x31,	0x32,	0x33,	0x34,	0x35,	0x36,	0x37,
++     	0x38,	0x39,	0x3a,	0x3b,	0x3c,	0x3d,	0x3e,	0x3f,
++	0x40,	'a',	'b',	'c',	'd',	'e',	'f',	'g',
++     	'h',	'i',	'j',	'k',	'l',	'm',	'n',	'o',
++	'p',	'q',	'r',	's',	't',	'u',	'v',	'w',
++     	'x',	'y',	'z',	0x5b,	0x5c,	0x5d,	0x5e,	0x5f,
++	0x60,	'a',	'b',	'c',	'd',	'e',	'f',	'g',
++     	'h',	'i',	'j',	'k',	'l',	'm',	'n',	'o',
++	'p',	'q',	'r',	's',	't',	'u',	'v',	'w',
++     	'x',	'y',	'z',	0x7b,	0x7c,	0x7d,	0x7e,	0x7f,
++	0x80,	0x81,	0x82,	0x83,	0x84,	0x85,	0x86,	0x87,
++     	0x88,	0x89,	0x8a,	0x8b,	0x8c,	0x8d,	0x8e,	0x8f,
++	0x90,	0x91,	0x92,	0x93,	0x94,	0x95,	0x96,	0x97,
++     	0x98,	0x99,	0x9a,	0x9b,	0x9c,	0x9d,	0x9e,	0x9f,
++	0xa0,	0xa1,	0xa2,	0xa3,	0xa4,	0xa5,	0xa6,	0xa7,
++     	0xa8,	0xa9,	0xaa,	0xab,	0xac,	0xad,	0xae,	0xaf,
++	0xb0,	0xb1,	0xb2,	0xb3,	0xb4,	0xb5,	0xb6,	0xb7,
++     	0xb8,	0xb9,	0xba,	0xbb,	0xbc,	0xbd,	0xbe,	0xbf,
++	0xc0,	0xc1,	0xc2,	0xc3,	0xc4,	0xc5,	0xc6,	0xc7,
++     	0xc8,	0xc9,	0xca,	0xcb,	0xcc,	0xcd,	0xce,	0xcf,
++	0xd0,	0xd1,	0xd2,	0xd3,	0xd4,	0xd5,	0xd6,	0xd7,
++     	0xd8,	0xd9,	0xda,	0xdb,	0xdc,	0xdd,	0xde,	0xdf,
++	0xe0,	0xe1,	0xe2,	0xe3,	0xe4,	0xe5,	0xe6,	0xe7,
++     	0xe8,	0xe9,	0xea,	0xeb,	0xec,	0xed,	0xee,	0xef,
++	0xf0,	0xf1,	0xf2,	0xf3,	0xf4,	0xf5,	0xf6,	0xf7,
++     	0xf8,	0xf9,	0xfa,	0xfb,	0xfc,	0xfd,	0xfe,	0xff,
++    },
++    {	0x00,	0x01,	0x02,	0x03,	0x04,	0x05,	0x06,	0x07,
++     	0x08,	0x09,	0x0a,	0x0b,	0x0c,	0x0d,	0x0e,	0x0f,
++	0x10,	0x11,	0x12,	0x13,	0x14,	0x15,	0x16,	0x17,
++     	0x18,	0x19,	0x1a,	0x1b,	0x1c,	0x1d,	0x1e,	0x1f,
++	0x20,	0x21,	0x22,	0x23,	0x24,	0x25,	0x26,	0x27,
++     	0x28,	0x29,	0x2a,	0x2b,	0x2c,	0x2d,	0x2e,	0x2f,
++	0x30,	0x31,	0x32,	0x33,	0x34,	0x35,	0x36,	0x37,
++     	0x38,	0x39,	0x3a,	0x3b,	0x3c,	0x3d,	0x3e,	0x3f,
++	0x40,	'A',	'B',	'C',	'D',	'E',	'F',	'G',
++     	'H',	'I',	'J',	'K',	'L',	'M',	'N',	'O',
++	'P',	'Q',	'R',	'S',	'T',	'U',	'V',	'W',
++     	'X',	'Y',	'Z',	0x5b,	0x5c,	0x5d,	0x5e,	0x5f,
++	0x60,	'A',	'B',	'C',	'D',	'E',	'F',	'G',
++     	'H',	'I',	'J',	'K',	'L',	'M',	'N',	'O',
++	'P',	'Q',	'R',	'S',	'T',	'U',	'V',	'W',
++     	'X',	'Y',	'Z',	0x7b,	0x7c,	0x7d,	0x7e,	0x7f,
++	0x80,	0x81,	0x82,	0x83,	0x84,	0x85,	0x86,	0x87,
++     	0x88,	0x89,	0x8a,	0x8b,	0x8c,	0x8d,	0x8e,	0x8f,
++	0x90,	0x91,	0x92,	0x93,	0x94,	0x95,	0x96,	0x97,
++     	0x98,	0x99,	0x9a,	0x9b,	0x9c,	0x9d,	0x9e,	0x9f,
++	0xa0,	0xa1,	0xa2,	0xa3,	0xa4,	0xa5,	0xa6,	0xa7,
++     	0xa8,	0xa9,	0xaa,	0xab,	0xac,	0xad,	0xae,	0xaf,
++	0xb0,	0xb1,	0xb2,	0xb3,	0xb4,	0xb5,	0xb6,	0xb7,
++     	0xb8,	0xb9,	0xba,	0xbb,	0xbc,	0xbd,	0xbe,	0xbf,
++	0xc0,	0xc1,	0xc2,	0xc3,	0xc4,	0xc5,	0xc6,	0xc7,
++     	0xc8,	0xc9,	0xca,	0xcb,	0xcc,	0xcd,	0xce,	0xcf,
++	0xd0,	0xd1,	0xd2,	0xd3,	0xd4,	0xd5,	0xd6,	0xd7,
++     	0xd8,	0xd9,	0xda,	0xdb,	0xdc,	0xdd,	0xde,	0xdf,
++	0xe0,	0xe1,	0xe2,	0xe3,	0xe4,	0xe5,	0xe6,	0xe7,
++     	0xe8,	0xe9,	0xea,	0xeb,	0xec,	0xed,	0xee,	0xef,
++	0xf0,	0xf1,	0xf2,	0xf3,	0xf4,	0xf5,	0xf6,	0xf7,
++     	0xf8,	0xf9,	0xfa,	0xfb,	0xfc,	0xfd,	0xfe,	0xff,
++    },
++};
++
++_RuneLocale *_CurrentRuneLocale = &_DefaultRuneLocale;
++
++int __mb_cur_max = 1;
+diff -urN /tmp/src.skel/lib/libc/locale/utf2.c ./src.skel/lib/libc/locale/utf2.c
+--- /tmp/src.skel/lib/libc/locale/utf2.c	Thu Jan  1 09:00:00 1970
++++ ./src.skel/lib/libc/locale/utf2.c	Mon Aug 16 20:46:28 1999
+@@ -0,0 +1,150 @@
++/*-
++ * Copyright (c) 1993
++ *	The Regents of the University of California.  All rights reserved.
++ *
++ * This code is derived from software contributed to Berkeley by
++ * Paul Borman at Krystal Technologies.
++ *
++ * Redistribution and use in source and binary forms, with or without
++ * modification, are permitted provided that the following conditions
++ * are met:
++ * 1. Redistributions of source code must retain the above copyright
++ *    notice, this list of conditions and the following disclaimer.
++ * 2. Redistributions in binary form must reproduce the above copyright
++ *    notice, this list of conditions and the following disclaimer in the
++ *    documentation and/or other materials provided with the distribution.
++ * 3. All advertising materials mentioning features or use of this software
++ *    must display the following acknowledgement:
++ *	This product includes software developed by the University of
++ *	California, Berkeley and its contributors.
++ * 4. Neither the name of the University nor the names of its contributors
++ *    may be used to endorse or promote products derived from this software
++ *    without specific prior written permission.
++ *
++ * THIS SOFTWARE IS PROVIDED BY THE REGENTS AND CONTRIBUTORS ``AS IS'' AND
++ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
++ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
++ * ARE DISCLAIMED.  IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE LIABLE
++ * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
++ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
++ * OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
++ * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
++ * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
++ * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
++ * SUCH DAMAGE.
++ */
++
++#include <sys/cdefs.h>
++#if defined(LIBC_SCCS) && !defined(lint)
++__RCSID("@(#)utf2.c	8.1 (Berkeley) 6/4/93");
++#endif /* LIBC_SCCS and not lint */
++
++#include <errno.h>
++#include <rune.h>
++#include <stddef.h>
++#include <stdio.h>
++#include <stdlib.h>
++
++rune_t	_UTF2_sgetrune __P((const char *, size_t, char const **));
++int	_UTF2_sputrune __P((rune_t, char *, size_t, char **));
++int 	_UTF2_init __P((_RuneLocale *));
++
++static int _utf_count[16] = {
++	1, 1, 1, 1, 1, 1, 1, 1,
++	0, 0, 0, 0, 2, 2, 3, 0,
++};
++
++int
++_UTF2_init(rl)
++	_RuneLocale *rl;
++{
++	rl->sgetrune = _UTF2_sgetrune;
++	rl->sputrune = _UTF2_sputrune;
++	_CurrentRuneLocale = rl;
++	__mb_cur_max = 3;
++	return (0);
++}
++
++rune_t
++_UTF2_sgetrune(string, n, result)
++	const char *string;
++	size_t n;
++	char const **result;
++{
++	int c;
++
++	if (n < 1 || (c = _utf_count[(*string >> 4) & 0xf]) > n) {
++		if (result)
++			*result = string;
++		return (_INVALID_RUNE);
++	}
++	switch (c) {
++	case 1:
++		if (result)
++			*result = string + 1;
++		return (*string & 0xff);
++	case 2:
++		if ((string[1] & 0xC0) != 0x80)
++			goto encoding_error;
++		if (result)
++			*result = string + 2;
++		return (((string[0] & 0x1F) << 6) | (string[1] & 0x3F));
++	case 3:
++		if ((string[1] & 0xC0) != 0x80 || (string[2] & 0xC0) != 0x80)
++			goto encoding_error;
++		if (result)
++			*result = string + 3;
++		return (((string[0] & 0x1F) << 12) | ((string[1] & 0x3F) << 6)
++		    | (string[2] & 0x3F));
++	default:
++encoding_error:	if (result)
++			*result = string + 1;
++		return (_INVALID_RUNE);
++	}
++}
++
++int
++_UTF2_sputrune(c, string, n, result)
++	rune_t c;
++	char *string, **result;
++	size_t n;
++{
++	if (c & 0xF800) {
++		if (n >= 3) {
++			if (string) {
++				string[0] = 0xE0 | ((c >> 12) & 0x0F);
++				string[1] = 0x80 | ((c >> 6) & 0x3F);
++				string[2] = 0x80 | ((c) & 0x3F);
++			}
++			if (result)
++				*result = string + 3;
++		} else
++			if (result)
++				*result = NULL;
++
++		return (3);
++	} else
++		if (c & 0x0780) {
++			if (n >= 2) {
++				if (string) {
++					string[0] = 0xC0 | ((c >> 6) & 0x1F);
++					string[1] = 0x80 | ((c) & 0x3F);
++				}
++				if (result)
++					*result = string + 2;
++			} else
++				if (result)
++					*result = NULL;
++			return (2);
++		} else {
++			if (n >= 1) {
++				if (string)
++					string[0] = c;
++				if (result)
++					*result = string + 1;
++			} else
++				if (result)
++					*result = NULL;
++			return (1);
++		}
++}
+diff -urN /tmp/src.skel/lib/libc/stdlib/multibyte.c ./src.skel/lib/libc/stdlib/multibyte.c
+--- /tmp/src.skel/lib/libc/stdlib/multibyte.c	Thu Jan  1 09:00:00 1970
++++ ./src.skel/lib/libc/stdlib/multibyte.c	Mon Aug 16 20:46:28 1999
+@@ -0,0 +1,227 @@
++/*	$NetBSD: multibyte.c,v 1.6 1997/07/13 20:16:48 christos Exp $	*/
++
++/*
++ * Copyright (c) 1991 The Regents of the University of California.
++ * All rights reserved.
++ *
++ * Redistribution and use in source and binary forms, with or without
++ * modification, are permitted provided that the following conditions
++ * are met:
++ * 1. Redistributions of source code must retain the above copyright
++ *    notice, this list of conditions and the following disclaimer.
++ * 2. Redistributions in binary form must reproduce the above copyright
++ *    notice, this list of conditions and the following disclaimer in the
++ *    documentation and/or other materials provided with the distribution.
++ * 3. All advertising materials mentioning features or use of this software
++ *    must display the following acknowledgement:
++ *	This product includes software developed by the University of
++ *	California, Berkeley and its contributors.
++ * 4. Neither the name of the University nor the names of its contributors
++ *    may be used to endorse or promote products derived from this software
++ *    without specific prior written permission.
++ *
++ * THIS SOFTWARE IS PROVIDED BY THE REGENTS AND CONTRIBUTORS ``AS IS'' AND
++ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
++ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
++ * ARE DISCLAIMED.  IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE LIABLE
++ * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
++ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
++ * OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
++ * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
++ * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
++ * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
++ * SUCH DAMAGE.
++ */
++
++#include <sys/cdefs.h>
++#if defined(LIBC_SCCS) && !defined(lint)
++#if 0
++static char *sccsid = "from: @(#)multibyte.c	5.1 (Berkeley) 2/18/91";
++#else
++__RCSID("$NetBSD: multibyte.c,v 1.6 1997/07/13 20:16:48 christos Exp $");
++#endif
++#endif /* LIBC_SCCS and not lint */
++
++#include <stdlib.h>
++#if	!defined(ORIGINAL_CODE) && !defined(_NO_RUNE_LOCALE_)
++#include <limits.h>
++#include <stddef.h>
++#include <rune.h>
++#endif	/* LOCALE */
++
++/*
++ * Stub multibyte character functions.
++ * This cheezy implementation is fixed to the native single-byte
++ * character set.
++ */
++
++int
++mblen(s, n)
++	const char *s;
++	size_t n;
++{
++#if	defined(ORIGINAL_CODE) || defined(_NO_RUNE_LOCALE_)
++	if (s == NULL || *s == '\0')
++		return 0;
++	if (n == 0)
++		return -1;
++	return 1;
++#else
++	char const *e;
++
++	if (s == NULL || *s == '\0')
++		return 0;
++	if (n == 0)
++		return -1;
++
++	if (sgetrune(s, (int)n, &e) == _INVALID_RUNE)
++		return (s - e);
++	return (e - s);
++#endif
++}
++
++/*ARGSUSED*/
++int
++mbtowc(pwc, s, n)
++	wchar_t *pwc;
++	const char *s;
++	size_t n;
++{
++#if	defined(ORIGINAL_CODE) || defined(_NO_RUNE_LOCALE_)
++	if (s == NULL)
++		return 0;
++	if (n == 0)
++		return -1;
++	if (pwc)
++		*pwc = (wchar_t) *s;
++	return (*s != '\0');
++#else
++	char const *e;
++	rune_t r;
++
++	if (s == NULL || *s == '\0')
++		return 0;
++	if (n == 0)
++		return -1;
++
++	if ((r = sgetrune(s, (int)n, &e)) == _INVALID_RUNE)
++		return (s - e);
++	if (pwc)
++		*pwc = r;
++	return (e - s);
++#endif
++}
++
++/*ARGSUSED*/
++int
++#ifdef __STDC__
++wctomb(char *s, wchar_t wchar)
++#else
++wctomb(s, wchar)
++	char *s;
++	wchar_t wchar;
++#endif
++{
++#if	defined(ORIGINAL_CODE) || defined(_NO_RUNE_LOCALE_)
++	if (s == NULL)
++		return 0;
++
++	*s = (char) wchar;
++	return 1;
++#else
++	char *e;
++
++	if (s == NULL) 
++		return 0;
++
++	if (wchar == 0) {
++		*s = 0;
++		return 1;
++	}
++
++	sputrune(wchar, s, MB_CUR_MAX, &e);
++	return (e ? e - s : -1);
++#endif
++}
++
++/*ARGSUSED*/
++size_t
++mbstowcs(pwcs, s, n)
++	wchar_t *pwcs;
++	const char *s;
++	size_t n;
++{
++#if	defined(ORIGINAL_CODE) || defined(_NO_RUNE_LOCALE_)
++	int count = 0;
++
++	if (n != 0) {
++		do {
++			if ((*pwcs++ = (wchar_t) *s++) == 0)
++				break;
++			count++;
++		} while (--n != 0);
++	}
++	
++	return count;
++#else
++	char const *e;
++	int count = 0;
++
++	if (!pwcs || !s)
++		return -1;
++
++	while (n-- > 0) {
++		*pwcs = sgetrune(s, MB_LEN_MAX, &e);
++		if (*pwcs == _INVALID_RUNE)
++			return -1;
++		if (*pwcs++ == 0)
++			break;
++		s = e;
++		++count;
++	}
++	return count;
++#endif
++}
++
++/*ARGSUSED*/
++size_t
++wcstombs(s, pwcs, n)
++	char *s;
++	const wchar_t *pwcs;
++	size_t n;
++{
++#if	defined(ORIGINAL_CODE) || defined(_NO_RUNE_LOCALE_)
++	int count = 0;
++
++	if (n != 0) {
++		do {
++			if ((*s++ = (char) *pwcs++) == 0)
++				break;
++			count++;
++		} while (--n != 0);
++	}
++
++	return count;
++#else
++	char *e;
++	int count = 0;
++
++	if (!pwcs || !s)
++		return -1;
++
++	while (n > 0) {
++		if (*pwcs == 0) {
++			*s = 0;
++			break;
++		}
++		if (!sputrune(*pwcs++, s, (int)n, &e))
++			return -1;		/* encoding error */
++		if (!e)			/* too long */
++			return count;
++		count += e - s;
++		s = e;
++	}
++	return count;
++#endif
++}
++
+diff -urN /tmp/src.skel/sys/arch/i386/include/limits.h ./src.skel/sys/arch/i386/include/limits.h
+--- /tmp/src.skel/sys/arch/i386/include/limits.h	Thu Jan  1 09:00:00 1970
++++ ./src.skel/sys/arch/i386/include/limits.h	Mon Aug 16 20:46:28 1999
+@@ -0,0 +1,94 @@
++/*	$NetBSD: limits.h,v 1.13 1998/08/06 11:25:04 kleink Exp $	*/
++
++/*
++ * Copyright (c) 1988 The Regents of the University of California.
++ * All rights reserved.
++ *
++ * Redistribution and use in source and binary forms, with or without
++ * modification, are permitted provided that the following conditions
++ * are met:
++ * 1. Redistributions of source code must retain the above copyright
++ *    notice, this list of conditions and the following disclaimer.
++ * 2. Redistributions in binary form must reproduce the above copyright
++ *    notice, this list of conditions and the following disclaimer in the
++ *    documentation and/or other materials provided with the distribution.
++ * 3. All advertising materials mentioning features or use of this software
++ *    must display the following acknowledgement:
++ *	This product includes software developed by the University of
++ *	California, Berkeley and its contributors.
++ * 4. Neither the name of the University nor the names of its contributors
++ *    may be used to endorse or promote products derived from this software
++ *    without specific prior written permission.
++ *
++ * THIS SOFTWARE IS PROVIDED BY THE REGENTS AND CONTRIBUTORS ``AS IS'' AND
++ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
++ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
++ * ARE DISCLAIMED.  IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE LIABLE
++ * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
++ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
++ * OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
++ * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
++ * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
++ * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
++ * SUCH DAMAGE.
++ *
++ *	@(#)limits.h	7.2 (Berkeley) 6/28/90
++ */
++
++#ifndef	_MACHINE_LIMITS_H_
++#define	_MACHINE_LIMITS_H_
++
++#define	CHAR_BIT	8		/* number of bits in a char */
++#ifdef	ORIGINAL_CODE
++#define	MB_LEN_MAX	1		/* no multibyte characters */
++#else	/* LOCALE */
++#define	MB_LEN_MAX	4		/* the same as i386 wchar_t */
++#endif	/* LOCALE */
++
++#define	SCHAR_MAX	0x7f		/* max value for a signed char */
++#define SCHAR_MIN	(-0x7f-1)	/* min value for a signed char */
++
++#define	UCHAR_MAX	0xffU		/* max value for an unsigned char */
++#define	CHAR_MAX	0x7f		/* max value for a char */
++#define	CHAR_MIN	(-0x7f-1)	/* min value for a char */
++
++#define	USHRT_MAX	0xffffU		/* max value for an unsigned short */
++#define	SHRT_MAX	0x7fff		/* max value for a short */
++#define SHRT_MIN        (-0x7fff-1)     /* min value for a short */
++
++#define	UINT_MAX	0xffffffffU	/* max value for an unsigned int */
++#define	INT_MAX		0x7fffffff	/* max value for an int */
++#define	INT_MIN		(-0x7fffffff-1)	/* min value for an int */
++
++#define	ULONG_MAX	0xffffffffUL	/* max value for an unsigned long */
++#define	LONG_MAX	0x7fffffffL	/* max value for a long */
++#define	LONG_MIN	(-0x7fffffffL-1)	/* min value for a long */
++
++#if !defined(_ANSI_SOURCE)
++#define	SSIZE_MAX	INT_MAX		/* max value for a ssize_t */
++
++#if !defined(_POSIX_C_SOURCE) && !defined(_XOPEN_SOURCE)
++#define	SIZE_T_MAX	UINT_MAX	/* max value for a size_t */
++
++#define	UQUAD_MAX	0xffffffffffffffffULL		/* max unsigned quad */
++#define	QUAD_MAX	0x7fffffffffffffffLL		/* max signed quad */
++#define	QUAD_MIN	(-0x7fffffffffffffffLL-1)	/* min signed quad */
++
++#endif /* !_POSIX_C_SOURCE && !_XOPEN_SOURCE */
++#endif /* !_ANSI_SOURCE */
++
++#if !defined(_ANSI_SOURCE) && !defined(_POSIX_C_SOURCE) || \
++    defined(_XOPEN_SOURCE)
++#define LONG_BIT	32
++#define WORD_BIT	32
++
++#define DBL_DIG		15
++#define DBL_MAX		1.7976931348623157E+308
++#define DBL_MIN		2.2250738585072014E-308
++
++#define FLT_DIG		6
++#define FLT_MAX		3.40282347E+38F
++#define FLT_MIN		1.17549435E-38F
++#endif
++
++#endif /* _MACHINE_LIMITS_H_ */
+diff -urN /tmp/src.skel/usr.bin/Makefile ./src.skel/usr.bin/Makefile
+--- /tmp/src.skel/usr.bin/Makefile	Thu Jan  1 09:00:00 1970
++++ ./src.skel/usr.bin/Makefile	Mon Aug 16 20:46:28 1999
+@@ -0,0 +1,45 @@
++#	$NetBSD: Makefile,v 1.101 1999/03/26 16:53:29 tron Exp $
++#	from: @(#)Makefile	8.3 (Berkeley) 1/7/94
++
++.include <bsd.own.mk>			# for EXPORTABLE_SYSTEM definition
++#					# and OBJECT_FMT definition
++
++SUBDIR=	apply apropos asa at audio banner basename bdes biff \
++	bzip2 bzip2recover cal calendar cap_mkdb checknr chflags chpass \
++	cksum cmp col colcrt colrm column comm compress \
++	crontab crunch ctags cut dirname du eject env \
++	error expand false fdformat fgen file find finger fmt fold fpr \
++	from fsplit fstat ftp gencat getconf getopt gprof head hesinfo \
++	hexdump id indent innetgr ipcrm ipcs join jot kdump ktrace \
++	lam last lastcomm ldd leave less lex locate lock \
++	logger login logname look lorder m4 machine mail \
++	make man menuc mesg midiplay mixerctl mkdep mkfifo mkstr modstat \
++	msgc msgs netgroup netstat newsyslog nfsstat nice nl nohup pagesize \
++	passwd paste patch pr printenv printf quota rdist \
++	renice rev rlogin rpcgen rpcinfo rs rsh rup \
++	ruptime rusers rwall rwho script sed shar shlock \
++	showmount shuffle skey skeyinfo skeyinit soelim split \
++	su systat tail talk tcopy tee telnet tftp time \
++	tip tn3270 top touch tput tr true tset tsort tty ul \
++	uname unexpand unifdef uniq units unvis usbhidctl users \
++	uudecode uuencode vacation vgrind vi vis vmstat w \
++	wall wc what whatis whereis which who whois window \
++	write xargs xinstall xlint xstr yacc yes ypcat \
++	ypmatch ypwhich
++
++.if !defined(ORIGINAL_CODE)
++SUBDIR+= mklocale
++.endif
++
++.if	make(obj) || make(clean) || make(cleandir) || make(distclean)
++SUBDIR+=elf2aout elf2ecoff telnet
++.else
++
++# Build ELF to {ecoff, aout} tools on mips, for old bootblocks/PROMs.
++.if (${MACHINE_ARCH} == "mipsel" || ${MACHINE_ARCH} == "mipseb")
++SUBDIR+= elf2aout elf2ecoff
++.endif
++
++.endif	# make(obj) || make(clean) || make(cleandir) || make(distclean)
++
++.include <bsd.subdir.mk>
+diff -urN /tmp/src.skel/usr.bin/mklocale/Japanese ./src.skel/usr.bin/mklocale/Japanese
+--- /tmp/src.skel/usr.bin/mklocale/Japanese	Thu Jan  1 09:00:00 1970
++++ ./src.skel/usr.bin/mklocale/Japanese	Mon Aug 16 20:46:28 1999
+@@ -0,0 +1,158 @@
++#	@(#)Japanese	8.1 (Berkeley) 6/6/93
++
++/*
++ * Japanese LOCALE_CTYPE definitions using EUC of JIS character sets
++ */
++
++ENCODING	"EUC"
++
++/*		JIS	 JIS	  JIS			*/
++/*		X201	 X208	  X201 			*/
++/*		00-7f		  84-fe			*/
++
++VARIABLE	1 0x0000 2 0x8080 2 0x0080 3 0x8000 0x8080
++
++/*
++ * Code Set 1
++ */
++ALPHA		'A' - 'Z' 'a' - 'z'
++CONTROL		0x00 - 0x1f 0x7f
++DIGIT		'0' - '9'
++GRAPH		0x21 - 0x7e
++LOWER		'a' - 'z'
++PUNCT		0x21 - 0x2f 0x3a - 0x40 0x5b - 0x60 0x7b - 0x7e
++SPACE		0x09 - 0x0d 0x20
++UPPER		'A' - 'Z'
++XDIGIT		'a' - 'f' 'A' - 'F'
++BLANK		' ' '\t'
++PRINT		0x20 - 0x7e
++
++MAPLOWER       	< 'A' - 'Z' : 'a' >
++MAPLOWER       	< 'a' - 'z' : 'a' >
++MAPUPPER       	< 'A' - 'Z' : 'A' >
++MAPUPPER       	< 'a' - 'z' : 'A' >
++TODIGIT       	< '0' - '9' : 0 >
++TODIGIT       	< 'A' - 'F' : 10 >
++TODIGIT       	< 'a' - 'f' : 10 >
++
++/*
++ * Code Set 2
++ */
++
++SPACE		0xa1a1
++PHONOGRAM	0xa1bc
++SPECIAL     	0xa1a2 - 0xa1fe
++PUNCT		0xa1a2 - 0xa1f8		/* A few too many in here... */
++
++SPECIAL		0xa2a1 - 0xa2ae 0xa2ba - 0xa2c1 0xa2ca - 0xa2d0 0xa2dc - 0xa2ea
++SPECIAL		0xa2f2 - 0xa2f9 0xa2fe
++
++DIGIT		0xa3b0 - 0xa3b9
++UPPER		0xa3c1 - 0xa3da				/* Romaji */
++LOWER		0xa3e1 - 0xa3fa				/* Romaji */
++MAPLOWER	< 0xa3c1 - 0xa3da : 0xa3e1 >		/* English */
++MAPLOWER	< 0xa3e1 - 0xa3fa : 0xa3e1 >		/* English */
++MAPUPPER	< 0xa3c1 - 0xa3da : 0xa3c1 >
++MAPUPPER	< 0xa3e1 - 0xa3fa : 0xa3c1 >
++
++XDIGIT		0xa3c1 - 0xa3c6 0xa3e1 - 0xa3e6
++
++TODIGIT		< 0xa3b0 - 0xa3b9 : 0 >
++TODIGIT		< 0xa3c1 - 0xa3c6 : 10 >
++TODIGIT		< 0xa3e1 - 0xa3e6 : 10 >
++
++PHONOGRAM	0xa4a1 - 0xa4f3
++PHONOGRAM	0xa5a1 - 0xa5f6
++
++UPPER		0xa6a1 - 0xa6b8				/* Greek */
++LOWER		0xa6c1 - 0xa6d8				/* Greek */
++MAPLOWER	< 0xa6a1 - 0xa6b8 : 0xa6c1 >
++MAPLOWER	< 0xa6c1 - 0xa6d8 : 0xa6c1 >
++MAPUPPER	< 0xa6a1 - 0xa6b8 : 0xa6a1 >
++MAPUPPER	< 0xa6c1 - 0xa6d8 : 0xa6a1 >
++
++UPPER		0xa7a1 - 0xa7c1				/* Cyrillic */
++LOWER		0xa7d1 - 0xa7f1				/* Cyrillic */
++MAPLOWER	< 0xa7a1 - 0xa7c1 : 0xa7d1 >
++MAPLOWER	< 0xa7d1 - 0xa7f1 : 0xa7d1 >
++MAPUPPER	< 0xa7a1 - 0xa7c1 : 0xa7a1 >
++MAPUPPER	< 0xa7d1 - 0xa7f1 : 0xa7a1 >
++
++SPECIAL		0xa8a1 - 0xa8c0
++
++IDEOGRAM	0xb0a1 - 0xb0fe
++IDEOGRAM	0xb1a1 - 0xb1fe
++IDEOGRAM	0xb2a1 - 0xb2fe
++IDEOGRAM	0xb3a1 - 0xb3fe
++IDEOGRAM	0xb4a1 - 0xb4fe
++IDEOGRAM	0xb5a1 - 0xb5fe
++IDEOGRAM	0xb6a1 - 0xb6fe
++IDEOGRAM	0xb7a1 - 0xb7fe
++IDEOGRAM	0xb8a1 - 0xb8fe
++IDEOGRAM	0xb9a1 - 0xb9fe
++IDEOGRAM	0xbaa1 - 0xbafe
++IDEOGRAM	0xbba1 - 0xbbfe
++IDEOGRAM	0xbca1 - 0xbcfe
++IDEOGRAM	0xbda1 - 0xbdfe
++IDEOGRAM	0xbea1 - 0xbefe
++IDEOGRAM	0xbfa1 - 0xbffe
++IDEOGRAM	0xc0a1 - 0xc0fe
++IDEOGRAM	0xc1a1 - 0xc1fe
++IDEOGRAM	0xc2a1 - 0xc2fe
++IDEOGRAM	0xc3a1 - 0xc3fe
++IDEOGRAM	0xc4a1 - 0xc4fe
++IDEOGRAM	0xc5a1 - 0xc5fe
++IDEOGRAM	0xc6a1 - 0xc6fe
++IDEOGRAM	0xc7a1 - 0xc7fe
++IDEOGRAM	0xc8a1 - 0xc8fe
++IDEOGRAM	0xc9a1 - 0xc9fe
++IDEOGRAM	0xcaa1 - 0xcafe
++IDEOGRAM	0xcba1 - 0xcbfe
++IDEOGRAM	0xcca1 - 0xccfe
++IDEOGRAM	0xcda1 - 0xcdfe
++IDEOGRAM	0xcea1 - 0xcefe
++IDEOGRAM	0xcfa1 - 0xcfd3
++IDEOGRAM	0xd0a1 - 0xd0fe
++IDEOGRAM	0xd1a1 - 0xd1fe
++IDEOGRAM	0xd2a1 - 0xd2fe
++IDEOGRAM	0xd3a1 - 0xd3fe
++IDEOGRAM	0xd4a1 - 0xd4fe
++IDEOGRAM	0xd5a1 - 0xd5fe
++IDEOGRAM	0xd6a1 - 0xd6fe
++IDEOGRAM	0xd7a1 - 0xd7fe
++IDEOGRAM	0xd8a1 - 0xd8fe
++IDEOGRAM	0xd9a1 - 0xd9fe
++IDEOGRAM	0xdaa1 - 0xdafe
++IDEOGRAM	0xdba1 - 0xdbfe
++IDEOGRAM	0xdca1 - 0xdcfe
++IDEOGRAM	0xdda1 - 0xddfe
++IDEOGRAM	0xdea1 - 0xdefe
++IDEOGRAM	0xdfa1 - 0xdffe
++IDEOGRAM	0xe0a1 - 0xe0fe
++IDEOGRAM	0xe1a1 - 0xe1fe
++IDEOGRAM	0xe2a1 - 0xe2fe
++IDEOGRAM	0xe3a1 - 0xe3fe
++IDEOGRAM	0xe4a1 - 0xe4fe
++IDEOGRAM	0xe5a1 - 0xe5fe
++IDEOGRAM	0xe6a1 - 0xe6fe
++IDEOGRAM	0xe7a1 - 0xe7fe
++IDEOGRAM	0xe8a1 - 0xe8fe
++IDEOGRAM	0xe9a1 - 0xe9fe
++IDEOGRAM	0xeaa1 - 0xeafe
++IDEOGRAM	0xeba1 - 0xebfe
++IDEOGRAM	0xeca1 - 0xecfe
++IDEOGRAM	0xeda1 - 0xedfe
++IDEOGRAM	0xeea1 - 0xeefe
++IDEOGRAM	0xefa1 - 0xeffe
++IDEOGRAM	0xf0a1 - 0xf0fe
++IDEOGRAM	0xf1a1 - 0xf1fe
++IDEOGRAM	0xf2a1 - 0xf2fe
++IDEOGRAM	0xf3a1 - 0xf3fe
++IDEOGRAM	0xf4a1 - 0xf4a4
++
++/*
++ * This is for Code Set 3, half-width kana
++ */
++SPECIAL		0xa1 - 0xdf
++PHONOGRAM	0xa1 - 0xdf
++CONTROL		0x84 - 0x97 0x9b - 0x9f 0xe0 - 0xfe
+diff -urN /tmp/src.skel/usr.bin/mklocale/JapaneseSJIS ./src.skel/usr.bin/mklocale/JapaneseSJIS
+--- /tmp/src.skel/usr.bin/mklocale/JapaneseSJIS	Thu Jan  1 09:00:00 1970
++++ ./src.skel/usr.bin/mklocale/JapaneseSJIS	Mon Aug 16 20:46:28 1999
+@@ -0,0 +1,250 @@
++#	@(#)Japanese	 SJIS
++
++/*
++ *	ja_JP.SJIS locale table for BSD4.4/rune
++ *	version 1.0
++ *	(C) Sin'ichiro MIYATANI / Phase One, Inc
++ *	May 12, 1995
++ */
++ENCODING	"MSKanji"
++
++/*
++ * ASCII byte code
++ */
++ALPHA		'A'-'Z' 'a'-'z'
++CONTROL		0x00-0x1f 0x7f
++DIGIT		'0'-'9'
++GRAPH		0x21-0x7e
++LOWER		'a'-'z'
++PUNCT		0x21-0x2f 0x3a-0x40 0x5b-0x60 0x7b-0x7e
++SPACE		0x09-0x0d 0x20
++UPPER		'A'-'Z'
++XDIGIT		'a'-'f' 'A'-'F'
++BLANK		' ' '\t'
++PRINT		0x20-0x7e
++SWIDTH1		0x20-0x7e
++
++MAPLOWER	<'A'-'Z':'a'><'a'-'z':'a'>
++MAPUPPER	<'A'-'Z':'A'><'a'-'z':'A'>
++TODIGIT		<'0'-'9':0>
++TODIGIT		<'A'-'F':10><'a'-'f':10>
++
++/*
++ * JIS X201
++ */
++PUNCT		0xa1-0xa5
++SPACE		0xa0
++BLANK		0xa0
++PRINT		0xa0-0xdf
++SPECIAL		0xa1-0xdf
++PHONOGRAM	0xa6-0xdf
++SWIDTH1		0xa0-0xdf
++
++/*
++ * JIS X208/SJIS
++ */
++/* 100 */
++PUNCT		0x8141-0x8151 0x8159-0x815a 0x815c-0x817e 0x8180-0x819e
++SPACE		0x8140
++PHONOGRAM	0x8152-0x8158 0x815b
++
++/* 200 */
++PUNCT		0x819f-0x81ac 0x81b8-0x81bf 0x81c8-0x81ce 0x81da-0x81e8
++PUNCT		0x81f0-0x81f7 0x81fc
++
++/* 300 */
++DIGIT		0x824f-0x8258
++XDIGIT		0x8260-0x8265 0x8281-0x8286
++ALPHA		0x8260-0x8279 0x8281-0x829a
++UPPER		0x8260-0x8279
++LOWER		0x8281-0x829a
++
++MAPLOWER	<0x8260-0x8279:0x8281>
++MAPLOWER	<0x8281-0x829a:0x8281>
++MAPUPPER	<0x8260-0x8279:0x8260>
++MAPUPPER	<0x8281-0x829a:0x8260>
++TODIGIT		<0x824f-0x8258:0>
++TODIGIT		<0x8260-0x8265:10>
++TODIGIT		<0x8281-0x8286:10>
++
++/* 400 */
++PHONOGRAM	0x829f-0x82f1
++
++/* 500 */
++PHONOGRAM	0x8340-0x837e
++PHONOGRAM	0x8380-0x8396
++
++/* 600 */
++UPPER		0x839f-0x83b6
++LOWER		0x83bf-0x83d6
++MAPLOWER	<0x839f-0x83b6:0x83bf>
++MAPLOWER	<0x83bf-0x83d6:0x83bf>
++MAPUPPER	<0x839f-0x83b6:0x839f>
++MAPUPPER	<0x83bf-0x83d6:0x839f>
++
++/* 700 */
++UPPER		0x8440-0x8460
++LOWER		0x8470-0x847e 0x8480-0x8491
++MAPLOWER	<0x8440-0x844e:0x8470><0x844f-0x8460:0x8480>
++MAPLOWER	<0x8470-0x847e:0x8470><0x8480-0x8491:0x8480>
++MAPUPPER	<0x8440-0x8460:0x8440>
++MAPUPPER	<0x8470-0x847e:0x8440><0x8480-0x8491:0x844f>
++
++/* 800 */
++SPECIAL		0x849f-0x84be
++
++SWIDTH2		0x8140-0x817e 0x8180-0x819e	/* 100 */
++SWIDTH2		0x819f-0x81ac 0x81b8-0x81bf	/* 200 */
++SWIDTH2		0x81c8-0x81ce 0x81da-0x81e8
++SWIDTH2		0x81f0-0x81f7 0x81fc
++SWIDTH2		0x824f-0x8258 0x8260-0x8279	/* 300 */
++SWIDTH2		0x8281-0x829a
++SWIDTH2		0x829f-0x82f1			/* 400 */
++SWIDTH2		0x8340-0x837e			/* 500 */
++SWIDTH2		0x8380-0x8396
++SWIDTH2		0x839f-0x83b6			/* 600 */
++SWIDTH2		0x83bf-0x83d6
++SWIDTH2		0x8440-0x8460			/* 700 */
++SWIDTH2		0x8470-0x847e 0x8480-0x8491
++SWIDTH2		0x849f-0x84be			/* 800 */
++
++/* 1600- */
++IDEOGRAM	0x889f-0x88fc			/* 1600 */
++IDEOGRAM	0x8940-0x897e 0x8980-0x899e	/* 1700 */
++IDEOGRAM	0x899f-0x89fc			/* 1800 */
++IDEOGRAM	0x8a40-0x8a7e 0x8a80-0x8a9e	/* 1900 */
++IDEOGRAM	0x8a9f-0x8afc			/* 2000 */
++IDEOGRAM	0x8b40-0x8b7e 0x8b80-0x8b9e	/* 2100 */
++IDEOGRAM	0x8b9f-0x8bfc			/* 2200 */
++IDEOGRAM	0x8c40-0x8c7e 0x8c80-0x8c9e	/* 2300 */
++IDEOGRAM	0x8c9f-0x8cfc			/* 2400 */
++IDEOGRAM	0x8d40-0x8d7e 0x8d80-0x8d9e	/* 2500 */
++IDEOGRAM	0x8d9f-0x8dfc			/* 2600 */
++IDEOGRAM	0x8e40-0x8e7e 0x8e80-0x8e9e	/* 2700 */
++IDEOGRAM	0x8e9f-0x8efc			/* 2800 */
++IDEOGRAM	0x8f40-0x8f7e 0x8f80-0x8f9e	/* 2900 */
++IDEOGRAM	0x8f9f-0x8ffc			/* 3000 */
++IDEOGRAM	0x9040-0x907e 0x9080-0x909e	/* 3100 */
++IDEOGRAM	0x909f-0x90fc			/* 3200 */
++IDEOGRAM	0x9140-0x917e 0x9180-0x919e	/* 3300 */
++IDEOGRAM	0x919f-0x91fc			/* 3400 */
++IDEOGRAM	0x9240-0x927e 0x9280-0x929e	/* 3500 */
++IDEOGRAM	0x929f-0x92fc			/* 3600 */
++IDEOGRAM	0x9340-0x937e 0x9380-0x939e	/* 3700 */
++IDEOGRAM	0x939f-0x93fc			/* 3800 */
++IDEOGRAM	0x9440-0x947e 0x9480-0x949e	/* 3900 */
++IDEOGRAM	0x949f-0x94fc			/* 4000 */
++IDEOGRAM	0x9540-0x957e 0x9580-0x959e	/* 4100 */
++IDEOGRAM	0x959f-0x95fc			/* 4200 */
++IDEOGRAM	0x9640-0x967e 0x9680-0x969e	/* 4300 */
++IDEOGRAM	0x969f-0x96fc			/* 4400 */
++IDEOGRAM	0x9740-0x977e 0x9780-0x979e	/* 4500 */
++IDEOGRAM	0x979f-0x97fc			/* 4600 */
++IDEOGRAM	0x9840-0x987e 0x9880-0x989e	/* 4700 */
++IDEOGRAM	0x989f-0x98fc			/* 4800 */
++IDEOGRAM	0x9940-0x997e 0x9980-0x999e	/* 4900 */
++IDEOGRAM	0x999f-0x99fc			/* 5000 */
++IDEOGRAM	0x9a40-0x9a7e 0x9a80-0x9a9e	/* 5100 */
++IDEOGRAM	0x9a9f-0x9afc			/* 5200 */
++IDEOGRAM	0x9b40-0x9b7e 0x9b80-0x9b9e	/* 5300 */
++IDEOGRAM	0x9b9f-0x9bfc			/* 5400 */
++IDEOGRAM	0x9c40-0x9c7e 0x9c80-0x9c9e	/* 5500 */
++IDEOGRAM	0x9c9f-0x9cfc			/* 5600 */
++IDEOGRAM	0x9d40-0x9d7e 0x9d80-0x9d9e	/* 5700 */
++IDEOGRAM	0x9d9f-0x9dfc			/* 5800 */
++IDEOGRAM	0x9e40-0x9e7e 0x9e80-0x9e9e	/* 5900 */
++IDEOGRAM	0x9e9f-0x9efc			/* 6000 */
++IDEOGRAM	0x9f40-0x9f7e 0x9f80-0x9f9e	/* 6100 */
++IDEOGRAM	0x9f9f-0x9ffc			/* 6200 */
++IDEOGRAM	0xe040-0xe07e 0xe080-0xe09e	/* 6300 */
++IDEOGRAM	0xe09f-0xe0fc			/* 6400 */
++IDEOGRAM	0xe140-0xe17e 0xe180-0xe19e	/* 6500 */
++IDEOGRAM	0xe19f-0xe1fc			/* 6600 */
++IDEOGRAM	0xe240-0xe27e 0xe280-0xe29e	/* 6700 */
++IDEOGRAM	0xe29f-0xe2fc			/* 6800 */
++IDEOGRAM	0xe340-0xe37e 0xe380-0xe39e	/* 6900 */
++IDEOGRAM	0xe39f-0xe3fc			/* 7000 */
++IDEOGRAM	0xe440-0xe47e 0xe480-0xe49e	/* 7100 */
++IDEOGRAM	0xe49f-0xe4fc			/* 7200 */
++IDEOGRAM	0xe540-0xe57e 0xe580-0xe59e	/* 7300 */
++IDEOGRAM	0xe59f-0xe5fc			/* 7400 */
++IDEOGRAM	0xe640-0xe67e 0xe680-0xe69e	/* 7500 */
++IDEOGRAM	0xe69f-0xe6fc			/* 7600 */
++IDEOGRAM	0xe740-0xe77e 0xe780-0xe79e	/* 7700 */
++IDEOGRAM	0xe79f-0xe7fc			/* 7800 */
++IDEOGRAM	0xe840-0xe87e 0xe880-0xe89e	/* 7900 */
++IDEOGRAM	0xe89f-0xe8fc			/* 8000 */
++IDEOGRAM	0xe940-0xe97e 0xe980-0xe99e	/* 8100 */
++IDEOGRAM	0xe99f-0xe9fc			/* 8200 */
++IDEOGRAM	0xea40-0xea7e 0xea80-0xea9e	/* 8300 */
++IDEOGRAM	0xea9f-0xeaa4			/* 8400 */
++
++SWIDTH2		0x889f-0x88fc			/* 1600 */
++SWIDTH2		0x8940-0x897e 0x8980-0x899e	/* 1700 */
++SWIDTH2		0x899f-0x89fc			/* 1800 */
++SWIDTH2		0x8a40-0x8a7e 0x8a80-0x8a9e	/* 1900 */
++SWIDTH2		0x8a9f-0x8afc			/* 2000 */
++SWIDTH2		0x8b40-0x8b7e 0x8b80-0x8b9e	/* 2100 */
++SWIDTH2		0x8b9f-0x8bfc			/* 2200 */
++SWIDTH2		0x8c40-0x8c7e 0x8c80-0x8c9e	/* 2300 */
++SWIDTH2		0x8c9f-0x8cfc			/* 2400 */
++SWIDTH2		0x8d40-0x8d7e 0x8d80-0x8d9e	/* 2500 */
++SWIDTH2		0x8d9f-0x8dfc			/* 2600 */
++SWIDTH2		0x8e40-0x8e7e 0x8e80-0x8e9e	/* 2700 */
++SWIDTH2		0x8e9f-0x8efc			/* 2800 */
++SWIDTH2		0x8f40-0x8f7e 0x8f80-0x8f9e	/* 2900 */
++SWIDTH2		0x8f9f-0x8ffc			/* 3000 */
++SWIDTH2		0x9040-0x907e 0x9080-0x909e	/* 3100 */
++SWIDTH2		0x909f-0x90fc			/* 3200 */
++SWIDTH2		0x9140-0x917e 0x9180-0x919e	/* 3300 */
++SWIDTH2		0x919f-0x91fc			/* 3400 */
++SWIDTH2		0x9240-0x927e 0x9280-0x929e	/* 3500 */
++SWIDTH2		0x929f-0x92fc			/* 3600 */
++SWIDTH2		0x9340-0x937e 0x9380-0x939e	/* 3700 */
++SWIDTH2		0x939f-0x93fc			/* 3800 */
++SWIDTH2		0x9440-0x947e 0x9480-0x949e	/* 3900 */
++SWIDTH2		0x949f-0x94fc			/* 4000 */
++SWIDTH2		0x9540-0x957e 0x9580-0x959e	/* 4100 */
++SWIDTH2		0x959f-0x95fc			/* 4200 */
++SWIDTH2		0x9640-0x967e 0x9680-0x969e	/* 4300 */
++SWIDTH2		0x969f-0x96fc			/* 4400 */
++SWIDTH2		0x9740-0x977e 0x9780-0x979e	/* 4500 */
++SWIDTH2		0x979f-0x97fc			/* 4600 */
++SWIDTH2		0x9840-0x987e 0x9880-0x989e	/* 4700 */
++SWIDTH2		0x989f-0x98fc			/* 4800 */
++SWIDTH2		0x9940-0x997e 0x9980-0x999e	/* 4900 */
++SWIDTH2		0x999f-0x99fc			/* 5000 */
++SWIDTH2		0x9a40-0x9a7e 0x9a80-0x9a9e	/* 5100 */
++SWIDTH2		0x9a9f-0x9afc			/* 5200 */
++SWIDTH2		0x9b40-0x9b7e 0x9b80-0x9b9e	/* 5300 */
++SWIDTH2		0x9b9f-0x9bfc			/* 5400 */
++SWIDTH2		0x9c40-0x9c7e 0x9c80-0x9c9e	/* 5500 */
++SWIDTH2		0x9c9f-0x9cfc			/* 5600 */
++SWIDTH2		0x9d40-0x9d7e 0x9d80-0x9d9e	/* 5700 */
++SWIDTH2		0x9d9f-0x9dfc			/* 5800 */
++SWIDTH2		0x9e40-0x9e7e 0x9e80-0x9e9e	/* 5900 */
++SWIDTH2		0x9e9f-0x9efc			/* 6000 */
++SWIDTH2		0x9f40-0x9f7e 0x9f80-0x9f9e	/* 6100 */
++SWIDTH2		0x9f9f-0x9ffc			/* 6200 */
++SWIDTH2		0xe040-0xe07e 0xe080-0xe09e	/* 6300 */
++SWIDTH2		0xe09f-0xe0fc			/* 6400 */
++SWIDTH2		0xe140-0xe17e 0xe180-0xe19e	/* 6500 */
++SWIDTH2		0xe19f-0xe1fc			/* 6600 */
++SWIDTH2		0xe240-0xe27e 0xe280-0xe29e	/* 6700 */
++SWIDTH2		0xe29f-0xe2fc			/* 6800 */
++SWIDTH2		0xe340-0xe37e 0xe380-0xe39e	/* 6900 */
++SWIDTH2		0xe39f-0xe3fc			/* 7000 */
++SWIDTH2		0xe440-0xe47e 0xe480-0xe49e	/* 7100 */
++SWIDTH2		0xe49f-0xe4fc			/* 7200 */
++SWIDTH2		0xe540-0xe57e 0xe580-0xe59e	/* 7300 */
++SWIDTH2		0xe59f-0xe5fc			/* 7400 */
++SWIDTH2		0xe640-0xe67e 0xe680-0xe69e	/* 7500 */
++SWIDTH2		0xe69f-0xe6fc			/* 7600 */
++SWIDTH2		0xe740-0xe77e 0xe780-0xe79e	/* 7700 */
++SWIDTH2		0xe79f-0xe7fc			/* 7800 */
++SWIDTH2		0xe840-0xe87e 0xe880-0xe89e	/* 7900 */
++SWIDTH2		0xe89f-0xe8fc			/* 8000 */
++SWIDTH2		0xe940-0xe97e 0xe980-0xe99e	/* 8100 */
++SWIDTH2		0xe99f-0xe9fc			/* 8200 */
++SWIDTH2		0xea40-0xea7e 0xea80-0xea9e	/* 8300 */
++SWIDTH2		0xea9f-0xeaa4			/* 8400 */
+diff -urN /tmp/src.skel/usr.bin/mklocale/Makefile ./src.skel/usr.bin/mklocale/Makefile
+--- /tmp/src.skel/usr.bin/mklocale/Makefile	Thu Jan  1 09:00:00 1970
++++ ./src.skel/usr.bin/mklocale/Makefile	Mon Aug 16 20:46:28 1999
+@@ -0,0 +1,43 @@
++#	@(#)Makefile	8.1 (Berkeley) 6/7/93
++
++PROG=	mklocale
++SRCS=	yacc.c lex.c
++
++_PATH_LOCALE=			/usr/share/locale
++
++FILES=				POSIX-LC_CTYPE EUC-LC_CTYPE SJIS-LC_CTYPE
++FILESNAME=			LC_CTYPE
++FILESDIR_POSIX-LC_CTYPE=	${_PATH_LOCALE}/POSIX
++FILESDIR_EUC-LC_CTYPE=		${_PATH_LOCALE}/ja_JP.eucJP
++FILESDIR_SJIS-LC_CTYPE=		${_PATH_LOCALE}/ja_JP.SJIS
++
++SYMLINKS=			POSIX ${_PATH_LOCALE}/C
++SYMLINKS+=			ja_JP.eucJP ${_PATH_LOCALE}/ja
++SYMLINKS+=			ja_JP.eucJP ${_PATH_LOCALE}/ja_JP
++SYMLINKS+=			ja_JP.eucJP ${_PATH_LOCALE}/ja_JP.EUC
++SYMLINKS+=			ja_JP.eucJP ${_PATH_LOCALE}/ja_JP.ujis
++SYMLINKS+=			ja_JP.SJIS  ${_PATH_LOCALE}/ja_JP.mscode
++
++CFLAGS+=			-I.
++CLEANFILES+=			yacc.h yacc.c lex.c $(FILES)
++YHEADER=			yes
++
++all:	$(PROG) $(FILES)
++
++proginstall::
++.for F in ${FILES}
++.if !exists(${DESTDIR}${FILESDIR_${F}})
++	${INSTALL} -d -o root -g wheel ${DESTDIR}${FILESDIR_${F}}
++.endif
++.endfor
++
++POSIX-LC_CTYPE:	$(PROG)	 POSIX
++	./mklocale < ${.ALLSRC} > ${.TARGET}
++
++EUC-LC_CTYPE:	$(PROG)	Japanese
++	./mklocale < ${.ALLSRC} > ${.TARGET}
++
++SJIS-LC_CTYPE:	$(PROG)	JapaneseSJIS
++	./mklocale < ${.ALLSRC} > ${.TARGET}
++
++.include <bsd.prog.mk>
+diff -urN /tmp/src.skel/usr.bin/mklocale/POSIX ./src.skel/usr.bin/mklocale/POSIX
+--- /tmp/src.skel/usr.bin/mklocale/POSIX	Thu Jan  1 09:00:00 1970
++++ ./src.skel/usr.bin/mklocale/POSIX	Mon Aug 16 20:46:29 1999
+@@ -0,0 +1,33 @@
++#	@(#)POSIX	8.1 (Berkeley) 6/6/93
++
++/*
++ * Standard LOCALE_CTYPE for the C Locale
++ */
++ENCODING	"UTF2"
++VARIABLE	A comment line or data line.  Only 1 allowed.  Copied verbatim.
++
++#
++# This is a comment
++#
++ALPHA		'A' - 'Z' 'a' - 'z'
++CONTROL		0x00 - 0x1f 0x7f
++DIGIT		'0' - '9'
++GRAPH		0x21 - 0x7e
++LOWER		'a' - 'z'
++PUNCT		0x21 - 0x2f 0x3a - 0x40 0x5b - 0x60 0x7b - 0x7e
++SPACE		0x09 - 0x0d 0x20
++UPPER		'A' - 'Z'
++XDIGIT		'a' - 'f' 'A' - 'F'
++BLANK		' ' '\t'
++PRINT		0x20 - 0x7e
++# IDEOGRAM
++# SPECIAL
++# PHONEGRAM
++
++MAPLOWER       	<'A' - 'Z' : 'a'>
++MAPLOWER       	<'a' - 'z' : 'a'>
++MAPUPPER       	<'A' - 'Z' : 'A'>
++MAPUPPER       	<'a' - 'z' : 'A'>
++TODIGIT       	<'0' - '9' : 0>
++TODIGIT       	<'A' - 'F' : 10>
++TODIGIT       	<'a' - 'f' : 10>
+diff -urN /tmp/src.skel/usr.bin/mklocale/ldef.h ./src.skel/usr.bin/mklocale/ldef.h
+--- /tmp/src.skel/usr.bin/mklocale/ldef.h	Thu Jan  1 09:00:00 1970
++++ ./src.skel/usr.bin/mklocale/ldef.h	Mon Aug 16 20:46:29 1999
+@@ -0,0 +1,53 @@
++/*-
++ * Copyright (c) 1993
++ *	The Regents of the University of California.  All rights reserved.
++ *
++ * This code is derived from software contributed to Berkeley by
++ * Paul Borman at Krystal Technologies.
++ *
++ * Redistribution and use in source and binary forms, with or without
++ * modification, are permitted provided that the following conditions
++ * are met:
++ * 1. Redistributions of source code must retain the above copyright
++ *    notice, this list of conditions and the following disclaimer.
++ * 2. Redistributions in binary form must reproduce the above copyright
++ *    notice, this list of conditions and the following disclaimer in the
++ *    documentation and/or other materials provided with the distribution.
++ * 3. All advertising materials mentioning features or use of this software
++ *    must display the following acknowledgement:
++ *	This product includes software developed by the University of
++ *	California, Berkeley and its contributors.
++ * 4. Neither the name of the University nor the names of its contributors
++ *    may be used to endorse or promote products derived from this software
++ *    without specific prior written permission.
++ *
++ * THIS SOFTWARE IS PROVIDED BY THE REGENTS AND CONTRIBUTORS ``AS IS'' AND
++ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
++ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
++ * ARE DISCLAIMED.  IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE LIABLE
++ * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
++ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
++ * OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
++ * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
++ * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
++ * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
++ * SUCH DAMAGE.
++ *
++ *	@(#)ldef.h	8.1 (Berkeley) 6/6/93
++ */
++
++/*
++ * This should look a LOT like a _RuneEntry
++ */
++typedef struct rune_list {
++    rune_t		min;
++    rune_t 		max;
++    rune_t 		map;
++    u_long		*types;
++    struct rune_list	*next;
++} rune_list;
++
++typedef struct rune_map {
++    u_long		map[_CACHED_RUNES];
++    rune_list		*root;
++} rune_map;
+diff -urN /tmp/src.skel/usr.bin/mklocale/lex.l ./src.skel/usr.bin/mklocale/lex.l
+--- /tmp/src.skel/usr.bin/mklocale/lex.l	Thu Jan  1 09:00:00 1970
++++ ./src.skel/usr.bin/mklocale/lex.l	Mon Aug 16 20:46:29 1999
+@@ -0,0 +1,155 @@
++%{
++/*-
++ * Copyright (c) 1993
++ *	The Regents of the University of California.  All rights reserved.
++ *
++ * This code is derived from software contributed to Berkeley by
++ * Paul Borman at Krystal Technologies.
++ *
++ * Redistribution and use in source and binary forms, with or without
++ * modification, are permitted provided that the following conditions
++ * are met:
++ * 1. Redistributions of source code must retain the above copyright
++ *    notice, this list of conditions and the following disclaimer.
++ * 2. Redistributions in binary form must reproduce the above copyright
++ *    notice, this list of conditions and the following disclaimer in the
++ *    documentation and/or other materials provided with the distribution.
++ * 3. All advertising materials mentioning features or use of this software
++ *    must display the following acknowledgement:
++ *	This product includes software developed by the University of
++ *	California, Berkeley and its contributors.
++ * 4. Neither the name of the University nor the names of its contributors
++ *    may be used to endorse or promote products derived from this software
++ *    without specific prior written permission.
++ *
++ * THIS SOFTWARE IS PROVIDED BY THE REGENTS AND CONTRIBUTORS ``AS IS'' AND
++ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
++ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
++ * ARE DISCLAIMED.  IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE LIABLE
++ * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
++ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
++ * OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
++ * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
++ * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
++ * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
++ * SUCH DAMAGE.
++ */
++
++#if defined(LIBC_SCCS) && !defined(lint)
++static char sccsid[] = "@(#)lex.l	8.1 (Berkeley) 6/6/93";
++#endif /* LIBC_SCCS and not lint */
++
++#include <ctype.h>
++#include <stdio.h>
++#include <stdlib.h>
++
++#include "ldef.h"
++#include "yacc.h"
++
++int yylex __P((void));
++%}
++
++ODIGIT	[0-7]
++DIGIT	[0-9]
++XDIGIT	[0-9a-fA-F]
++W	[\t\n\r ]
++
++%%
++\'.\'				{ yylval.rune = yytext[1];
++				  return(RUNE); }
++
++'\\a'				{ yylval.rune = '\a';
++				  return(RUNE); }
++'\\b'				{ yylval.rune = '\b';
++				  return(RUNE); }
++'\\f'				{ yylval.rune = '\f';
++				  return(RUNE); }
++'\\n'				{ yylval.rune = '\n';
++				  return(RUNE); }
++'\\r'				{ yylval.rune = '\r';
++				  return(RUNE); }
++'\\t'				{ yylval.rune = '\t';
++				  return(RUNE); }
++'\\v'				{ yylval.rune = '\v';
++				  return(RUNE); }
++
++0x{XDIGIT}+			{ yylval.rune = strtol(yytext, 0, 16);
++				  return(RUNE); }
++0{ODIGIT}+			{ yylval.rune = strtol(yytext, 0, 8);
++				  return(RUNE); }
++{DIGIT}+			{ yylval.rune = strtol(yytext, 0, 10);
++				  return(RUNE); }
++
++
++MAPLOWER			{ return(MAPLOWER); }
++MAPUPPER			{ return(MAPUPPER); }
++TODIGIT				{ return(DIGITMAP); }
++INVALID				{ return(INVALID); }
++
++ALPHA				{ yylval.i = _A|_R|_G; return(LIST); }
++CONTROL				{ yylval.i = _C; return(LIST); }
++DIGIT				{ yylval.i = _D|_R|_G; return(LIST); }
++GRAPH				{ yylval.i = _G|_R; return(LIST); }
++LOWER				{ yylval.i = _L|_R|_G; return(LIST); }
++PUNCT				{ yylval.i = _P|_R|_G; return(LIST); }
++SPACE				{ yylval.i = _S; return(LIST); }
++UPPER				{ yylval.i = _U|_R|_G; return(LIST); }
++XDIGIT				{ yylval.i = _X|_R|_G; return(LIST); }
++BLANK				{ yylval.i = _B; return(LIST); }
++PRINT				{ yylval.i = _R; return(LIST); }
++IDEOGRAM			{ yylval.i = _I|_R|_G; return(LIST); }
++SPECIAL				{ yylval.i = _T|_R|_G; return(LIST); }
++PHONOGRAM			{ yylval.i = _Q|_R|_G; return(LIST); }
++
++VARIABLE[\t ]			{ static char vbuf[1024];
++				  char *v = vbuf;
++				  while ((*v = input()) && *v != '\n')
++					++v;
++                                  if (*v) {
++					unput(*v);
++					*v = 0;
++				  }
++				  yylval.str = vbuf;
++				  return(VARIABLE);
++				}
++
++ENCODING			{ return(ENCODING); }
++
++\".*\"				{ char *e = yytext + 1;
++				  yylval.str = e;
++				  while (*e && *e != '"')
++					++e;
++				  *e = 0;
++				  return(STRING); }
++
++\<|\(|\[			{ return(LBRK); }
++
++\>|\)|\]			{ return(RBRK); }
++
++\-				{ return(THRU); }
++\.\.\.				{ return(THRU); }
++
++\:				{ return(':'); }
++
++{W}+				;
++
++^\#.*\n				;
++\/\*				{ char lc = 0;
++				  do {
++				    while ((lc) != '*')
++					if ((lc = input()) == 0)
++					    break;
++				  } while((lc = input()) != '/');
++				}
++
++\\$				;
++.				{ printf("Lex is skipping '%s'\n", yytext); }
++%%
++
++#if	!defined(yywrap)
++int
++yywrap()
++{
++	return(1);
++}
++#endif
+diff -urN /tmp/src.skel/usr.bin/mklocale/mklocale.1 ./src.skel/usr.bin/mklocale/mklocale.1
+--- /tmp/src.skel/usr.bin/mklocale/mklocale.1	Thu Jan  1 09:00:00 1970
++++ ./src.skel/usr.bin/mklocale/mklocale.1	Mon Aug 16 20:46:29 1999
+@@ -0,0 +1,257 @@
++.\" Copyright (c) 1993, 1994
++.\"	The Regents of the University of California.  All rights reserved.
++.\"
++.\" This code is derived from software contributed to Berkeley by
++.\" Paul Borman at Krystal Technologies.
++.\"
++.\" Redistribution and use in source and binary forms, with or without
++.\" modification, are permitted provided that the following conditions
++.\" are met:
++.\" 1. Redistributions of source code must retain the above copyright
++.\"    notice, this list of conditions and the following disclaimer.
++.\" 2. Redistributions in binary form must reproduce the above copyright
++.\"    notice, this list of conditions and the following disclaimer in the
++.\"    documentation and/or other materials provided with the distribution.
++.\" 3. All advertising materials mentioning features or use of this software
++.\"    must display the following acknowledgement:
++.\"	This product includes software developed by the University of
++.\"	California, Berkeley and its contributors.
++.\" 4. Neither the name of the University nor the names of its contributors
++.\"    may be used to endorse or promote products derived from this software
++.\"    without specific prior written permission.
++.\"
++.\" THIS SOFTWARE IS PROVIDED BY THE REGENTS AND CONTRIBUTORS ``AS IS'' AND
++.\" ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
++.\" IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
++.\" ARE DISCLAIMED.  IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE LIABLE
++.\" FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
++.\" DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
++.\" OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
++.\" HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
++.\" LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
++.\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
++.\" SUCH DAMAGE.
++.\"
++.\"	@(#)mklocale.1	8.2 (Berkeley) 4/18/94
++.\"
++.Dd "April 18, 1994"
++.Dt MKLOCALE 1
++.Os
++.Sh NAME
++.Nm mklocale
++.Nd make LC_CTYPE locale files
++.Sh SYNOPSIS
++.Nm mklocale
++.Ar "< src-file"
++.Ar "> language/LC_CTYPE"
++.Sh DESCRIPTION
++The
++.Nm mklocale
++utility reads a
++.Dv LC_CTYPE
++source file from standard input and produces a
++.Dv LC_CTYPE
++binary file on standard output suitable for placement in
++.Dv /usr/share/locale/\fIlanguage\fP/LC_CTYPE.
++.Pp
++The format of
++.Ar src-file
++is quite simple.
++It consists of a series of lines which start with a keyword and have
++associated data following.  C style comments are used
++to place comments in the file.
++.Pp
++Besides the keywords which will be listed below,
++the following are valid tokens in
++.Ar src-file :
++.Bl -tag -width literal
++.It Dv RUNE
++A
++.Dv RUNE
++may be any of the following:
++.Bl -tag -width 0x[0-9a-z]*
++.It Ar 'x'
++The ascii character
++.Ar x .
++.It Ar '\ex'
++The ANSI C character
++.Ar \ex
++where
++.Ar \ex
++is one of
++.Dv \ea ,
++.Dv \eb ,
++.Dv \ef ,
++.Dv \en ,
++.Dv \er ,
++.Dv \et ,
++or
++.Dv \ev .
++.It Ar 0x[0-9a-z]*
++A hexadecimal number representing a rune code.
++.It Ar 0[0-7]*
++An octal number representing a rune code.
++.It Ar [1-9][0-9]*
++A decimal number representing a rune code.
++.El
++.It Dv STRING
++A string enclosed in double quotes (").
++.It Dv THRU
++Either
++.Dv ...
++or
++.Dv - .
++Used to indicate ranges.
++.It Ar literal
++The follow characters are taken literally:
++.Bl -tag -width "<\|\|(\|\|["
++.It Dv "<\|(\|["
++Used to start a mapping.  All are equivalent.
++.It Dv ">\|\^)\|]"
++Used to end a mapping.  All are equivalent.
++.It Dv :
++Used as a delimiter in mappings.
++.El
++.El
++.sp
++Key words which should only appear once are:
++.Bl -tag -width PHONOGRAM
++.It Dv ENCODING
++Followed by a
++.Dv STRING
++which indicates the encoding mechanism to be used for this locale.
++The current encodings are:
++.Bl -tag -width NONE
++.It Dv NONE
++No translation and the default.
++.It Dv UTF2
++.Dv "Universal character set Transformation Format"
++adopted from
++.Nm "Plan 9 from Bell Labs" .
++This is the preferred encoding.
++.It Dv EUC
++.Dv EUC
++encoding as used by several
++vendors of
++.Ux
++systems.
++.El
++.It Dv VARIABLE
++This keyword must be followed by a single tab or space character,
++after which encoding specific data is placed.
++Currently only the 
++.Dv "EUC"
++encoding requires variable data.
++See 
++.Xr euc 4
++for further details.
++.It Dv INVALID
++A single
++.Dv RUNE
++follows and is used as the invalid rune for this locale.
++.El
++.sp
++The following keywords may appear multiple times and have the following
++format for data:
++.in +.5i
++.Bl -tag -width "<RUNE1 THRU RUNEn : RUNE2>"
++.It Dv <RUNE1 RUNE2>
++.Dv RUNE1
++is mapped to
++.Dv RUNE2 .
++.It Dv <RUNE1 THRU RUNEn : RUNE2>
++Runes
++.Dv RUNE1
++through
++.Dv RUNEn
++are mapped to
++.Dv RUNE2
++through
++.Dv RUNE2
+++ n-1.
++.El
++.in -.5i
++.Bl -tag -width PHONOGRAM
++.It Dv MAPLOWER
++Defines the tolower mappings.
++.Dv RUNE2
++is the lower case representation of
++.Dv RUNE1.
++.It Dv MAPUPPER
++Defines the toupper mappings.
++.Dv RUNE2
++is the upper case representation of
++.Dv RUNE1.
++.It Dv TODIGIT
++Defines a map from runes to their digit value.
++.Dv RUNE2
++is the integer value represented  by
++.Dv RUNE1 .
++For example, the ascii character
++.Nm '0'
++would map to the decimal value
++.Nm 0 .
++Only values up to
++.Nm 255
++are allowed.
++.El
++.sp
++The following keywords may appear multiple times and have the following
++format for data:
++.in +.5i
++.Bl -tag -width "RUNE1 THRU RUNEn"
++.It Dv RUNE
++This rune has the property defined by the keyword.
++.It Dv "RUNE1 THRU RUNEn"
++All the runes between and including
++.Dv RUNE1
++and
++.Dv RUNEn
++have the property defined by the keyword.
++.El
++.in -.5i
++.Bl -tag -width PHONOGRAM
++.It Dv ALPHA
++Defines runes which are alphabetic, printable and graphic.
++.It Dv CONTROL
++Defines runes which are control characters.
++.It Dv DIGIT
++Defines runes which are decimal digits, printable and graphic.
++.It Dv GRAPH
++Defines runes which are graphic and printable.
++.It Dv LOWER
++Defines runes which are lower case, printable and graphic.
++.It Dv PUNCT
++Defines runes which are punctuation, printable and graphic.
++.It Dv SPACE
++Defines runes which are spaces.
++.It Dv UPPER
++Defines runes which are upper case, printable and graphic.
++.It Dv XDIGIT
++Defines runes which are hexadecimal digits, printable and graphic.
++.It Dv BLANK
++Defines runes which are blank.
++.It Dv PRINT
++Defines runes which are printable.
++.It Dv IDEOGRAM
++Defines runes which are ideograms, printable and graphic.
++.It Dv SPECIAL
++Defines runes which are special characters, printable and graphic.
++.It Dv PHONOGRAM
++Defines runes which are phonograms, printable and graphic.
++.El
++.Sh SEE ALSO
++.Xr mbrune 3 ,
++.Xr rune 3 ,
++.Xr setlocale 3 ,
++.Xr euc 4 ,
++.Xr utf2 4
++.Sh BUGS
++The
++.Nm mklocale
++utility is overly simplistic.
++.Sh HISTORY
++The
++.Nm mklocale
++utility first appeared in
++.Bx 4.4 .
+diff -urN /tmp/src.skel/usr.bin/mklocale/tags ./src.skel/usr.bin/mklocale/tags
+--- /tmp/src.skel/usr.bin/mklocale/tags	Thu Jan  1 09:00:00 1970
++++ ./src.skel/usr.bin/mklocale/tags	Mon Aug 16 20:46:29 1999
+@@ -0,0 +1,37 @@
++Myacc	yacc.c	/^main(ac, av)$/
++YY_FATAL_ERROR	lex.c	/^#define YY_FATAL_ERROR(msg) yy_fatal_error( msg )$/
++YY_INPUT	lex.c	/^#define YY_INPUT(buf,result,max_size) \\$/
++YY_PROTO	lex.c	/^#define YY_PROTO(proto) proto$/
++YY_SC_TO_UI	lex.c	/^#define YY_SC_TO_UI(c) ((unsigned int) (unsigned c/
++YY_STATE_EOF	lex.c	/^#define YY_STATE_EOF(state) (YY_END_OF_BUFFER + st/
++add_map	yacc.c	/^add_map(map, list, flag)$/
++dump_tables	yacc.c	/^dump_tables()$/
++set_digitmap	yacc.c	/^set_digitmap(map, list)$/
++set_map	yacc.c	/^set_map(map, list, flag)$/
++unput	lex.c	/^#define unput(c) yyunput( c, yytext_ptr )$/
++xlalloc	yacc.c	/^xlalloc(sz)$/
++xmalloc	yacc.c	/^xmalloc(sz)$/
++xrelalloc	yacc.c	/^xrelalloc(old, sz)$/
++yy_create_buffer	lex.c	/^YY_BUFFER_STATE yy_create_buffer( file, size )$/
++yy_delete_buffer	lex.c	/^void yy_delete_buffer( b )$/
++yy_fatal_error	lex.c	/^static void yy_fatal_error( msg )$/
++yy_flex_alloc	lex.c	/^static void *yy_flex_alloc( size )$/
++yy_flex_free	lex.c	/^static void yy_flex_free( ptr )$/
++yy_flex_realloc	lex.c	/^static void *yy_flex_realloc( ptr, size )$/
++yy_flex_strcpy	lex.c	/^static void yy_flex_strcpy( s1, s2 )$/
++yy_get_next_buffer	lex.c	/^static int yy_get_next_buffer()$/
++yy_get_previous_state	lex.c	/^static yy_state_type yy_get_previous_state()$/
++yy_init_buffer	lex.c	/^void yy_init_buffer( b, file )$/
++yy_pop_state	lex.c	/^static void yy_pop_state()$/
++yy_push_state	lex.c	/^static void yy_push_state( new_state )$/
++yy_switch_to_buffer	lex.c	/^void yy_switch_to_buffer( new_buffer )$/
++yy_top_state	lex.c	/^static int yy_top_state()$/
++yy_try_NUL_trans	lex.c	/^static yy_state_type yy_try_NUL_trans( yy_current_/
++yyerror	yacc.c	/^yyerror(s)$/
++yyless	lex.c	/^#define yyless(n) \\$/
++yymore	lex.c	/^#define yymore() yymore_used_but_not_detected$/
++yyparse	yacc.c	/^yyparse()$/
++yyrestart	lex.c	/^void yyrestart( input_file )$/
++yyterminate	lex.c	/^#define yyterminate() return YY_NULL$/
++yyunput	lex.c	/^static void yyunput( c, yy_bp )$/
++yywrap	lex.c	/^yywrap()$/
+diff -urN /tmp/src.skel/usr.bin/mklocale/yacc.y ./src.skel/usr.bin/mklocale/yacc.y
+--- /tmp/src.skel/usr.bin/mklocale/yacc.y	Thu Jan  1 09:00:00 1970
++++ ./src.skel/usr.bin/mklocale/yacc.y	Mon Aug 16 20:46:29 1999
+@@ -0,0 +1,835 @@
++%{
++/*-
++ * Copyright (c) 1993
++ *	The Regents of the University of California.  All rights reserved.
++ *
++ * This code is derived from software contributed to Berkeley by
++ * Paul Borman at Krystal Technologies.
++ *
++ * Redistribution and use in source and binary forms, with or without
++ * modification, are permitted provided that the following conditions
++ * are met:
++ * 1. Redistributions of source code must retain the above copyright
++ *    notice, this list of conditions and the following disclaimer.
++ * 2. Redistributions in binary form must reproduce the above copyright
++ *    notice, this list of conditions and the following disclaimer in the
++ *    documentation and/or other materials provided with the distribution.
++ * 3. All advertising materials mentioning features or use of this software
++ *    must display the following acknowledgement:
++ *	This product includes software developed by the University of
++ *	California, Berkeley and its contributors.
++ * 4. Neither the name of the University nor the names of its contributors
++ *    may be used to endorse or promote products derived from this software
++ *    without specific prior written permission.
++ *
++ * THIS SOFTWARE IS PROVIDED BY THE REGENTS AND CONTRIBUTORS ``AS IS'' AND
++ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
++ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
++ * ARE DISCLAIMED.  IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE LIABLE
++ * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
++ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
++ * OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
++ * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
++ * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
++ * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
++ * SUCH DAMAGE.
++ */
++
++#if defined(LIBC_SCCS) && !defined(lint)
++static char sccsid[] = "@(#)yacc.y	8.1 (Berkeley) 6/6/93";
++#endif /* LIBC_SCCS and not lint */
++
++#include <ctype.h>
++#include <rune.h>
++#include <stddef.h>
++#include <stdio.h>
++#include <stdlib.h>
++#include <string.h>
++#include <unistd.h>
++
++#include "ldef.h"
++
++char	*locale_file = "<stdout>";
++
++rune_map	maplower = { {0}, };
++rune_map	mapupper = { {0}, };
++rune_map	types = { {0}, };
++
++_RuneLocale	new_locale = { {0}, };
++
++int	yylex __P((void));
++int	yyparse __P((void));
++int	main __P((int, char *[]));
++void	yyerror __P((char *));
++void	*xmalloc __P((unsigned int));
++u_long	*xlalloc __P((unsigned int));
++u_long	*xrelalloc __P((u_long *, unsigned int));
++void	dump_tables __P((void));
++
++void set_map __P((rune_map *, rune_list *, u_long));
++void set_digitmap __P((rune_map *, rune_list *));
++void add_map __P((rune_map *, rune_list *, u_long));
++%}
++
++%union	{
++    rune_t	rune;
++    int		i;
++    char	*str;
++
++    rune_list	*list;
++}
++
++%token	<rune>	RUNE
++%token		LBRK
++%token		RBRK
++%token		THRU
++%token		MAPLOWER
++%token		MAPUPPER
++%token		DIGITMAP
++%token	<i>	LIST
++%token	<str>	VARIABLE
++%token		ENCODING
++%token		INVALID
++%token	<str>	STRING
++
++%type	<list>	list
++%type	<list>	map
++
++
++%%
++
++locale	:	/* empty */
++	|	table
++	    	{ dump_tables(); }
++	;
++
++table	:	entry
++	|	table entry
++	;
++
++entry	:	ENCODING STRING
++		{ strncpy(new_locale.encoding, $2, sizeof(new_locale.encoding)); }
++	|	VARIABLE
++		{ new_locale.variable_len = strlen($1) + 1;
++		  new_locale.variable = malloc(new_locale.variable_len);
++		  strcpy((char *)new_locale.variable, $1);
++		}
++	|	INVALID RUNE
++		{ new_locale.invalid_rune = $2; }
++	|	LIST list
++		{ set_map(&types, $2, $1); }
++	|	MAPLOWER map
++		{ set_map(&maplower, $2, 0); }
++	|	MAPUPPER map
++		{ set_map(&mapupper, $2, 0); }
++	|	DIGITMAP map
++		{ set_digitmap(&types, $2); }
++	;
++
++list	:	RUNE
++		{
++		    $$ = (rune_list *)malloc(sizeof(rune_list));
++		    $$->min = $1;
++		    $$->max = $1;
++		    $$->next = 0;
++		}
++	|	RUNE THRU RUNE
++		{
++		    $$ = (rune_list *)malloc(sizeof(rune_list));
++		    $$->min = $1;
++		    $$->max = $3;
++		    $$->next = 0;
++		}
++	|	list RUNE
++		{
++		    $$ = (rune_list *)malloc(sizeof(rune_list));
++		    $$->min = $2;
++		    $$->max = $2;
++		    $$->next = $1;
++		}
++	|	list RUNE THRU RUNE
++		{
++		    $$ = (rune_list *)malloc(sizeof(rune_list));
++		    $$->min = $2;
++		    $$->max = $4;
++		    $$->next = $1;
++		}
++	;
++
++map	:	LBRK RUNE RUNE RBRK
++		{
++		    $$ = (rune_list *)malloc(sizeof(rune_list));
++		    $$->min = $2;
++		    $$->max = $2;
++		    $$->map = $3;
++		    $$->next = 0;
++		}
++	|	map LBRK RUNE RUNE RBRK
++		{
++		    $$ = (rune_list *)malloc(sizeof(rune_list));
++		    $$->min = $3;
++		    $$->max = $3;
++		    $$->map = $4;
++		    $$->next = $1;
++		}
++	|	LBRK RUNE THRU RUNE ':' RUNE RBRK
++		{
++		    $$ = (rune_list *)malloc(sizeof(rune_list));
++		    $$->min = $2;
++		    $$->max = $4;
++		    $$->map = $6;
++		    $$->next = 0;
++		}
++	|	map LBRK RUNE THRU RUNE ':' RUNE RBRK
++		{
++		    $$ = (rune_list *)malloc(sizeof(rune_list));
++		    $$->min = $3;
++		    $$->max = $5;
++		    $$->map = $7;
++		    $$->next = $1;
++		}
++	;
++%%
++
++int debug = 0;
++FILE *fp = stdout;
++
++int
++main(ac, av)
++	int ac;
++	char *av[];
++{
++    int x;
++
++    extern char *optarg;
++    extern int optind;
++
++    while ((x = getopt(ac, av, "do:")) != EOF) {
++	switch(x) {
++	case 'd':
++	    debug = 1;
++	    break;
++	case 'o':
++	    locale_file = optarg;
++	    if ((fp = fopen(locale_file, "w")) == 0) {
++		perror(locale_file);
++		exit(1);
++	    }
++	    break;
++	default:
++	usage:
++	    fprintf(stderr, "Usage: mklocale [-d] [-o output] [source]\n");
++	    exit(1);
++	}
++    }
++
++    switch (ac - optind) {
++    case 0:
++	break;
++    case 1:
++	if (freopen(av[optind], "r", stdin) == 0) {
++	    perror(av[optind]);
++	    exit(1);
++	}
++	break;
++    default:
++	goto usage;
++    }
++    for (x = 0; x < _CACHED_RUNES; ++x) {
++	mapupper.map[x] = x;
++	maplower.map[x] = x;
++    }
++    new_locale.invalid_rune = _INVALID_RUNE;
++    memcpy(new_locale.magic, _RUNE_MAGIC_1, sizeof(new_locale.magic));
++
++    yyparse();
++    return 0;
++}
++
++void
++yyerror(s)
++	char *s;
++{
++    fprintf(stderr, "%s\n", s);
++}
++
++void *
++xmalloc(sz)
++	unsigned int sz;
++{
++    void *r = malloc(sz);
++    if (!r) {
++	perror("xmalloc");
++	abort();
++    }
++    return(r);
++}
++
++u_long *
++xlalloc(sz)
++	unsigned int sz;
++{
++    u_long *r = (u_long *)malloc(sz * sizeof(u_long));
++    if (!r) {
++	perror("xlalloc");
++	abort();
++    }
++    return(r);
++}
++
++u_long *
++xrelalloc(old, sz)
++	u_long *old;
++	unsigned int sz;
++{
++    u_long *r = (u_long *)realloc((char *)old, sz * sizeof(u_long));
++    if (!r) {
++	perror("xrelalloc");
++	abort();
++    }
++    return(r);
++}
++
++void
++set_map(map, list, flag)
++	rune_map *map;
++	rune_list *list;
++	u_long flag;
++{
++    while (list) {
++	rune_list *nlist = list->next;
++	add_map(map, list, flag);
++	list = nlist;
++    }
++}
++
++void
++set_digitmap(map, list)
++	rune_map *map;
++	rune_list *list;
++{
++    rune_t i;
++
++    while (list) {
++	rune_list *nlist = list->next;
++	for (i = list->min; i <= list->max; ++i) {
++	    if (list->map + (i - list->min)) {
++		rune_list *tmp = (rune_list *)xmalloc(sizeof(rune_list));
++		tmp->min = i;
++		tmp->max = i;
++		add_map(map, tmp, list->map + (i - list->min));
++	    }
++	}
++	free(list);
++	list = nlist;
++    }
++}
++
++void
++add_map(map, list, flag)
++	rune_map *map;
++	rune_list *list;
++	u_long flag;
++{
++    rune_t i;
++    rune_list *lr = 0;
++    rune_list *r;
++    rune_t run;
++
++    while (list->min < _CACHED_RUNES && list->min <= list->max) {
++	if (flag)
++	    map->map[list->min++] |= flag;
++	else
++	    map->map[list->min++] = list->map++;
++    }
++
++    if (list->min > list->max) {
++	free(list);
++	return;
++    }
++
++    run = list->max - list->min + 1;
++
++    if (!(r = map->root) || (list->max < r->min - 1)
++			 || (!flag && list->max == r->min - 1)) {
++	if (flag) {
++	    list->types = xlalloc(run);
++	    for (i = 0; i < run; ++i)
++		list->types[i] = flag;
++	}
++	list->next = map->root;
++	map->root = list;
++	return;
++    }
++
++    for (r = map->root; r && r->max + 1 < list->min; r = r->next)
++	lr = r;
++
++    if (!r) {
++	/*
++	 * We are off the end.
++	 */
++	if (flag) {
++	    list->types = xlalloc(run);
++	    for (i = 0; i < run; ++i)
++		list->types[i] = flag;
++	}
++	list->next = 0;
++	lr->next = list;
++	return;
++    }
++
++    if (list->max < r->min - 1) {
++	/*
++	 * We come before this range and we do not intersect it.
++	 * We are not before the root node, it was checked before the loop
++	 */
++	if (flag) {
++	    list->types = xlalloc(run);
++	    for (i = 0; i < run; ++i)
++		list->types[i] = flag;
++	}
++	list->next = lr->next;
++	lr->next = list;
++	return;
++    }
++
++    /*
++     * At this point we have found that we at least intersect with
++     * the range pointed to by `r', we might intersect with one or
++     * more ranges beyond `r' as well.
++     */
++
++    if (!flag && list->map - list->min != r->map - r->min) {
++	/*
++	 * There are only two cases when we are doing case maps and
++	 * our maps needn't have the same offset.  When we are adjoining
++	 * but not intersecting.
++	 */
++	if (list->max + 1 == r->min) {
++	    lr->next = list;
++	    list->next = r;
++	    return;
++	}
++	if (list->min - 1 == r->max) {
++	    list->next = r->next;
++	    r->next = list;
++	    return;
++	}
++	fprintf(stderr, "Error: conflicting map entries\n");
++	exit(1);
++    }
++
++    if (list->min >= r->min && list->max <= r->max) {
++	/*
++	 * Subset case.
++	 */
++
++	if (flag) {
++	    for (i = list->min; i <= list->max; ++i)
++		r->types[i - r->min] |= flag;
++	}
++	free(list);
++	return;
++    }
++    if (list->min <= r->min && list->max >= r->max) {
++	/*
++	 * Superset case.  Make him big enough to hold us.
++	 * We might need to merge with the guy after him.
++	 */
++	if (flag) {
++	    list->types = xlalloc(list->max - list->min + 1);
++
++	    for (i = list->min; i <= list->max; ++i)
++		list->types[i - list->min] = flag;
++
++	    for (i = r->min; i <= r->max; ++i)
++		list->types[i - list->min] |= r->types[i - r->min];
++
++	    free(r->types);
++	    r->types = list->types;
++	} else {
++	    r->map = list->map;
++	}
++	r->min = list->min;
++	r->max = list->max;
++	free(list);
++    } else if (list->min < r->min) {
++	/*
++	 * Our tail intersects his head.
++	 */
++	if (flag) {
++	    list->types = xlalloc(r->max - list->min + 1);
++
++	    for (i = r->min; i <= r->max; ++i)
++		list->types[i - list->min] = r->types[i - r->min];
++
++	    for (i = list->min; i < r->min; ++i)
++		list->types[i - list->min] = flag;
++
++	    for (i = r->min; i <= list->max; ++i)
++		list->types[i - list->min] |= flag;
++
++	    free(r->types);
++	    r->types = list->types;
++	} else {
++	    r->map = list->map;
++	}
++	r->min = list->min;
++	free(list);
++	return;
++    } else {
++	/*
++	 * Our head intersects his tail.
++	 * We might need to merge with the guy after him.
++	 */
++	if (flag) {
++	    r->types = xrelalloc(r->types, list->max - r->min + 1);
++
++	    for (i = list->min; i <= r->max; ++i)
++		r->types[i - r->min] |= flag;
++
++	    for (i = r->max+1; i <= list->max; ++i)
++		r->types[i - r->min] = flag;
++	}
++	r->max = list->max;
++	free(list);
++    }
++
++    /*
++     * Okay, check to see if we grew into the next guy(s)
++     */
++    while ((lr = r->next) && r->max >= lr->min) {
++	if (flag) {
++	    if (r->max >= lr->max) {
++		/*
++		 * Good, we consumed all of him.
++		 */
++		for (i = lr->min; i <= lr->max; ++i)
++		    r->types[i - r->min] |= lr->types[i - lr->min];
++	    } else {
++		/*
++		 * "append" him on to the end of us.
++		 */
++		r->types = xrelalloc(r->types, lr->max - r->min + 1);
++
++		for (i = lr->min; i <= r->max; ++i)
++		    r->types[i - r->min] |= lr->types[i - lr->min];
++
++		for (i = r->max+1; i <= lr->max; ++i)
++		    r->types[i - r->min] = lr->types[i - lr->min];
++
++		r->max = lr->max;
++	    }
++	} else {
++	    if (lr->max > r->max)
++		r->max = lr->max;
++	}
++
++	r->next = lr->next;
++
++	if (flag)
++	    free(lr->types);
++	free(lr);
++    }
++}
++
++void
++dump_tables()
++{
++    int x;
++    rune_list *list;
++
++    /*
++     * See if we can compress some of the istype arrays
++     */
++    for(list = types.root; list; list = list->next) {
++	list->map = list->types[0];
++	for (x = 1; x < list->max - list->min + 1; ++x) {
++	    if (list->types[x] != list->map) {
++		list->map = 0;
++		break;
++	    }
++	}
++    }
++
++    new_locale.invalid_rune = htonl(new_locale.invalid_rune);
++
++    /*
++     * Fill in our tables.  Do this in network order so that
++     * diverse machines have a chance of sharing data.
++     * (Machines like Crays cannot share with little machines due to
++     *  word size.  Sigh.  We tried.)
++     */
++    for (x = 0; x < _CACHED_RUNES; ++x) {
++	new_locale.runetype[x] = htonl(types.map[x]);
++	new_locale.maplower[x] = htonl(maplower.map[x]);
++	new_locale.mapupper[x] = htonl(mapupper.map[x]);
++    }
++
++    /*
++     * Count up how many ranges we will need for each of the extents.
++     */
++    list = types.root;
++
++    while (list) {
++	new_locale.runetype_ext.nranges++;
++	list = list->next;
++    }
++    new_locale.runetype_ext.nranges = htonl(new_locale.runetype_ext.nranges);
++
++    list = maplower.root;
++
++    while (list) {
++	new_locale.maplower_ext.nranges++;
++	list = list->next;
++    }
++    new_locale.maplower_ext.nranges = htonl(new_locale.maplower_ext.nranges);
++
++    list = mapupper.root;
++
++    while (list) {
++	new_locale.mapupper_ext.nranges++;
++	list = list->next;
++    }
++    new_locale.mapupper_ext.nranges = htonl(new_locale.mapupper_ext.nranges);
++
++    new_locale.variable_len = htonl(new_locale.variable_len);
++
++    /*
++     * Okay, we are now ready to write the new locale file.
++     */
++
++    /*
++     * PART 1: The _RuneLocale structure
++     */
++    if (fwrite((char *)&new_locale, sizeof(new_locale), 1, fp) != 1) {
++	perror(locale_file);
++	exit(1);
++    }
++    /*
++     * PART 2: The runetype_ext structures (not the actual tables)
++     */
++    list = types.root;
++
++    while (list) {
++	_RuneEntry re;
++
++	re.min = htonl(list->min);
++	re.max = htonl(list->max);
++	re.map = htonl(list->map);
++
++	if (fwrite((char *)&re, sizeof(re), 1, fp) != 1) {
++	    perror(locale_file);
++	    exit(1);
++	}
++
++        list = list->next;
++    }
++    /*
++     * PART 3: The maplower_ext structures
++     */
++    list = maplower.root;
++
++    while (list) {
++	_RuneEntry re;
++
++	re.min = htonl(list->min);
++	re.max = htonl(list->max);
++	re.map = htonl(list->map);
++
++	if (fwrite((char *)&re, sizeof(re), 1, fp) != 1) {
++	    perror(locale_file);
++	    exit(1);
++	}
++
++        list = list->next;
++    }
++    /*
++     * PART 4: The mapupper_ext structures
++     */
++    list = mapupper.root;
++
++    while (list) {
++	_RuneEntry re;
++
++	re.min = htonl(list->min);
++	re.max = htonl(list->max);
++	re.map = htonl(list->map);
++
++	if (fwrite((char *)&re, sizeof(re), 1, fp) != 1) {
++	    perror(locale_file);
++	    exit(1);
++	}
++
++        list = list->next;
++    }
++    /*
++     * PART 5: The runetype_ext tables
++     */
++    list = types.root;
++
++    while (list) {
++	for (x = 0; x < list->max - list->min + 1; ++x)
++	    list->types[x] = htonl(list->types[x]);
++
++	if (!list->map) {
++	    if (fwrite((char *)list->types,
++		(list->max - list->min + 1)*sizeof(u_long), 1, fp) != 1) {
++		perror(locale_file);
++		exit(1);
++	    }
++	}
++        list = list->next;
++    }
++    /*
++     * PART 5: And finally the variable data
++     */
++    if (fwrite((char *)new_locale.variable,
++	       ntohl(new_locale.variable_len), 1, fp) != 1) {
++	perror(locale_file);
++	exit(1);
++    }
++    fclose(fp);
++
++    if (!debug)
++	return;
++
++    if (new_locale.encoding[0])
++	fprintf(stderr, "ENCODING	%s\n", new_locale.encoding);
++    if (new_locale.variable)
++	fprintf(stderr, "VARIABLE	%s\n", (char *)new_locale.variable);
++
++    fprintf(stderr, "\nMAPLOWER:\n\n");
++
++    for (x = 0; x < _CACHED_RUNES; ++x) {
++	if (isprint(maplower.map[x]))
++	    fprintf(stderr, " '%c'", (int)maplower.map[x]);
++	else if (maplower.map[x])
++	    fprintf(stderr, "%04x", (unsigned int)maplower.map[x]);
++	else
++	    fprintf(stderr, "%4x", 0);
++	if ((x & 0xf) == 0xf)
++	    fprintf(stderr, "\n");
++	else
++	    fprintf(stderr, " ");
++    }
++    fprintf(stderr, "\n");
++
++    for (list = maplower.root; list; list = list->next)
++	fprintf(stderr, "\t%04x - %04x : %04x\n", list->min, list->max, list->map);
++
++    fprintf(stderr, "\nMAPUPPER:\n\n");
++
++    for (x = 0; x < _CACHED_RUNES; ++x) {
++	if (isprint(mapupper.map[x]))
++	    fprintf(stderr, " '%c'", (int)mapupper.map[x]);
++	else if (mapupper.map[x])
++	    fprintf(stderr, "%04x", (unsigned int)mapupper.map[x]);
++	else
++	    fprintf(stderr, "%4x", 0);
++	if ((x & 0xf) == 0xf)
++	    fprintf(stderr, "\n");
++	else
++	    fprintf(stderr, " ");
++    }
++    fprintf(stderr, "\n");
++
++    for (list = mapupper.root; list; list = list->next)
++	fprintf(stderr, "\t%04x - %04x : %04x\n", list->min, list->max, list->map);
++
++
++    fprintf(stderr, "\nTYPES:\n\n");
++
++    for (x = 0; x < _CACHED_RUNES; ++x) {
++	u_long r = types.map[x];
++
++	if (r) {
++	    if (isprint(x))
++		fprintf(stderr, " '%c': %2d", x, (int)(r & 0xff));
++	    else
++		fprintf(stderr, "%04x: %2d", x, (int)(r & 0xff));
++
++	    fprintf(stderr, " %4s", (r & _A) ? "alph" : "");
++	    fprintf(stderr, " %4s", (r & _C) ? "ctrl" : "");
++	    fprintf(stderr, " %4s", (r & _D) ? "dig" : "");
++	    fprintf(stderr, " %4s", (r & _G) ? "graf" : "");
++	    fprintf(stderr, " %4s", (r & _L) ? "low" : "");
++	    fprintf(stderr, " %4s", (r & _P) ? "punc" : "");
++	    fprintf(stderr, " %4s", (r & _S) ? "spac" : "");
++	    fprintf(stderr, " %4s", (r & _U) ? "upp" : "");
++	    fprintf(stderr, " %4s", (r & _X) ? "xdig" : "");
++	    fprintf(stderr, " %4s", (r & _B) ? "blnk" : "");
++	    fprintf(stderr, " %4s", (r & _R) ? "prnt" : "");
++	    fprintf(stderr, " %4s", (r & _I) ? "ideo" : "");
++	    fprintf(stderr, " %4s", (r & _T) ? "spec" : "");
++	    fprintf(stderr, " %4s", (r & _Q) ? "phon" : "");
++	    fprintf(stderr, "\n");
++	}
++    }
++
++    for (list = types.root; list; list = list->next) {
++	if (list->map && list->min + 3 < list->max) {
++	    u_long r = list->map;
++
++	    fprintf(stderr, "%04x: %2d", list->min, (int)(r & 0xff));
++
++	    fprintf(stderr, " %4s", (r & _A) ? "alph" : "");
++	    fprintf(stderr, " %4s", (r & _C) ? "ctrl" : "");
++	    fprintf(stderr, " %4s", (r & _D) ? "dig" : "");
++	    fprintf(stderr, " %4s", (r & _G) ? "graf" : "");
++	    fprintf(stderr, " %4s", (r & _L) ? "low" : "");
++	    fprintf(stderr, " %4s", (r & _P) ? "punc" : "");
++	    fprintf(stderr, " %4s", (r & _S) ? "spac" : "");
++	    fprintf(stderr, " %4s", (r & _U) ? "upp" : "");
++	    fprintf(stderr, " %4s", (r & _X) ? "xdig" : "");
++	    fprintf(stderr, " %4s", (r & _B) ? "blnk" : "");
++	    fprintf(stderr, " %4s", (r & _R) ? "prnt" : "");
++	    fprintf(stderr, " %4s", (r & _I) ? "ideo" : "");
++	    fprintf(stderr, " %4s", (r & _T) ? "spec" : "");
++	    fprintf(stderr, " %4s", (r & _Q) ? "phon" : "");
++	    fprintf(stderr, "\n...\n");
++
++	    fprintf(stderr, "%04x: %2d", list->max, (int)(r & 0xff));
++
++	    fprintf(stderr, " %4s", (r & _A) ? "alph" : "");
++	    fprintf(stderr, " %4s", (r & _C) ? "ctrl" : "");
++	    fprintf(stderr, " %4s", (r & _D) ? "dig" : "");
++	    fprintf(stderr, " %4s", (r & _G) ? "graf" : "");
++	    fprintf(stderr, " %4s", (r & _L) ? "low" : "");
++	    fprintf(stderr, " %4s", (r & _P) ? "punc" : "");
++	    fprintf(stderr, " %4s", (r & _S) ? "spac" : "");
++	    fprintf(stderr, " %4s", (r & _U) ? "upp" : "");
++	    fprintf(stderr, " %4s", (r & _X) ? "xdig" : "");
++	    fprintf(stderr, " %4s", (r & _B) ? "blnk" : "");
++	    fprintf(stderr, " %4s", (r & _R) ? "prnt" : "");
++	    fprintf(stderr, " %4s", (r & _I) ? "ideo" : "");
++	    fprintf(stderr, " %4s", (r & _T) ? "spec" : "");
++	    fprintf(stderr, " %4s", (r & _Q) ? "phon" : "");
++	    fprintf(stderr, "\n");
++	} else 
++	for (x = list->min; x <= list->max; ++x) {
++	    u_long r = ntohl(list->types[x - list->min]);
++
++	    if (r) {
++		fprintf(stderr, "%04x: %2d", x, (int)(r & 0xff));
++
++		fprintf(stderr, " %4s", (r & _A) ? "alph" : "");
++		fprintf(stderr, " %4s", (r & _C) ? "ctrl" : "");
++		fprintf(stderr, " %4s", (r & _D) ? "dig" : "");
++		fprintf(stderr, " %4s", (r & _G) ? "graf" : "");
++		fprintf(stderr, " %4s", (r & _L) ? "low" : "");
++		fprintf(stderr, " %4s", (r & _P) ? "punc" : "");
++		fprintf(stderr, " %4s", (r & _S) ? "spac" : "");
++		fprintf(stderr, " %4s", (r & _U) ? "upp" : "");
++		fprintf(stderr, " %4s", (r & _X) ? "xdig" : "");
++		fprintf(stderr, " %4s", (r & _B) ? "blnk" : "");
++		fprintf(stderr, " %4s", (r & _R) ? "prnt" : "");
++		fprintf(stderr, " %4s", (r & _I) ? "ideo" : "");
++		fprintf(stderr, " %4s", (r & _T) ? "spec" : "");
++		fprintf(stderr, " %4s", (r & _Q) ? "phon" : "");
++		fprintf(stderr, "\n");
++	    }
++	}
++    }
++}

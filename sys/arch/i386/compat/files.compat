@@ -1,0 +1,12 @@
+#	$NecBSD: files.compat,v 1.6 1998/03/14 07:06:41 kmatsuda Exp $
+#	$NetBSD$
+#
+# [NetBSD for NEC PC-98 series]
+#  Copyright (c) 1994, 1995, 1996, 1997, 1998
+#	NetBSD/pc98 porting staff.  All rights reserved.
+#
+# new better driver
+#
+
+define	compat_audio
+file	arch/i386/compat/dev/compat_audio.c	compat_audio	needs-flag

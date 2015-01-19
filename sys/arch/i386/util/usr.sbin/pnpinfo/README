@@ -1,0 +1,7 @@
+$NecBSD: README,v 1.4 1998/02/04 02:44:38 kmatsuda Exp $
+
+************** WARNINGS FOR NETBSD/PC98 **********************
+Do not use pnpinfo
+
+Kernel controls all PnP board with fixed CSN, however,
+this programs reset CSN to 0!

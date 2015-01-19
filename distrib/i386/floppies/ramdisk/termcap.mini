@@ -1,0 +1,130 @@
+#	$NecBSD: termcap.mini,v 1.1 1999/08/07 11:12:02 kmatsuda Exp $
+#	$NetBSD$
+#
+# [NetBSD for NEC PC-98 series]
+#  Copyright (c) 1996, 1997, 1998
+#	NetBSD/pc98 porting staff. All rights reserved.
+#
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions
+# are met:
+# 1. Redistributions of source code must retain the above copyright
+#    notice, this list of conditions and the following disclaimer.
+# 2. Redistributions in binary form must reproduce the above copyright
+#    notice, this list of conditions and the following disclaimer in the
+#    documentation and/or other materials provided with the distribution.
+# 3. Neither the name of the University nor the names of its contributors
+#    may be used to endorse or promote products derived from this software
+#    without specific prior written permission.
+#
+# THIS SOFTWARE IS PROVIDED BY THE REGENTS AND CONTRIBUTORS ``AS IS'' AND
+# ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+# IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+# ARE DISCLAIMED.  IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE LIABLE
+# FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+# DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+# OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+# HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+# LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+# OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+# SUCH DAMAGE.
+#
+#	@(#)termcap.src	5.109 (Berkeley) 3/8/93
+#
+vscXX|vsc dec vt220 emulator for pc98 consoles:\
+	:AL=\E[%dL:\
+	:DC=\E[%dP:\
+	:DL=\E[%dM:\
+	:DO=\E[%dB:\
+	:IC=\E[%d@:\
+	:LE=\E[%dD:\
+	:RI=\E[%dC:\
+	:SF=\E[%dS:SR=\E[%dT:\
+	:UP=\E[%dA:\
+	:ae=^O:\
+	:al=\E[L:\
+	:am:\
+	:as=^N:\
+	:bl=^G:\
+	:bs:\
+	:cb=\E[1K:\
+	:cd=\E[J:\
+	:ce=\E[K:\
+	:cl=\E[H\E[J:\
+	:cm=\E[%i%d;%dH:\
+	:cr=^M:\
+	:cs=\E[%i%d;%dr:\
+	:ct=\E[3g:\
+	:dc=\E[P:\
+	:dl=\E[M:\
+	:do=^J:\
+	:ei=\E[4l:\
+	:ho=\E[H:\
+	:im=\E[4h:\
+	:it#8:\
+	:k1=\E[M:\
+	:k2=\E[N:\
+	:k3=\E[O:\
+	:k4=\E[P:\
+	:k5=\E[Q:\
+	:k6=\E[R:\
+	:k7=\E[S:\
+	:k8=\E[T:\
+	:k9=\E[U:\
+	:k0=\E[V:\
+	:kh=\E[1~:\
+	:kI=\E[2~:\
+	:kD=\E[3~:\
+	:kH=\E[4~:\
+	:kP=\E[5~:\
+	:kN=\E[6~:\
+	:%1=\E[7~:\
+	:kb=\177:\
+	:#4=\EOD:\
+	:%i=\EOC:\
+	:su=\EOA:\
+	:sd=\EOB:\
+	:kl=\E[D:\
+	:kr=\E[C:\
+	:ku=\E[A:\
+	:kd=\E[B:\
+	:ke=\E[?1l\E>:\
+	:km:\
+	:ks=\E[?1h\E=:\
+	:le=^H:\
+	:mb=\E[5m:\
+	:md=\E[1m:\
+	:me=\E[m:\
+	:mi:\
+	:mr=\E[7m:\
+	:ms:\
+	:nd=\E[C:\
+	:rc=\E8:\
+	:rs=\Ec\E>\E[?3l\E[?4l\E[?5l\E[?7h\E[?8h\E[?25h:\
+	:sc=\E7:\
+	:se=\E[27m:\
+	:sf=\ED:\
+	:so=\E[7m:\
+	:sr=\EM:\
+	:st=\EH:\
+	:ue=\E[24m:\
+	:up=\E[A:\
+	:us=\E[4m:\
+	:hs:ts=\E_:fs=\E\\:ds=\E_\E\\:\
+	:xn:G0:co#80:
+VSC24|vsc24|vsc with 24 lines (1 status line):\
+	:li#24:\
+	:is=\E[1;24r\E[24;1H:\
+	:tc=vscXX:
+VSC25|vsc25|vsc with 25 lines:\
+	:li#25:\
+	:is=\E[1;25r\E[25;1H:\
+	:tc=vscXX:
+VSC29|vsc29|vsc with 29 lines (1 status line):\
+	:li#29:\
+	:is=\E[1;29r\E[29;1H:\
+	:tc=vscXX:
+VSC30|vsc30|vsc with 30 lines:\
+	:li#30:\
+	:is=\E[1;30r\E[30;1H:\
+	:tc=vscXX:

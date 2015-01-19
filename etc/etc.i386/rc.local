@@ -1,0 +1,92 @@
+#	$NecBSD: rc.local,v 1.8.6.2 1999/08/21 06:50:33 kmatsuda Exp $
+#	$NetBSD: rc.local,v 1.14 1995/12/17 02:01:13 thorpej Exp $
+#
+# site-specific startup actions, daemons
+#
+#	From: @(#)rc.local	5.4 (Berkeley) 12/14/90
+#
+
+#
+# [NetBSD for NEC PC-98 series]
+#  Copyright (c) 1995, 1996, 1997, 1998
+#	NetBSD/pc98 porting staff. All rights reserved.
+#
+
+#
+# set these to "NO" to turn off. otherwise, tyey're used as flags
+#
+vm86biosd=NO				#vm86biosd
+apmd=YES				#apmd
+pcsd_flags="-d"				#pcsd
+slot0_flags=YES				#slotctrl slot0
+slot1_flags=NO				#slotctrl slot1
+#slot1_flags="slot.timing=high"		#slotctrl slot1
+comstart=NO				#comstart
+clock=YES				#status clock
+loadfont=NO				#loadfont="maru" or "ascii"
+
+
+echo -n 'starting local daemons:'
+
+# vm86biosd
+if [ X"$vm86biosd" = X"YES" -a -f /sbin/vm86biosd ]; then
+	echo ' vm86biosd' 
+	/sbin/vm86biosd
+fi
+
+# apmd
+if [ X"$apmd" = X"YES" -a -f /usr/sbin/apmd ]; then
+	echo -n ' apmd' 
+	/usr/sbin/apmd 2>&1 > /dev/null
+fi
+
+# pcsd
+if [ X"$pcsd_flags" != X"NO" -a -f /sbin/pcsd ]; then
+	echo -n ' pcsd'
+	/sbin/pcsd "$pcsd_flags"
+
+	if [ -f /usr/sbin/slotctrl ]; then
+		echo -n ' slotctrl'
+		if [ X"$slot0_flags" != X"YES" ]; then
+			echo -n ' '
+			/usr/sbin/slotctrl slot0 $slot0_flags
+		fi
+		if [ X"$slot1_flags" != X"YES" ]; then
+			echo -n ' '
+			/usr/sbin/slotctrl slot1 $slot1_flags
+		fi
+	fi
+fi
+
+echo '.'
+
+echo -n "starting console programs:"
+
+if [ X"$loadfont" != X"NO" -a -f /usr/local/bin/load${loadfont} ]; then
+	echo  -n " load${loadfont}"
+	/usr/local/bin/load${loadfont}
+fi
+
+# clock
+if [ X"$clock" = X"YES" -a -f /usr/local/bin/clock ]; then
+	echo  -n ' clock'
+	for i in 0 1 2 3 4 5 6 7 8 9
+	do
+		if [ -f /usr/local/bin/vsc -a -c /dev/ttyv$i ]; then
+			/usr/local/bin/vsc -SON /dev/ttyv$i >/dev/null 2>&1
+		fi
+	done
+	/usr/local/bin/clock
+fi
+
+echo "."
+
+# configure serial devices
+echo -n 'configuring serial devices:'
+
+if [ X"$comstart" = X"YES" -a -f /etc/comstart ]; then
+	/etc/comstart
+	echo ' done.'
+else
+	echo '.'
+fi

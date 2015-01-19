@@ -1,0 +1,11 @@
+xsystm utility
+
+なんやかんや言って、実はsuspendやslotctrl down等が出来るようになって
+います。該当項目をdouble clickするとmenuがpopupします。
+
+ただ、rootでないとだめですが。内部的にはslotctrlやapmctrlを
+呼んでいるだけですので、setuidすればOKですけども。。。
+
+各自の判断にまかせます。このprogram自体の実行権限は
+絶対に変えないでくださいね。
+

@@ -1,0 +1,1435 @@
+/*	$NecBSD: msg.mi.ja,v 1.13.2.1 1999/08/15 11:21:40 kmatsuda Exp $	*/
+/*	$NetBSD: msg.mi.en,v 1.49.2.1 1999/06/24 23:04:18 cgd Exp $	*/
+
+/*
+ * Copyright 1997 Piermont Information Systems Inc.
+ * All rights reserved.
+ *
+ * Written by Philip A. Nelson for Piermont Information Systems Inc.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
+ * 3. All advertising materials mentioning features or use of this software
+ *    must display the following acknowledgement:
+ *      This product includes software developed for the NetBSD Project by
+ *      Piermont Information Systems Inc.
+ * 4. The name of Piermont Information Systems Inc. may not be used to endorse
+ *    or promote products derived from this software without specific prior
+ *    written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY PIERMONT INFORMATION SYSTEMS INC. ``AS IS''
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED. IN NO EVENT SHALL PIERMONT INFORMATION SYSTEMS INC. BE 
+ * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR 
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF 
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF 
+ * THE POSSIBILITY OF SUCH DAMAGE.
+ *
+ */
+
+/* MI Message catalog -- english, machine independent */
+/* MI Message catalog -- japanese, machine independent */
+
+message usage
+{使用法: sysinst [-r リリース]
+}
+/*
+{usage: sysinst [-r release]
+}
+*/
+
+message yes {はい}
+/*
+message yes {Yes}
+*/
+
+message no {いいえ}
+/*
+message no {No}
+*/
+
+message install
+{インストール}
+/*
+{install}
+*/
+
+message reinstall
+{セットの再インストール}/* XXX */
+/*
+{reinstall sets for}
+*/
+
+message upgrade
+{アップグレード}
+/*
+{upgrade}
+*/
+
+message hello
+{NetBSD-@@VERSION@@ システムインストールツール sysinst へようこそ。
+このメニュー駆動型ツールは NetBSD のハードディスクへのインストールや、
+アップグレードを、最小限の手間で、行なえるように設計されました。
+以下のメニュー中にあるリファレンス文字(a, b, c, ...)のどれかをタイプ
+することによって項目を指定する事ができます。また、矢印キーで指定も
+可能です。メニューからエンターキーをタイプすることによって、指定した
+項目を実行します。
+
+もしフロッピーから起動しているなら、今ディスクを抜いてください。
+
+NetBSD のご利用ありがとうございます!
+}
+/*
+{Welcome to sysinst, the NetBSD-@@VERSION@@ system installation tool.
+This menu-driven tool is designed to help you install NetBSD to a hard
+disk, or upgrade an existing NetBSD system, with a minimum of work.
+In the following menus, you may change the current selection by
+either typing the reference letter (a, b, c, ...).  Arrow keys may also work.
+You activate the current selection from the menu by typing the enter key.
+
+If you booted from a floppy, you may now remove the disk.
+
+Thank you for using NetBSD!
+}
+*/
+
+message installusure
+{NetBSD をハードディスク上にインストールするために以下の項目を実行
+しなければなりません。この手続きを進める前に全てをバックアップする
+事をお勧めします。以下の手順でインストールを行ないます:
+	a) ディスクのパーティションを切る
+	b) 新しい BSD ファイルシステムを作成する
+	c) 配付セットの読み込みとインストール
+
+(実際にディスクの書き込みが行われる直前に、再度手続きを進めるか進めないか
+問い合わせが行なわれます。その時点まで、ディスクの情報が書き換えられる事は
+ありません。)
+作業を続けますか?
+}
+/*
+{You have chosen to install NetBSD on your hard disk.  This will change
+information on your hard disk.  You should have made a full backup
+before this procedure!  This procedure will do the following things:
+	a) Partition your disk
+	b) Create new BSD file systems
+	c) Load and install distribution sets
+
+(After you enter the partition information but before your disk is 
+changed, you will have the opportunity to quit this procedure.)
+Shall we continue?  
+}
+*/
+
+message upgradeusure
+{既存のNetBSDシステムのアップグレードを行います。
+これからハードディスクの情報を実際に書き換えます。
+この手続きを進める前にバックアップを行なってください!
+本当に NetBSD のアップグレードを行ないますか?
+(これは実際に書き込みを行う前の！！最後の警告！！です。)
+}
+/*
+{Ok, lets upgrade NetBSD on your hard disk.  As always, this will
+change information on your hard disk.  You should have made a full backup
+before this procedure!  Do you really want to upgrade NetBSD?
+(This is your last warning before this procedure starts modifying your
+disks.)
+}
+*/
+
+message reinstallusure
+{NetBSD 配付セットをNetBSD領域に展開します。
+この手続は、実際に配付セットを取得し、作成したNetBSD領域へ展開するだけです。
+ディスクのラベル付やブートブロックのアップグレードは行われません。
+また、NetBSDシステムの既存の設定情報は上書きされ、保存される事はありません。
+(これらの事が必要であれば、一旦この項目を終了し、 `インストール'あるいは
+ `アップグレード'を選択しなおしてください）。
+
+この手続きをはじめる前に `インストール' あるいは `アップグレード'を
+完了している事を確認してください。
+
+本当に NetBSD 配付セットを再インストールしますか?
+(これはディスクを変更する手続きを始める前の最後の警告です。)
+}
+/*
+{Ok, lets unpack the NetBSD distribution sets to a bootable hard disk.
+This procedure just fetches and unpacks sets onto an pre-partitioned
+bootable disk. It does not label disks, upgrade bootblocks, or save
+any existing configuration info.  (Quit and choose `install' or
+`upgrade' if you want those options.)  You should have already done an
+`install' or `upgrade' before starting this procedure!
+
+Do you really want to reinstall NetBSD distribution sets?
+(This is your last warning before this procedure starts modifying your
+disks.)
+}
+*/
+
+
+message nodisk
+{NetBSDで使用可能なハードディスクを見付けることができません。
+一番最初のメニューに戻ってください。
+}
+/*
+{I can not find any hard disks for use by NetBSD.  You will be
+returned to the original menu.
+}
+*/
+
+message onedisk
+{ディスク %s が存在します。これに NetBSD を%s
+します。
+}
+/*
+{I found only one disk, %s.  Therefore I assume you want to %s
+NetBSD on it.
+}
+*/
+
+message askdisk
+{以下のディスクが使用可能です: %s
+\nどのディスクに NetBSD をインストールしますか? }
+/*
+{I have found the following disks: %s
+\nOn which disk do you want to install NetBSD? }
+*/
+
+message badname
+{表示された使用可能ディスクを選んでいません。選択しなおしてください。
+以下のディスクが選択可能です: %s
+\nどのディスク上に NetBSD をインストールしますか? }
+/*
+{You did not choose one of the listed disks.  Please try again.
+The following disks are available: %s
+\nOn which disk do you want to install NetBSD? }
+*/
+
+message disktoosmall
+{標準インストールのためにはディスクの容量が小さすぎます。パーティション
+サイズを手動で入力する必要があります。
+}
+/*
+{Your hard disk is too small for a standard install. You will have to enter
+the partitions size by hand.
+}
+*/
+
+message pleasemountroot
+{インストール先のルートデバイスをマウント出来ません。マウントしてください。
+
+選択したディスク %s 中に、現在のルートデバイスが存在します。
+そのルートデバイスがインストールの対象となるルート (%sa) なのか、
+一時的な仮のルート(つまり、スワップパーティション %sb )であるのか、
+カーネルから得られる情報では判断出来ません。
+手動で対象となるルートデバイスをマウントしてください。
+
+メインメニューからサブシェルを実行する事が可能です。
+現在の作業を打ち切り、メインメニューへ戻ります。
+}
+/*
+{The root device is not mounted.  Please mount it.
+
+Your selected target disk %s also holds the current root device.  I
+need to know whether I'm currently running out of the target root
+(%sa), or out of an alternate root (say, in %sb, your swap partition).
+I can't tell unless you mount the root.
+
+I'm aborting back to the main menu so you can fork a subshell.
+}
+*/
+
+message cylinders
+{シリンダー}
+/*
+{cylinders}
+*/
+
+message heads
+{ヘッド}
+/*
+{heads}
+*/
+
+message sectors
+{セクタ}
+/*
+{sectors}
+*/
+
+message size
+{サイズ}
+/*
+{size}
+*/
+
+message start
+{先頭}
+/*
+{start}
+*/
+
+message offset
+{オフセット}
+/*
+{offset}
+*/
+
+message bsize
+{ブロックサイズ}
+/*
+{block size}
+*/
+
+message fsize
+{フラグメントサイズ}
+/*
+{frag size}
+*/
+
+message mountpoint
+{マウントポイント}
+/*
+{mount point}
+*/
+
+message cylname
+{cyl}
+/*
+{シリンダ}
+*/
+/*
+{cyl}
+*/
+
+message secname
+{sec}
+/*
+{セクタ}
+*/
+/*
+{sec}
+*/
+
+message megname
+{meg}
+/*
+{メガバイト}
+*/
+/*
+{meg}
+*/
+
+message layout
+{NetBSD領域のレイアウト(パーティションサイズ)を決定します。
+以下のレイアウトを選ぶ事が可能です。
+-- 標準:     プログラムによってパーティションは計算されます。
+-- X 付標準: X バイナリのためのスワップ領域を 2 倍にします。
+-- カスタム: 全てのパーティションのサイズを指定します。
+
+使用可能な NetBSD 領域は %.2f メガバイトです。
+標準は少なくとも %.2f メガバイト必要です。
+X 付標準は少なくとも %.2f メガバイト必要です。
+}
+/*
+{NetBSD uses a BSD disklabel to carve up the NetBSD portion of the disk
+into multiple BSD partitions.  You must now set up your BSD disklabel.
+You have several choices.  They are summarized below.
+-- Standard: the BSD disklabel partitions are computed by this program.
+-- Standard with X: twice the swap space, space for X binaries.
+-- Custom: you specify the sizes of all the BSD disklabel partitions.
+
+The NetBSD part of your disk is %.2f Megabytes.
+Standard requires at least %.2f Megabytes.
+Standard with X requires at least %.2f Megabytes.
+}
+*/
+
+message sizechoice
+{NetBSD パーティションサイズを決定します。大きさを指定する時の単位を
+選択してください。メガバイトを選ぶ場合は、指定した値に最も近い
+シリンダサイズの整数倍に丸め込まれます。セクタを選ぶ場合は、ほぼ
+自由なサイズを指定することが可能ですが、シリンダサイズ(%d セクタ)の
+整数倍が最もディスクを効率的に利用出来る事を忘れないで下さい。
+注意: というよりは、確実にシリンダーサイズの整数倍にすべきです。
+      従って、単位はメガバイトかシリンダにしましょう。
+}
+/*
+{You have elected to specify partition sizes (either for the BSD
+disklabel, or on some ports, for MBR slices). You must first choose a
+size unit to use.  Choosing megabytes will give partition sizes close
+to your choice, but aligned to cylinder boundaries. Choosing sectors
+will allow you to more accurately specify the sizes.  On modern ZBR disks,
+actual cylinder size varies across the disk and there is little real
+gain from cylinder alignment. On older disks, it is most efficient to
+choose partition sizes that are exact multiples of your actual
+cylinder size, which is %d sectors.
+}
+*/
+
+message defaultunit
+{入力の最後に 'M' (メガバイト), 'c' (シリンダー), 's' (セクタ) が
+付けられていない場合の、サイズおよびオフセット値の単位は %s です。
+}
+/*
+{Unless specified with 'M' (megabytes), 'c' (cylinders) or 's' sector
+at the end of input, sizes and offsets are in %s.
+}
+*/
+
+message startoutsidedisk
+{あなたの入力したstart値はディスクの最後を越えています！
+}
+/*
+{The start value you specified is beyond the end of the disk.
+}
+*/
+
+message endoutsidedisk
+{この値では、パーティションの最後が、ディスクの最後を越えてしまいます。
+パーティションサイズは %d %s に縮められました。
+}
+/*
+{With this value, the partition end is beyond the end of the disk. Your
+partition size has been truncated to %d %s.
+}
+*/
+
+message fspart
+{NetBSD パーティションは以下の通りです。(サイズとオフセットは%s単位):
+}
+/*
+{We now have your BSD-disklabel partitions as (Size and Offset in %s):
+}
+*/
+
+message fspart_head
+{id:    サイズ オフセット      End FS 型  Bsize Fsize マウントポイント
+---    ------ ---------       --- ------ ----- ----- ----------------
+}
+/*
+{id:      Size    Offset       End FStype Bsize Fsize Mount point
+---      ----    ------       --- ------ ----- ----- -----------
+}
+*/
+
+
+message edfspart
+{最初にファイルシステム(FS)の種類を設定します。
+
+パーティション %c の現在の値は:
+
+}
+/*
+{You should set the file system (FS) kind first.  Then set the other values.
+
+The current values for partition %c are:
+
+}
+*/
+
+message not42bsd
+{パーティション %c は 4.2BSD 型のパーティションではありません。
+ブロックサイズとフラグメントサイズは必要はありません。
+}
+/*
+{Partition %c is not of type 4.2BSD and thus does not have a block and
+frag size to set.
+}
+*/
+
+message packname
+{NetBSD ディスクの名称を入力してください。}
+/*
+{Please enter a name for your NetBSD disk}
+*/
+
+message lastchance
+{NetBSD をハードディスクへインストールする準備ができました。
+未だ書き込みは行なわれていません。
+	ディスクへの書き込みを中止する＜＜最後のチャンス＞＞です。
+続行しますか？
+}
+/*
+{Ok, we are now ready to install NetBSD on your hard disk.  Nothing has been
+written yet.  This is your last chance to quit this process before anything
+gets changed.  Shall we continue?
+}
+*/
+
+message disksetupdone
+{手続きの最初の部分は終りました。ディスクラベルの書き込み、
+新しいファイルシステムが構築(newfs)、整合性の確認(fsck)を終了しました。
+もしファイルシステム -- 殊に / と /usr --の不整合が報告されたなら、
+ここで作業を打ち切ってください。
+
+問題がなければ、次の段階の配布セットの取り寄せと展開を実行します。
+<RETURN> を押すと続行します。
+}
+/*
+{Okay, the first part of the procedure is finished.  Sysinst has
+written a disklabel to the target disk, and newfs'ed and fsck'ed
+the new partitions you specified for the target disk.
+
+The next step is to fetch and unpack the distribution filesets.
+Press <return> to proceed.
+}
+*/
+
+message openfail
+{%s を開く事ができませんでした。エラーメッセージは: %s.
+}
+/*
+{Could not open %s, error message was: %s.
+}
+*/
+
+/* XXX: What properties ? */
+message statfail
+{%s の状態を得る事ができませんでした。エラーメッセージは: %s.
+}
+/*
+{Can't get properties of %s, error message was: %s.
+}
+*/
+
+message unlink_fail
+{%s の削除に失敗しました。エラーメッセージは: %s.
+}
+/*
+{I was unable to delete %s, error message was: %s.
+}
+*/
+
+message rename_fail
+{%s を %s に変更することができませんでした。エラーメッセージは: %s.
+}
+/*
+{I was unable to rename %s to %s, error message was: %s.
+}
+*/
+
+message deleting_files
+{アップグレードの作業の一部として、次に挙げられるファイルが削除されます:
+}
+/*
+{As part of the upgrade procedure, the following have to be deleted:
+}
+*/
+
+message deleting_dirs
+{アップグレードの作業の一部として、次に挙げられるディレクトリが削除
+されます (ただし、そのディレクトリが空でなければ、名前を変更して保存
+されることになります):
+}
+/*
+{As part of the upgrade procedure, the following directories have to be
+deleted (I will rename those that are not empty):
+}
+*/
+
+message renamed_dir
+{ディレクトリ %s は空でなかったため、%s に名前を変更して保存しました。
+}
+/*
+{The directory %s has been renamed to %s because it was not empty.
+}
+*/
+
+/* XXX: it calls if upgrade? (existing install = old install system ?) */
+message cleanup_warn
+{アップグレードのための、現状のシステムに対するクリーンアップに失敗
+しました。配布セットの展開に失敗する可能性があります。
+}
+/*
+{Cleanup of the existing install failed. This may cause cause the extraction
+of the set to fail.
+}
+*/
+
+message nomount
+{パーティション %c の 4.2BSD または MS-DOS ファイルシステムではありません。
+マウントポイントはありません。}
+/*
+{Partition %c's type is not 4.2BSD or msdos and therefore does not have
+a mount point.}
+*/
+
+message mountfail
+{デバイス %s の %s へのマウントに失敗しました。
+}
+/*
+{mount of device %s on %s failed.
+}
+*/
+
+message dotar
+{NetBSDの起動に必要なバイナリと設定ファイルを書き込み中...\n}
+/*
+{Populating filesystems with bootstrapping binaries and config files...\n}
+*/
+
+message dotarfail
+{The bootstrapping binaries and config file installation failed.
+Can't continue ...}
+
+message instcomplete
+{NetBSD-@@VERSION@@ のインストールが完了しました。
+インストール先のハードディスクからNetBSDを起動出来ます。
+インストールドキュメントの”システムの最後の構築について”を良く読み、
+その指示に従ってください。
+
+最低でも root のパスワードを設定し、必要な機能を有効にする為に
+ /etc/rc.confを編集してください。
+}
+/*
+{The installation of NetBSD-@@VERSION@@ is now complete.  The system
+should boot from hard disk.  Follow the instructions in the INSTALL
+document about final configuration of your system.
+
+At a minimum, you should set a root password and edit /etc/rc.conf to
+match your needs.
+}
+*/
+
+message unpackcomplete
+{NetBSD-@@VERSION@@ のアップグレードが完了しました。
+インストールドキュメントを良く読み、それぞれの環境に応じた
+システムの再構築を行ってください。
+
+古い /etc は /etc.oldとして保存されていてます。
+
+最低限、各自の環境を構築する為に rc.conf を編集し、
+rc_configured=NO を rc_configured=YES に変更するのを忘れないでください。
+この事を忘れると、起動時シングルユーザーモードで停止します。
+}
+/*
+{The upgrade to NetBSD-@@VERSION@@ is now complete.  You will
+now need to follow the instructions in the INSTALL document as to 
+what you need to do to get your system reconfigured for your
+situation.  Your old /etc has been saved as /etc.old.
+
+At a minimum, you must edit rc.conf for your local environment and change
+rc_configured=NO to rc_configured=YES or reboots will stop at single-user.
+}
+*/
+
+
+message upgrcomplete
+{NetBSD-@@VERSION@@ の追加リリースセットの展開が完了しました。
+/etcのいくつかのファイルは上書きされています。最初のアップグレードで
+保存された /etc.old は変更されていません。システムを再構築するための
+情報はインストールドキュメントに書いてあります。
+
+最低限、各自の環境を構築する為に rc.conf を編集し、
+rc_configured=NO を rc_configured=YES に変更するのを忘れないでください。
+この事を忘れると、起動時シングルユーザーモードで停止します。
+}
+/*
+{Unpacking additional release sets of NetBSD-@@VERSION@@ is now
+complete.  Unpacking sets has clobbered the target /etc.  Any /etc.old
+saved by an earlier upgrade was not touched.  You will now need to
+follow the instructions in the INSTALL document to get your system
+reconfigured for your situation.
+
+At a minimum, you must edit rc.conf for your local environment and change
+rc_configured=NO to rc_configured=YES or reboots will stop at single-user.
+}
+*/
+
+message distmedium
+{カーネル及び配付セットのインストールを行います。
+インストール方法には幾つかのオプションがあり、詳細はインストールノートに
+書かれています。 ftp や nfs を選んだ場合、マシンがネットワークに(物理的に)
+接続されていないといけません。
+問題がある場合、"none"を選びメインメニューへ戻り、問題を解決してください。
+解決後メインメニューから "upgrade" を選ぶ事で、このメニューに戻れます。
+}
+/*
+{Your disk is now ready for installing the kernel and the distribution
+sets.  As noted in your INSTALL notes, you have several options.  For
+ftp or nfs, you must be connected to a network with access to the proper
+machines.  If you are not ready to complete the installation at this time,
+you may select "none" and you will be returned to the main menu.  When
+you are ready at a later time, you may select "upgrade" from the main
+menu to complete the installation.
+}
+*/
+
+message distset
+{NetBSD 配付物は、いくつかの配付セット集から構成されています。
+どのような場合も必要な基本セットと、必須でないオプションセットがあります。
+配布セット集全てをインストールするか、個別に選ぶか、選択してください。
+}
+/*
+{The NetBSD distribution is broken into a collection of distribution
+sets.  There are some basic sets that are needed by all installations
+and there are some other sets that are not needed by all installations.
+You may choose to install all of them (Full installation) or you 
+select from the optional distribution sets.
+}
+*/
+
+message ftpsource
+{以下に、現在使用している ftp サイト, ディレクトリ, ユーザー, パスワード
+を示します。もし "ユーザー" が "ftp" ならばパスワードは必須ではありません。
+
+ホスト:       %s
+ディレクトリ: %s
+ユーザー:     %s
+パスワード:   }
+/*
+{The following is the ftp site, directory, user, and password currently
+ready to use.  If "user" is "ftp", then the password is not needed.
+
+host:      %s
+directory: %s
+user:      %s
+password:  }
+*/
+
+message host
+{ホスト名}
+/*
+{host}
+*/
+
+message dir
+{ディレクトリ}
+/*
+{directory}
+*/
+
+message user
+{ユーザー}
+/*
+{user}
+*/
+
+message passwd
+{パスワード}
+/*
+{password}
+*/
+
+message email
+{電子メールアドレス}
+/*
+{e-mail address}
+*/
+
+message dev
+{デバイス}
+/*
+{device}
+*/
+
+message nfssource
+{配付物がある場所の NFS ホスト及びサーバーディレクトリを入力してくださ
+い。ディレクトリは、配布物(*.tgz)のある場所を示し、また NFS マウント可能
+でなくてはなりません。
+
+ホスト:       %s
+ディレクトリ: %s
+}
+/*
+{Enter the nfs host and server directory where the distribution is
+located.  Remember, the directory should contain the .tgz files and
+must be nfs mountable.
+
+host:      %s
+directory: %s
+}
+*/
+
+message nfsbadmount
+{ディレクトリ %s:%s をマウントできませんでした。}
+/*
+{The directory %s:%s could not be nfs mounted.}
+*/
+
+message cdromsource
+{CDROM デバイスと配付物(*.tgz)が置かれている CDROM 上のディレクトリを
+入力してください。
+
+
+デバイス:     %s
+ディレクトリ: %s
+}
+/*
+{Enter the CDROM device to be used and directory on the CDROM where
+the distribution is located.  Remember, the directory should contain
+the .tgz files.
+
+device:    %s
+directory: %s
+}
+*/
+
+message localfssource
+{配付物(*.tgz)が置かれているデバイスと、配布物のあるディレクトリの位置
+を入力してください。デバイスはマウントされた状態でない必要があります。
+
+デバイス:         %s
+ファイルシステム: %s
+ディレクトリ:     %s
+}
+/*
+{Enter the unmounted local device and directory on that device where
+the distribution is located.  Remember, the directory should contain
+the .tgz files.
+
+device:     %s
+filesystem: %s
+directory:  %s
+}
+*/
+
+message localdir
+{配付物(*.tgz)が置かれているディレクトリを入力してください。
+
+ディレクトリ:  %s
+}
+/*
+{Enter the already-mounted local directory where the distribution is
+located.  Remember, the directory should contain the .tgz files.
+
+directory:  %s
+}
+*/
+
+message filesys
+{ファイルシステム}
+/*
+{filesystem}
+*/
+
+message cdrombadmount
+{CD-ROM はデバイス %s 上にマウントすることができません。}
+/*
+{The CDROM could not be mounted on device %s.}
+*/
+
+message localfsbadmount
+{%s はローカルデバイス %s 上にマウントすることができません。}
+/*
+{%s could not be mounted on local device %s.}
+*/
+
+message badlocalsetdir
+{%s はディレクトリではありません}
+/*
+{%s is not a directory}
+*/
+
+message badsetdir 
+{%s は基本インストールセットの base.tgz と kern.tgz が含まれて
+いません。正しいディレクトリを指定しましたか?}
+/*
+{%s does not contain the mandatory installation sets
+base.tgz and kern.tgz.  Are you sure you've got the right directory?}
+*/
+
+message nonet
+{NetBSD によって使用可能なネットワークインターフェースが
+見つかりませんでした。前のメニューに戻ります。
+}
+/*
+{I can not find any network interfaces for use by NetBSD.  You will be
+returned to the previous menu.
+}
+*/
+
+message asknetdev
+{右記のネットワークインターフェースを見付けました: %s
+\nどのデバイスを使用しますか?}
+/*
+{I have found the following network interfaces: %s
+\nWhich device shall I use?}
+*/
+
+message badnet
+{リストにあるネットワークデバイスを選んでいません。もう一度試して
+ください。右記のデバイスが有効です: %s
+\nどのデバイスを使用しますか?}
+/*
+{You did not choose one of the listed network devices.  Please try again.
+The following network devices are available: %s
+\nWhich device shall I use?}
+*/
+
+message netinfo
+{ネットワークを使用するために, 以下の質問に答えてください。
+
+}
+/*
+{To be able to use the network, we need answers to the following:
+
+}
+*/
+
+message net_domain
+{DNS ドメイン}
+/*
+{Your DNS domain}
+*/
+
+message net_host
+{ホスト名}
+/*
+{Your host name}
+*/
+
+message net_ip
+{IP 番号}
+/*
+{Your IP number}
+*/
+
+message net_mask
+{ネットマスク}
+/*
+{Netmask}
+*/
+
+message net_namesrv
+{ネームサーバーの IP}
+/*
+{IP of your name server}
+*/
+
+message net_defroute
+{ゲートウェイの IP}
+/*
+{IP of your gateway}
+*/
+
+message net_media
+{ネットワークのメディアタイプ}
+/*
+{Network media type}
+*/
+
+message netok
+{以下は入力された値です。これでよろしいでしょうか?
+
+ドメイン:          %s
+ホスト名:          %s
+ホスト IP:         %s
+ネットマスク:      %s
+ネームサーバー IP: %s
+ゲートウェイ IP:   %s
+メディアタイプ:    %s
+}
+/*
+{The following are the values you entered.  Are they OK?
+
+Domain:        %s
+Host Name:     %s
+Host IP:       %s
+Netmask:       %s
+Nameserver IP: %s
+Gateway IP:    %s
+Media type:    %s
+}
+*/
+
+message netagain
+{ネットワークについての情報を再入力してください。先程の回答はデフォルト
+になります。
+
+}
+/*
+{Please reenter the information about your network.  Your last answers
+will be your default.
+
+}
+*/
+
+message resolv
+{/etc/resolv.conf を作成できません。インストールを中止します。
+}
+/*
+{Could not create /etc/resolv.conf.  Install aborted.
+}
+*/
+
+message realdir
+{ディレクトリ %s: %s に変更できません。インストールを中止します。
+}
+/*
+{Could not change to directory %s: %s.  Install aborted.
+}
+*/
+
+message ftperror_cont
+{FTP でエラーが発見されました。 <return> を押すと続行します。}
+/*
+{Ftp detected an error.  Press <return> to continue.}
+*/
+
+message ftperror
+{FTP でファイルを取得できませんでした。もう一度試しますか?}
+/*
+{Ftp could not retrieve a file.  Do you want to try again?}
+*/
+
+message distdir
+{%s のためにどのディレクトリを使いますか?}
+/*
+{What directory shall I use for %s? }
+*/
+
+message verboseextract
+{展開作業時に、展開中のファイル名をみますか?
+}
+/*
+{During the extraction process, do you want to see the file names as
+each file is extracted?
+}
+*/
+
+message badls
+{/bin/ls を実行できませんでした。通常起こり得ないエラーです。
+インストールを中止します。
+}
+/*
+{Could not run /bin/ls.  This error should not have happened. Install aborted.
+}
+*/
+
+message notarfile
+{リリースセット %s は存在しません。
+
+配布セットの展開を続けますか?
+}
+/*
+{Release set %s does not exist.
+
+Continue extracting sets?}
+*/
+
+message endtarok
+{選択した配付セットは正常に展開されました。}
+/*
+{All selected distribution sets unpacked successfully.}
+*/
+
+message endtar
+{配付セットの展開に問題がありました。
+インストールは不完全な状態にあります。
+
+選択した%d 個の配付セットの内、%d 個を見付けることができませんでした。
+%d 個の内、%d 個は正常に展開出来、%d 個は展開中に問題が発生しました。
+
+インストールを中止しました。配付元をチェックし、メインメニューから
+再インストールセットを選んでください。}
+/*
+{There were problems unpacking distribution sets.
+Your installation is incomplete. 
+
+You selected %d distribution sets.  %d sets couldn't be found
+and %d were skipped after an error occured.  Of the %d
+that were attempted, %d unpacked without errors and %d with errors.
+
+The installation is aborted. Please recheck your distribution source
+and consider reinstalling sets from the main menu.}
+*/
+
+message abort
+{これ以上NetBSD のインストールを続行する事は出来ません。
+インストールを中止しました。
+}
+/*
+{Your choices have made it impossible to install NetBSD.  Install aborted.
+}
+*/
+
+message abortinst
+{このディストリビューションは正常にロードされませんでした。手動で手続きを
+進める必要があります。インストールを中止しました。
+}
+/*
+{The distribution was not successfully loaded.  You will need to proceed
+by hand.  Installation aborted.
+}
+*/
+
+message abortupgr
+{ディストリビューションセットを正常にロード出来ませんでした。手動で手続きを
+進める必要があります。アップグレードを中止しました。
+}
+/*
+{The distribution was not successfully loaded.  You will need to proceed
+by hand.  Upgrade aborted.
+}
+*/
+
+message abortunpack
+{追加セットを正常に展開できませんでした。
+手動で手続きを進めるか、リリースセットの今回の追加セットの展開に必要な
+配布物を選んで、もう一度挑戦してください。
+}
+/*
+{Unpacking additional sets was not successful.  You will need to
+proceed by hand, or choose a different source for release sets and try
+again.
+}
+*/
+
+message anonprog
+{sysinst: "%s" を実行中
+}
+/*
+{sysinst: running "%s"
+}
+*/
+
+message anonprogfailed
+{
+プログラム "%s" はリターンコード %s で不正終了しました。
+一番最初のインストールオプションの選択に誤りがあった可能性があります。
+例えば、 NetBSDシステムのないディスクをアップグレードをしようとしたり、
+既に稼働してるシステム上に新規インストールをしようとしていませんか？
+あるいは、ミスパッケージされたミニルートによるものかもしれません。
+理由が何であれ、sysinst はこの問題を解決出来ません。
+インストール作業は失敗に終わる可能性があります。
+
+上記のエラーメッセージをチェックし*十分に*に注意して進めてください。
+続けるには <return> を押してください。}
+/*
+{
+The program "%s" failed unexpectedly with return code %s.
+
+This is probably due to choosing the incorrect top-level install
+option---like trying to do an Upgrade on a bare disk, or doing a fresh
+Install on an already-running system.  Or it might be due to a
+mispackaged miniroot.  Whatever the cause, sysinst did not expect any
+errors here and the installation has almost certainly failed.
+
+Check the error messages above and proceed with *extreme* caution.
+Press <return> to continue.}
+*/
+
+message progdie
+{
+sysinst: "%s" の実行はエラーコード %s で不正終了しました。
+復旧できません。中止します。
+}
+/*
+{
+sysinst: Execution of "%s" failed unexpectedly with error code  %s.
+Cannot recover, aborting.
+}
+*/
+
+message createfstab
+/* ふざけてます。めんどいって。。 */
+{おいおい！/mnt/etc/fstab 作れないじゃん。 じゃやあね。 バイバイ。
+}
+/*
+{There is a big problem!  Can not create /mnt/etc/fstab.  Bailing out!
+}
+*/
+
+
+message noetcfstab
+{おおっと！  %s に /etc/fstab がないざんす。アップグレードやめちゃおっと。
+}
+/*
+{Help! No /etc/fstab in target disk %s.  Aborting upgrade.
+}
+*/
+
+message badetcfstab
+{いやーん!  %s の /etc/fstab ってむずくてわかんない。
+ アップグレードなんかしてやんない。
+}
+/*
+{Help! Can't parse /etc/fstab in target disk %s.  Aborting upgrade.
+}
+*/
+
+message etc_oldexists 
+{ディスクに既に /etc.old があるため /etc を /etc.old として保存
+できませんでした。 
+
+ユーティリティメニューからシェルを起動して、インストール先の
+ /etc と /etc.old を調べてください。もし /etc.old が既に
+アップグレード済みのファイルになってしまっていたら、(残念ですが)
+/etc.oldを削除(rm -rf etc.old)して、もう1度やりなおしてください。
+/etc.oldがアップグレード前の/etcの内容であるなら、rm -rf /etc と
+mv /etc.old /etc を実行して/etcをアップグレード前の状態に戻して
+もう１度挑戦してください。
+
+アップグレードを中止しました。}
+/*
+{I cannot save /etc as /etc.old, because the target disk already has an
+/etc.old. Please fix this before continuing.
+
+One way is to start a shell from the Utilities menu, examine the
+target /etc and /etc.old.  If /etc.old is from a completed upgrade,
+you can rm -f etc.old and restart.  Or if /etc.old is from a recent,
+incomplete upgrade, you can rm -f /etc and mv etc.old to /etc.
+
+Aborting upgrade.}
+*/
+
+message netnotup
+{ネットワークのセットアップ中に問題がありました。ゲートウェイかネームサーバー
+がネット上に見つかりません。再度ネットワークの設定を行ないますか? 
+(インストールプロセスを中止するものではありません.)
+}
+/*
+{There was a problem in setting up the network.  Either your gateway
+or your nameserver was not reachable by a ping.  Do you want to
+configure your network again?  (No aborts the install process.)
+}
+*/
+
+message makedev
+{デバイスファイルを作成中 ...
+}
+/*
+{Making device files ...
+}
+*/
+
+message badfs
+{%s%s は BSD ファイルシステムでないか ファイルシステムに不整合が
+あるようです。アップグレードは中止されました。 (エラー番号 %d)
+}
+/*
+{It appears that %s%s is not a BSD file system or the fsck was
+not successful.  The upgrade has been aborted.  (Error number %d.)
+}
+*/
+
+message badmount
+{ファイルシステム %s%s は正常にマウントされませんでした。アップグレード
+を中止します。}
+/*
+{Your file system %s%s was not successfully mounted.  Upgrade aborted.}
+*/
+
+message upgrinode
+{ファイルシステム %s は古い inode 形式を使用しています。もしこれらの
+ファイルシステムをNetBSD のみで使用するのなら、新しいinode形式に
+アップグレードすることを勧めます。
+このファイルシステムをアップグレードしますか?
+}
+/*
+{Your file system, %s, is using an old inode format.  If you are
+using only NetBSD on these file systems, it is recommended that 
+they are upgraded.  Do you want this file system upgraded?
+}
+*/
+
+message rootmissing
+{ ターゲットのルートに%s がありません。
+}
+/*
+{ target root is missing %s.
+}
+*/
+
+message badroot
+{新しい root ファイルシステムに最低限必要なバイナリーがそろっていません。
+ 全ての要求されたセットをインストールしましたか？
+}
+/*
+{The completed new root fileystem failed a basic sanity check.
+ Are you sure you installed all the required sets?
+}
+*/
+
+message fddev
+{どのフロッピーデバイスを使用しますか? }
+/*
+{What floppy device do you want to use? }
+*/
+
+message fdmount
+{ファイル "%s" のあるフロッピーを挿入してください。 }
+/*
+{Please load the floppy containing the file named "%s". }
+*/
+
+message fdnotfound
+{このディスクに ファイル "%s" を見付けることができませんでした。
+そのファイルを含むフロッピーを挿入してください。}
+/*
+{Could not find the file named "%s" on the disk.  Please load the
+floppy with that file on it.}
+*/
+
+message fdremount
+{フロッピーは正常にマウントされませんでした。
+
+    再度挑戦してください。"%s" という名前のファイルを含むフロッピー
+    を入れてください。
+
+    フロッピーからこれ以上ファイルを読み込みません。プロセスを
+    中止します。
+}
+/*
+{The floppy was not mounted successfully.  You may:
+
+    Try again and put in the floppy containing the file named "%s".
+
+    Not load any more files from floppy and abort the process.
+}
+*/
+
+message mntnetconfig
+{このマシンを普段使用する時に用いるネットワークの情報ですか?
+これを /etc にインストールしてもよいですか? }
+/*
+{Is the network information you entered accurate for this machine
+in regular operation and do you want it installed in /etc? }
+*/
+
+message cur_distsets
+{以下は使用されている配付セットの一覧です。
+
+}
+/*
+{The following is the list of distribution sets that will be used.
+
+}
+*/
+
+message etc_hosts
+{
+#
+#Added by NetBSD sysinst
+#
+%s	%s.%s %s
+127.0.0.1	localhost
+}
+/*
+{
+#
+#Added by NetBSD sysinst
+#
+%s %s.%s %s
+127.0.0.1 localhost
+}
+*/
+
+message tarerror
+{ファイル %s の展開中にエラーが発生しました。そのため、幾つかの
+ファイルが正常に展開できずに、システムが不完全な状態にあります。
+
+配布セットの展開を続けますか?}
+/*
+{There was an error in extracting the file %s.  That means
+some files were not extracted correctly and your system will not be
+complete.
+
+Continue extracting sets?}
+*/
+
+message partitions_overlap
+{パーティション %c と %c はオーバーラップしています。}
+/*
+{partitions %c and %c overlap.}
+*/
+
+message edit_partitions_again
+{
+
+手動でパーティションテーブルを編集するか, 現在の作業を中止してメインメニュー
+に戻る事が出来ます。
+
+パーティションテーブルを再度編集しますか?}
+/*
+{
+
+You can either edit the partition table by hand, or give up and return
+to the main menu.
+
+Edit the partition table again?}
+*/
+
+message not_regular_file
+{設定ファイル %s が通常のファイルではありません。\n}
+/*
+{Config file %s is not a regular file.\n}
+*/
+
+message out_of_memory
+{メモリ不足です (malloc に失敗しました)。\n}
+/*
+{Out of memory (malloc failed).\n}
+*/
+
+message config_open_error
+{設定ファイル %s を開く事ができませんでした\n}
+/*
+{Could not open config file %s\n}
+*/
+
+message config_read_error
+{設定ファイル %s を読む事ができませんでした\n}
+/*
+{Could not read config file %s\n}
+*/
+
+/* XXX: not used in PC-98 */
+/*
+message nobiosgeom
+{Sysinst could not automatically determine the BIOS geometry of the disk.
+The physical geometry is % cylinders %d sectors %d heads\n}
+*/
+/*
+{Sysinst could not automatically determine the BIOS geometry of the disk.
+The physical geometry is % cylinders %d sectors %d heads\n}
+*/
+
+/* XXX: not used in PC-98 */
+message biosguess
+{Using the information already on the disk, my best guess for the BIOS
+geometry is %d cylinders %d sectors %d heads\n}
+/*
+{Using the information already on the disk, my best guess for the BIOS
+geometry is %d cylinders %d sectors %d heads\n}
+*/
+
+message cmdfail
+{コマンド
+        %s
+の実行に失敗しました。続行できません。}
+/*
+{Command
+        %s
+failed. I can't continue.}
+*/
+
+/* XXX: not used in PC-98 */
+message noactivepart
+{You have not marked a partition active. This may cause your system to not
+start up properly. Should the NetBSD partition of the disk be marked active?}
+/*
+{You have not marked a partition active. This may cause your system to not
+start up properly. Should the NetBSD partition of the disk be marked active?}
+*/
+
+/* XXX: not used in PC-98 */
+message upgradeparttype
+{The only suitable partition that was found for NetBSD installation is of
+the old NetBSD/386BSD/FreeBSD partition type. Do you want to change the type
+of this partition to the new NetBSD-only partition type?}
+/*
+{The only suitable partition that was found for NetBSD installation is of
+the old NetBSD/386BSD/FreeBSD partition type. Do you want to change the type
+of this partition to the new NetBSD-only partition type?}
+*/

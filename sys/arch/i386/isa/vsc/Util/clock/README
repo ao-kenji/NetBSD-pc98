@@ -1,0 +1,13 @@
+#	$NecBSD: README,v 1.10 1998/03/14 07:09:23 kmatsuda Exp $
+#	$NetBSD$
+
+# [NetBSD for NEC PC-98 series]
+#  Copyright (c) 1994, 1995, 1996, 1997, 1998
+#	NetBSD/pc98 porting staff. All rights reserved.
+
+clock in status line.
+
+vcon -SON			# status line enable
+clock				# clock on
+
+That's all.
